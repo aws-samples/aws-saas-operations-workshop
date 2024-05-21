@@ -1,0 +1,59 @@
+config:
+  target: "https://default.url"
+  phases:
+    - duration: 200m
+      arrivalRate: 8
+      name: Normal
+      
+scenarios:
+  - name: "GetProducts"
+    weight: 10
+    flow:
+      - log: "Get Products"
+      - get:
+          url: "{{$processEnvironment.P3_ENDPOINT}}/products"
+          headers:
+            Authorization: "Bearer {{$processEnvironment.P3_TOKEN }}"
+  - name: "GetOrders"
+    weight: 1
+    flow:
+      - log: "Get Orders"
+      - get:
+          url: "{{$processEnvironment.P3_ENDPOINT}}/orders"
+          headers:
+            Authorization: "Bearer {{$processEnvironment.P3_TOKEN }}"
+  - name: "GetUsers"
+    weight: 1
+    flow:
+      - log: "Get Users"
+      - get:
+          url: "{{$processEnvironment.ADMIN_APIGATEWAYURL}}/users"
+          headers:
+            Authorization: "Bearer {{$processEnvironment.P3_TOKEN }}"
+  - name: "CreateProduct"
+    weight: 5
+    flow:
+      - log: "Create Product"
+      - post:
+          url: "{{$processEnvironment.P3_ENDPOINT}}/product"
+          headers:
+            Authorization: "Bearer {{$processEnvironment.P3_TOKEN }}"
+          json:
+            name: "TestProduct"
+            price: "100"
+            sku: "100"
+            category: "category1"
+  - name: "CreateOrder"
+    weight: 5
+    flow:
+      - log: "Create Order"
+      - post:
+          url: "{{$processEnvironment.P3_ENDPOINT}}/order"
+          headers:
+            Authorization: "Bearer {{$processEnvironment.P3_TOKEN }}"
+          json:
+            orderName: "TestOrder"
+            orderProducts:
+            - productId: "{{ productId }}"
+              price: "100"
+              quantity: 1

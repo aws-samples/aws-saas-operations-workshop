@@ -1,0 +1,28 @@
+{
+    "Product-pooled": [
+        {
+            "PutRequest": {
+                "Item": {
+                    "shardId": {
+                        "S": "SHARDID"
+                    },
+                    "productId": {
+                        "S": "PRODUCTID"
+                    },
+                    "category": {
+                        "S": "category1"
+                    },
+                    "name": {
+                        "S": "TestProduct"
+                    },
+                    "price": {
+                        "N": "1500"
+                    },
+                    "sku": {
+                        "S": ""
+                    }                                       
+                }
+            }
+         }
+    ]
+}

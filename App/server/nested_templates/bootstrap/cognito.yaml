@@ -1,0 +1,452 @@
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: MIT-0
+
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Template to setup cognito as part of bootstrap
+Parameters:
+  ApiKeyOperationUsersParameter:
+    Type: String
+    Default: "9a7743fa-3ae7-11eb-adc1-0242ac120002"
+    Description: "Enter default api key value to be used by api gateway for system admins"
+  AdminUserPoolCallbackURLParameter: 
+    Type: String
+    Description: "Enter Admin Management userpool call back url"
+  TenantUserPoolCallbackURLParameter:
+    Type: String
+    Description: "Enter Tenant Management userpool call back url"  
+Resources:
+  CognitoUserPool:
+    Type: "AWS::Cognito::UserPool"
+    Properties:
+      UserPoolName: PooledTenant-SaaSOperationsUserPool
+      AutoVerifiedAttributes:
+        - "email"
+      AccountRecoverySetting:
+        RecoveryMechanisms:
+          - Name: verified_email
+            Priority: 1
+      AdminCreateUserConfig:      
+        InviteMessageTemplate:
+          EmailMessage: !Join 
+            - "" 
+            - - "Login into tenant UI application at "
+              - "https://"
+              - !Ref TenantUserPoolCallbackURLParameter 
+              - "/"
+              - " with username {username} and temporary password {####}"
+          EmailSubject: !Join 
+            - "" 
+            - - "Your temporary password for tenant UI application"
+      Schema:
+        - AttributeDataType: "String"
+          Name: email
+          Required: True
+          Mutable: True
+        - AttributeDataType: "String"
+          Name: tenantId          
+        - AttributeDataType: "String"
+          Name: userRole
+          Required: False
+          Mutable: True        
+  CognitoUserPoolClient:
+    Type: "AWS::Cognito::UserPoolClient"
+    Properties:
+      ClientName: SaaSOperationsClient
+      GenerateSecret: false
+      UserPoolId: !Ref CognitoUserPool
+      AllowedOAuthFlowsUserPoolClient: True
+      AllowedOAuthFlows:
+        - code
+        - implicit
+      ExplicitAuthFlows: 
+        - ALLOW_REFRESH_TOKEN_AUTH
+        - ALLOW_USER_SRP_AUTH
+        - ALLOW_CUSTOM_AUTH
+        - ALLOW_USER_PASSWORD_AUTH
+      SupportedIdentityProviders:
+        - COGNITO
+      CallbackURLs:
+        - !Join ["",["https://",!Ref TenantUserPoolCallbackURLParameter, "/"]]
+      LogoutURLs:
+        - !Join ["",["https://",!Ref TenantUserPoolCallbackURLParameter, "/"]]  
+      AllowedOAuthScopes:
+        - email
+        - openid
+        - profile
+      WriteAttributes:
+        - "email"
+        - "custom:tenantId"
+        - "custom:userRole"
+      IdTokenValidity: 12
+  CognitoUserPoolDomain:
+    Type: AWS::Cognito::UserPoolDomain
+    Properties:
+      Domain: !Join ["-", [pooledtenant-saasoperations,!Ref "AWS::AccountId"]]
+      UserPoolId: !Ref CognitoUserPool
+
+  AuthenticatedPooledUserRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: authenticated-pooled-user-role
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Federated: cognito-identity.amazonaws.com
+            Action: sts:AssumeRoleWithWebIdentity
+            Condition:
+              ForAnyValue:StringLike:
+                "cognito-identity.amazonaws.com:amr": authenticated   
+              StringEquals:
+                "aws:PrincipalAccount": !Sub ${AWS::AccountId}         
+          - Effect: Allow
+            Principal:
+              Federated: cognito-identity.amazonaws.com
+            Action: sts:TagSession
+            Condition:
+              ForAnyValue:StringLike:
+                "cognito-identity.amazonaws.com:amr": authenticated
+              StringEquals:
+                "aws:PrincipalAccount": !Sub ${AWS::AccountId}
+      Policies:      
+        - PolicyName: authenticated-pooled-user-policy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:UpdateItem
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                  - dynamodb:DeleteItem
+                  - dynamodb:Query
+                Resource:
+                  - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/Product-pooled
+                Condition:
+                  ForAllValues:StringLike:
+                    dynamodb:LeadingKeys:
+                      - "${aws:PrincipalTag/tenantId}-*"
+              - Effect: Allow
+                Action:
+                  - dynamodb:UpdateItem
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                  - dynamodb:DeleteItem
+                  - dynamodb:Query
+                Resource:
+                  - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/Order-pooled
+                Condition:
+                  ForAllValues:StringLike:
+                    dynamodb:LeadingKeys:
+                      - "${aws:PrincipalTag/tenantId}-*"
+              - Effect: Allow
+                Action:
+                  - dynamodb:UpdateItem
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                  - dynamodb:Query
+                Resource:
+                  - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/SaaSOperations-TenantUserMapping
+                  - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/SaaSOperations-TenantDetails
+                Condition:
+                  ForAllValues:StringLike:
+                    dynamodb:LeadingKeys:
+                      - "${aws:PrincipalTag/tenantId}"
+                  StringEquals:
+                    "TenantAdmin": "${aws:PrincipalTag/userRole}"
+              - Effect: Allow
+                Action:
+                  - dynamodb:UpdateItem
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                  - dynamodb:Query
+                  - dynamodb:DeleteItem
+                Resource:
+                  - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/SaaSOperations-TenantStackMapping
+                  - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/SaaSOperations-Settings
+                Condition:
+                  StringEquals:
+                    "TenantAdmin": "${aws:PrincipalTag/userRole}"
+              - Effect: Allow
+                Action:
+                  - dynamodb:UpdateItem
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                  - dynamodb:Query
+                  - dynamodb:DeleteItem
+                  - dynamodb:Scan
+                Resource:
+                  - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/*"
+                  - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/*/index/*"
+                Condition:
+                  StringEquals:
+                    "SystemAdmin": "${aws:PrincipalTag/userRole}"
+
+  AuthenticatedSiloedUserRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: authenticated-siloed-user-role
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Federated: cognito-identity.amazonaws.com
+            Action: sts:AssumeRoleWithWebIdentity
+            Condition:
+              ForAnyValue:StringLike:
+                "cognito-identity.amazonaws.com:amr": authenticated  
+              StringEquals:
+                "aws:PrincipalAccount": !Sub ${AWS::AccountId}        
+          - Effect: Allow
+            Principal:
+              Federated: cognito-identity.amazonaws.com
+            Action: sts:TagSession
+            Condition:
+              ForAnyValue:StringLike:
+                "cognito-identity.amazonaws.com:amr": authenticated
+              StringEquals:
+                "aws:PrincipalAccount": !Sub ${AWS::AccountId}
+      Policies:      
+        - PolicyName: authenticated-siloed-user-policy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:UpdateItem
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                  - dynamodb:DeleteItem
+                  - dynamodb:Query
+                Resource:
+                  - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/Product-${!aws:PrincipalTag/tenantId}
+                Condition:
+                  ForAllValues:StringLike:
+                    dynamodb:LeadingKeys:
+                      - "${aws:PrincipalTag/tenantId}-*"
+              - Effect: Allow
+                Action:
+                  - dynamodb:UpdateItem
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                  - dynamodb:DeleteItem
+                  - dynamodb:Query
+                Resource:
+                  - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/Order-${!aws:PrincipalTag/tenantId}
+                Condition:
+                  ForAllValues:StringLike:
+                    dynamodb:LeadingKeys:
+                      - "${aws:PrincipalTag/tenantId}-*"
+              - Effect: Allow
+                Action:
+                  - dynamodb:UpdateItem
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                  - dynamodb:Query
+                Resource:
+                  - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/SaaSOperations-TenantUserMapping
+                  - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/SaaSOperations-TenantDetails
+                Condition:
+                  ForAllValues:StringLike:
+                    dynamodb:LeadingKeys:
+                      - "${aws:PrincipalTag/tenantId}"
+                  StringEquals:
+                    "TenantAdmin": "${aws:PrincipalTag/userRole}"
+              - Effect: Allow
+                Action:
+                  - dynamodb:UpdateItem
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                  - dynamodb:Query
+                  - dynamodb:DeleteItem
+                Resource:
+                  - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/SaaSOperations-TenantStackMapping
+                  - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/SaaSOperations-Settings
+                Condition:
+                  StringEquals:
+                    "TenantAdmin": "${aws:PrincipalTag/userRole}"
+              - Effect: Allow
+                Action:
+                  - dynamodb:UpdateItem
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                  - dynamodb:Query
+                  - dynamodb:DeleteItem
+                  - dynamodb:Scan
+                Resource:
+                  - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/*"
+                  - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/*/index/*"                  
+                Condition:
+                  StringEquals:
+                    "SystemAdmin": "${aws:PrincipalTag/userRole}"
+ 
+  CognitoIdentityPool:
+    Type: AWS::Cognito::IdentityPool
+    Properties:
+      IdentityPoolName: PooledTenant-SaaSOperationsIdentityPool
+      AllowUnauthenticatedIdentities: False
+      CognitoIdentityProviders: 
+        - ClientId: !Ref CognitoUserPoolClient
+          ProviderName: !GetAtt CognitoUserPool.ProviderName
+          ServerSideTokenCheck: True
+
+  CognitoIdentityPoolRoleAttachement:
+    Type: AWS::Cognito::IdentityPoolRoleAttachment
+    Properties:
+      IdentityPoolId: !Ref CognitoIdentityPool
+      Roles:
+        "authenticated": !GetAtt AuthenticatedPooledUserRole.Arn
+  CognitoUserPoolIdentityProvider:
+    Type: AWS::Cognito::UserPoolIdentityProvider
+    Properties:
+      ProviderName: "Cognito"
+      ProviderType: "OIDC"
+      UserPoolId: !Ref CognitoUserPool
+      ProviderDetails:
+        "client_id": !Ref CognitoUserPoolClient
+        "authorize_scopes": "email openid profile"
+        "attributes_request_method": "GET"
+        "oidc_issuer": !GetAtt CognitoUserPool.ProviderURL
+  PooledUserPrincipalTagMapping:
+    Type: AWS::Cognito::IdentityPoolPrincipalTag
+    Properties: 
+      IdentityPoolId: !Ref CognitoIdentityPool
+      IdentityProviderName: !Join ["",["cognito-idp.", !Ref "AWS::Region",".amazonaws.com/",!Ref CognitoUserPool]]
+      UseDefaults: False
+      PrincipalTags:
+        "tenantId": "custom:tenantId"
+        "userRole": "custom:userRole"
+
+  CognitoOperationUsersUserPool:
+    Type: "AWS::Cognito::UserPool"
+    Properties:
+      UserPoolName: OperationUsers-SaaSOperationsUserPool
+      AutoVerifiedAttributes:
+        - "email"
+      AccountRecoverySetting:
+        RecoveryMechanisms:
+          - Name: verified_email
+            Priority: 1
+      AdminCreateUserConfig:      
+        InviteMessageTemplate:
+          EmailMessage: !Join 
+            - "" 
+            - - "Login into admin UI application at " 
+              - "https://"
+              - !Ref AdminUserPoolCallbackURLParameter 
+              - "/" 
+              - " with username {username} and temporary password {####}"
+          EmailSubject: !Join 
+            - ""
+            - - "Your temporary password for admin UI application"  
+      Schema:
+        - AttributeDataType: "String"
+          Name: email
+          Required: True
+          Mutable: True
+        - AttributeDataType: "String"
+          Name: tenantId        
+        - AttributeDataType: "String"
+          Name: userRole
+          Required: False
+          Mutable: True
+        - AttributeDataType: "String"
+          Name: apiKey
+          Required: False
+          Mutable: True  
+  CognitoOperationUsersUserPoolClient:
+    Type: "AWS::Cognito::UserPoolClient"
+    Properties:
+      ClientName: SaaSOperationsOperationUsersPoolClient
+      GenerateSecret: false
+      UserPoolId: !Ref CognitoOperationUsersUserPool
+      AllowedOAuthFlowsUserPoolClient: True
+      AllowedOAuthFlows:
+        - code
+        - implicit
+      SupportedIdentityProviders:
+        - COGNITO
+      CallbackURLs:
+        - !Join ["",["https://", !Ref AdminUserPoolCallbackURLParameter, "/"]]
+      LogoutURLs:  
+        - !Join ["",["https://", !Ref AdminUserPoolCallbackURLParameter, "/"]]
+      AllowedOAuthScopes:
+        - email
+        - openid
+        - profile
+      WriteAttributes:
+        - "email"
+        - "custom:tenantId"
+        - "custom:userRole"
+        - "custom:apiKey"
+  CognitoOperationUsersUserPoolDomain:
+    Type: AWS::Cognito::UserPoolDomain
+    Properties:
+      Domain: !Join ["-", [operationsusers-saasoperations,!Ref "AWS::AccountId"]]
+      UserPoolId: !Ref CognitoOperationUsersUserPool
+  CognitoAdminUserGroup:
+    Type: AWS::Cognito::UserPoolGroup
+    Properties:
+      GroupName: SystemAdmins
+      Description: Admin user group
+      Precedence: 0
+      UserPoolId: !Ref CognitoOperationUsersUserPool     
+
+  CognitoOperationUsersIdentityPool:
+    Type: AWS::Cognito::IdentityPool
+    Properties:
+      IdentityPoolName: OperationsUser-SaaSOperationsIdentityPool
+      AllowUnauthenticatedIdentities: False
+      CognitoIdentityProviders: 
+        - ClientId: !Ref CognitoOperationUsersUserPoolClient
+          ProviderName: !GetAtt CognitoOperationUsersUserPool.ProviderName
+          ServerSideTokenCheck: True
+
+  CognitoOperationUsersIdentityPoolRoleAttachement:
+    Type: AWS::Cognito::IdentityPoolRoleAttachment
+    Properties:
+      IdentityPoolId: !Ref CognitoOperationUsersIdentityPool
+      Roles:
+        "authenticated": !GetAtt AuthenticatedPooledUserRole.Arn
+  CognitoOperationsUsersUserPoolIdentityProvider:
+    Type: AWS::Cognito::UserPoolIdentityProvider
+    Properties:
+      ProviderName: "Cognito"
+      ProviderType: "OIDC"
+      UserPoolId: !Ref CognitoOperationUsersUserPool
+      ProviderDetails:
+        "client_id": !Ref CognitoOperationUsersUserPoolClient
+        "authorize_scopes": "email openid profile"
+        "attributes_request_method": "GET"
+        "oidc_issuer": !GetAtt CognitoOperationUsersUserPool.ProviderURL
+  OperationsUserPrincipalTagMapping:
+    Type: AWS::Cognito::IdentityPoolPrincipalTag
+    Properties: 
+      IdentityPoolId: !Ref CognitoOperationUsersIdentityPool
+      IdentityProviderName: !Join ["",["cognito-idp.", !Ref "AWS::Region",".amazonaws.com/",!Ref CognitoOperationUsersUserPool]]
+      UseDefaults: False
+      PrincipalTags:
+        "tenantId": "custom:tenantId"
+        "userRole": "custom:userRole"
+  
+Outputs:
+  CognitoUserPoolId:
+    Value: !Ref CognitoUserPool
+  CognitoIdentityPoolId:
+    Value: !Ref CognitoIdentityPool
+  SiloedTenantRoleArn:
+    Value: !GetAtt AuthenticatedSiloedUserRole.Arn
+  CognitoUserPoolClientId:
+    Value: !Ref CognitoUserPoolClient
+  CognitoOperationUsersUserPoolId:
+    Value: !Ref CognitoOperationUsersUserPool
+  CognitoOperationUsersIdentityPoolId:
+    Value: !Ref CognitoOperationUsersIdentityPool
+  CognitoOperationUsersUserPoolClientId:
+    Value: !Ref CognitoOperationUsersUserPoolClient
+  CognitoOperationUsersUserPoolProviderURL:
+    Value: !GetAtt CognitoOperationUsersUserPool.ProviderURL

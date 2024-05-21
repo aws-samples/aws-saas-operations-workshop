@@ -1,0 +1,29 @@
+{
+  "name": "isolation-test",
+  "version": "1.0.0",
+  "description": "Test tenant isolation by accessing DynamoDB records as different tenants",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "keywords": [
+    "saas",
+    "tenant",
+    "isolation",
+    "test"
+  ],
+  "author": "zpbappi@amazon.com",
+  "license": "ISC",
+  "dependencies": {
+    "@aws-sdk/client-cloudformation": "^3.414.0",
+    "@aws-sdk/client-cognito-identity": "^3.414.0",
+    "@aws-sdk/client-cognito-identity-provider": "^3.414.0",
+    "@aws-sdk/client-dynamodb": "^3.415.0",
+    "amazon-cognito-identity-js": "^6.3.6",
+    "jest": "^29.7.0",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "jest-junit": "^16.0.0"
+  }
+}

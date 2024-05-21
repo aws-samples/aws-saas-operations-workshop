@@ -1,0 +1,806 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Create Cloud9 IDE, deploy SaaS application
+Parameters:
+  EBSVolumeSize: 
+    Type: Number
+    Description: The Size in GB of the Cloud9 Instance Volume. 
+    Default: 50
+  AWSRegion: 
+    Type: String
+    Description: Region 
+    Default: "eu-west-1"
+  EC2InstanceType:
+    Default: m5.large
+    Description: EC2 instance type on which IDE runs
+    Type: String
+  OwnerRoleName:
+    Default: ""
+    Description: Use this if you are accessing your AWS Account using a cross account role (as is the case with aws workshop event)
+    Type: String
+  WorkshopCodeURI:
+    Default: ""
+    Description: URI of workshop code
+    Type: String
+
+Conditions:
+  UseRole: !Not [!Equals [ !Ref OwnerRoleName, ""]]
+
+Resources:
+################## PERMISSIONS AND ROLES #################
+  SaaSOperationsWorkshopC9Role:
+    Type: AWS::IAM::Role
+    Properties:
+      Tags:
+        - Key: Environment
+          Value: AWS SaaSOperationsWorkshop
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - ec2.amazonaws.com
+            - ssm.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/AdministratorAccess
+      Path: "/"
+
+  SaaSOperationsWorkshopC9LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - lambda.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Path: "/"
+      Policies:
+      - PolicyName:
+          Fn::Join:
+          - ''
+          - - SaaSOperationsWorkshopC9LambdaPolicy-
+            - Ref: AWS::Region
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            Resource: arn:aws:logs:*:*:*
+          - Effect: Allow
+            Action:
+            - cloudformation:DescribeStacks
+            - cloudformation:DescribeStackEvents
+            - cloudformation:DescribeStackResource
+            - cloudformation:DescribeStackResources
+            - ec2:DescribeInstances
+            - ec2:AssociateIamInstanceProfile
+            - ec2:DescribeIamInstanceProfileAssociations
+            - ec2:ModifyInstanceAttribute
+            - ec2:ReplaceIamInstanceProfileAssociation
+            - iam:ListInstanceProfiles
+            - iam:PassRole
+            Resource: "*"
+
+################## LAMBDA BOOTSTRAP FUNCTION ################
+  SaaSOperationsWorkshopC9BootstrapInstanceLambda:
+    Description: Bootstrap Cloud9 instance
+    Type: Custom::SaaSOperationsWorkshopC9BootstrapInstanceLambda
+    DependsOn:
+    - SaaSOperationsWorkshopC9BootstrapInstanceLambdaFunction
+    - SaaSOperationsWorkshopC9Instance
+    - SaaSOperationsWorkshopC9InstanceProfile
+    - SaaSOperationsWorkshopC9LambdaExecutionRole
+    Properties:
+      Tags:
+        - Key: Environment
+          Value: AWS SaaSOperationsWorkshop
+      ServiceToken:
+        Fn::GetAtt:
+        - SaaSOperationsWorkshopC9BootstrapInstanceLambdaFunction
+        - Arn
+      REGION:
+        Ref: AWS::Region
+      StackName:
+        Ref: AWS::StackName
+      EnvironmentId:
+        Ref: SaaSOperationsWorkshopC9Instance
+      LabIdeInstanceProfileName:
+        Ref: SaaSOperationsWorkshopC9InstanceProfile
+      LabIdeInstanceProfileArn:
+        Fn::GetAtt:
+        - SaaSOperationsWorkshopC9InstanceProfile
+        - Arn
+
+  SaaSOperationsWorkshopC9BootstrapInstanceLambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Tags:
+        - Key: Environment
+          Value: AWS SaaSOperationsWorkshop
+      Handler: index.lambda_handler
+      Role:
+        Fn::GetAtt:
+        - SaaSOperationsWorkshopC9LambdaExecutionRole
+        - Arn
+      Runtime: python3.9
+      MemorySize: 256
+      Timeout: '600'
+      Code:
+        ZipFile: |
+          from __future__ import print_function
+          import boto3
+          import json
+          import os
+          import time
+          import traceback
+          import cfnresponse
+          
+          def lambda_handler(event, context):
+              # logger.info('event: {}'.format(event))
+              # logger.info('context: {}'.format(context))
+              responseData = {}
+
+              status = cfnresponse.SUCCESS
+              
+              if event['RequestType'] == 'Delete':
+                  responseData = {'Success': 'Custom Resource removed'}
+                  cfnresponse.send(event, context, status, responseData, 'CustomResourcePhysicalID')              
+          
+              if event['RequestType'] == 'Create':
+                  try:
+                      # Open AWS clients
+                      ec2 = boto3.client('ec2')
+          
+                      # Get the InstanceId of the Cloud9 IDE
+                      instance = ec2.describe_instances(Filters=[{'Name': 'tag:Name','Values': ['aws-cloud9-'+event['ResourceProperties']['StackName']+'-'+event['ResourceProperties']['EnvironmentId']]}])['Reservations'][0]['Instances'][0]
+                      # logger.info('instance: {}'.format(instance))
+          
+                      # Create the IamInstanceProfile request object
+                      iam_instance_profile = {
+                          'Arn': event['ResourceProperties']['LabIdeInstanceProfileArn'],
+                          'Name': event['ResourceProperties']['LabIdeInstanceProfileName']
+                      }
+                      # print('iam_instance_profile: {}'.format(iam_instance_profile))
+          
+                      # Wait for Instance to become ready before adding Role
+                      instance_state = instance['State']['Name']
+                      # logger.info('instance_state: {}'.format(instance_state))
+                      while instance_state != 'running':
+                          time.sleep(5)
+                          instance_state = ec2.describe_instances(InstanceIds=[instance['InstanceId']])
+                          # logger.info('instance_state: {}'.format(instance_state))
+
+                      # replace instance profile if it exists (Isengard) else attach instance profile
+                      response = ec2.describe_iam_instance_profile_associations(Filters=[{'Name': 'instance-id', 'Values': [ instance['InstanceId'] ]}])
+                      # print('response - describe_iam_instance_profile_associations: {}'.format(response))
+                      if response['IamInstanceProfileAssociations']:
+                          response = ec2.replace_iam_instance_profile_association(IamInstanceProfile=iam_instance_profile, AssociationId=response['IamInstanceProfileAssociations'][0]['AssociationId'])
+                      else:
+                          response = ec2.associate_iam_instance_profile(IamInstanceProfile=iam_instance_profile, InstanceId=instance['InstanceId'])
+                      # logger.info('response - associate_iam_instance_profile: {}'.format(response))
+  
+                      responseData = {'Success': 'Started bootstrapping for instance: '+instance['InstanceId']}
+                      cfnresponse.send(event, context, status, responseData, 'CustomResourcePhysicalID')
+                      
+                  except Exception as e:
+                      status = cfnresponse.FAILED
+                      print(traceback.format_exc())
+                      responseData = {'Error': traceback.format_exc(e)}
+                  finally:
+                      cfnresponse.send(event, context, status, responseData, 'CustomResourcePhysicalID')
+
+################## SSM BOOTSRAP HANDLER ###############
+  SaaSOperationsWorkshopC9OutputBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Delete
+    Properties: 
+      VersioningConfiguration:
+        Status: Enabled
+      BucketEncryption: 
+        ServerSideEncryptionConfiguration: 
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+
+  SaaSOperationsWorkshopC9SSMDocument: 
+    Type: AWS::SSM::Document
+    Properties: 
+      Tags:
+        - Key: Environment
+          Value: AWS SaaSOperationsWorkshop
+      DocumentType: Command
+      DocumentFormat: YAML
+      Content: 
+        schemaVersion: '2.2'
+        description: Bootstrap Cloud9 and SaaS application
+        parameters:
+          WorkshopURI:
+            type: String
+            description: "Workshop URI"
+            default: !Ref WorkshopCodeURI        
+        mainSteps:
+        - action: aws:runShellScript
+          name: ResizeVolume
+          inputs:
+            runCommand:
+            - "#!/bin/bash"
+            - echo '=== Resizing the Instance volume'
+            - !Sub SIZE=${EBSVolumeSize}
+            - !Sub REGION=${AWS::Region}
+            - |
+              INSTANCEID=$(curl http://169.254.169.254/latest/meta-data/instance-id)
+              VOLUMEID=$(aws ec2 describe-instances \
+                --instance-id $INSTANCEID \
+                --query "Reservations[0].Instances[0].BlockDeviceMappings[0].Ebs.VolumeId" \
+                --output text --region $REGION)
+              aws ec2 modify-volume --volume-id $VOLUMEID --size $SIZE --region $REGION
+              while [ \
+                "$(aws ec2 describe-volumes-modifications \
+                  --volume-id $VOLUMEID \
+                  --filters Name=modification-state,Values="optimizing","completed" \
+                  --query "length(VolumesModifications)"\
+                  --output text --region $REGION)" != "1" ]; do
+              sleep 1
+              done
+              #Check if we're on an NVMe filesystem
+              if [[ -e "/dev/xvda" && $(readlink -f /dev/xvda) = "/dev/xvda" ]]
+              then
+                # Rewrite the partition table so that the partition takes up all the space that it can.
+                sudo growpart /dev/xvda 1
+                # Expand the size of the file system.
+                # Check if we're on AL2
+                STR=$(cat /etc/os-release)
+                SUB="VERSION_ID=\"2\""
+                if [[ "$STR" == *"$SUB"* ]]
+                then
+                  sudo xfs_growfs -d /
+                else
+                  sudo resize2fs /dev/xvda1
+                fi
+              else
+                # Rewrite the partition table so that the partition takes up all the space that it can.
+                sudo growpart /dev/nvme0n1 1
+                # Expand the size of the file system.
+                # Check if we're on AL2
+                STR=$(cat /etc/os-release)
+                SUB="VERSION_ID=\"2\""
+                if [[ "$STR" == *"$SUB"* ]]
+                then
+                  sudo xfs_growfs -d /
+                else
+                  sudo resize2fs /dev/nvme0n1p1
+                fi
+              fi
+            - echo "Bootstrap completed with return code $?"        
+        - action: aws:runShellScript
+          name: Clone_SaaS_application_repository
+          inputs:
+            runCommand:
+            - cd /home/ec2-user/environment
+            - git clone --single-branch --branch main https://github.com/aws-samples/aws-saas-operations-workshop.git
+        - action: aws:runShellScript
+          name: Install_prerequisites_and_deploy_SaaS_application
+          inputs:
+            runCommand:
+            - "#!/bin/bash -x" 
+            - . /home/ec2-user/.nvm/nvm.sh
+            #Update OpenSSL
+            - sudo yum -y erase openssl-devel
+            - sudo yum -y install openssl11-devel
+            #Install python3.10
+            - sudo wget https://www.python.org/ftp/python/3.10.4/Python-3.10.4.tgz
+            - sudo tar xzf Python-3.10.4.tgz
+            - cd Python-3.10.4
+            - sudo ./configure --enable-optimizations
+            - sudo make -j $(nproc) altinstall
+            - sudo rm -f /opt/Python-3.10.4.tgz
+            - sudo alternatives --install /usr/bin/python3 python3 /usr/local/bin/python3.10 1
+            - sudo alternatives --set python3 /usr/local/bin/python3.10
+            - |
+              cat <<EoF >~/.bashrc
+              export PATH=/usr/local/bin:$PATH        
+              EoF
+            - source ~/.bashrc
+            - cd ..
+
+            # Uninstall aws cli v1 and Install aws cli version-2.13.10
+            - sudo pip2 uninstall awscli -y
+
+            - echo "Installing aws cli version-2.13.10"
+            - |
+              if [ -f ./aws ]
+              then
+                sudo rm ./aws
+              fi
+            - sudo curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.13.10.zip" -o "awscliv2.zip"
+            - sudo unzip awscliv2.zip
+            - sudo ./aws/install
+            - sudo rm awscliv2.zip
+            - sudo rm -rf aws 
+
+            # Install sam cli version 1.95.0
+            - echo "Installing sam cli version 1.95.0"
+            - sudo wget https://github.com/aws/aws-sam-cli/releases/download/v1.95.0/aws-sam-cli-linux-x86_64.zip
+            - sudo unzip aws-sam-cli-linux-x86_64.zip -d sam-installation
+            - sudo ./sam-installation/install
+            - |
+              if [ $? -ne 0 ]
+              then
+                echo "Sam cli is already present, so deleting existing version"
+                sudo rm /usr/local/bin/sam
+                sudo rm -rf /usr/local/aws-sam-cli
+                echo "Now installing sam cli version 1.95.0"
+                sudo ./sam-installation/install
+              fi
+            - sudo rm aws-sam-cli-linux-x86_64.zip
+            - sudo rm -rf sam-installation
+
+            # Install git-remote-codecommit version 1.16
+            - echo "Installing git-remote-codecommit version 1.16"
+            - sudo curl -O https://bootstrap.pypa.io/get-pip.py
+            - sudo python3 get-pip.py --user
+            - sudo rm get-pip.py
+            - sudo python3 -m pip install git-remote-codecommit==1.16
+
+            # Install node v16.20.0
+            - echo "Installing node v16.20.0"
+            - nvm deactivate
+            - nvm uninstall node
+            - nvm install v16.20.0
+            - nvm use v16.20.0
+            - nvm alias default v16.20.0
+
+            # Install cdk cli version ^2.91.0
+            - echo "Installing cdk cli version ^2.91.0"
+            - npm uninstall -g aws-cdk
+            - npm install -g aws-cdk@"^2.91.0"
+
+            #Install jq version 1.5
+            - sudo yum -y install jq-1.5
+
+            #Install pylint version 2.17.5
+            - python3 -m pip install pylint==2.17.5
+
+            #Set Repository path       
+            - REPOPATH="/home/ec2-user/environment/aws-saas-operations-workshop"
+            - cd $REPOPATH
+            - pwd
+
+            # Create CodeCommit repo
+            # REGION=$(aws configure get region)
+            - REGION=$(aws ec2 describe-availability-zones --output text --query 'AvailabilityZones[0].[RegionName]')
+            - echo $REGION
+            - git init -b main
+            - git config --global --add safe.directory /home/ec2-user/environment/aws-saas-operations-workshop
+            - git add -A
+            - git commit -m "Base code"            
+            - |
+              if ! aws codecommit get-repository --repository-name aws-saas-factory-saas-operations
+              then
+                echo "aws-saas-factory-saas-operations codecommit repo is not present, will create one now"
+                CREATE_REPO=$(aws codecommit create-repository --repository-name aws-saas-factory-saas-operations --repository-description "SaaS Operations reference architecture repository")
+                echo "$CREATE_REPO"
+              fi
+            - REPO_URL="codecommit::${REGION}://aws-saas-factory-saas-operations"
+            - echo $REPO_URL             
+            - |
+              if ! git remote add cc "$REPO_URL"
+              then
+                echo "Setting url to remote cc"
+                git remote set-url cc "$REPO_URL"
+              fi
+            - git push cc "$(git branch --show-current)":main
+
+            # enable yarn
+            - corepack enable || npm install --global yarn
+            
+            # Deploying CI/CD pipeline. stop execution if cd fails
+            - cd App/server/TenantPipeline || exit 
+            - pwd
+            - yarn install && yarn build
+            
+            # npm install && npm run build
+            - cdk bootstrap
+            - cdk deploy --require-approval never
+
+            # Deploying bootstrap
+            - cd $REPOPATH/App/server
+            - pwd
+            - DEFAULT_SAM_S3_BUCKET=$(grep s3_bucket samconfig-bootstrap.toml | cut -d'=' -f2 | cut -d \" -f2)
+            - echo "aws s3 ls s3://${DEFAULT_SAM_S3_BUCKET}"
+            - |
+              if ! aws s3 ls "s3://${DEFAULT_SAM_S3_BUCKET}"
+              then
+                echo "S3 Bucket: $DEFAULT_SAM_S3_BUCKET specified in samconfig-bootstrap.toml is not readable.
+                  So creating a new S3 bucket and will update samconfig-bootstrap.toml with new bucket name."
+
+                UUID=$(uuidgen | awk '{print tolower($0)}')
+                SAM_S3_BUCKET=sam-bootstrap-bucket-$UUID
+                aws s3 mb "s3://${SAM_S3_BUCKET}" --region "$REGION"
+                aws s3api put-bucket-encryption \
+                  --bucket "$SAM_S3_BUCKET" \
+                  --server-side-encryption-configuration '{"Rules": [{"ApplyServerSideEncryptionByDefault": {"SSEAlgorithm": "AES256"}}]}'
+                if [[ $? -ne 0 ]]
+                then
+                  echo "bootstrap bucket deployment failed"
+                  exit 1
+                fi
+                # Updating samconfig-bootstrap.toml with new bucket name
+                ex -sc '%s/s3_bucket = .*/s3_bucket = \"'"$SAM_S3_BUCKET"'\"/|x' samconfig-bootstrap.toml
+              fi
+
+            - sam build -t bootstrap-template.yaml --use-container --region="$REGION"
+            - sam deploy --config-file samconfig-bootstrap.toml --region="$REGION" --no-confirm-changeset
+            
+            - |
+              if [[ $? -ne 0 ]]
+              then
+                echo "Error! bootstrap-template.yaml deploy failed"
+                exit 1
+              fi
+
+            # Start CI/CD pipepline which loads tenant stack
+            - PIPELINE_EXECUTION_ID=$(aws codepipeline start-pipeline-execution --name saas-operations-pipeline | jq -r '.pipelineExecutionId')
+
+            - ADMIN_SITE_BUCKET=$(aws cloudformation list-exports --query "Exports[?Name=='SaaS-Operations-AdminAppBucket'].Value" --output text)
+            - APP_SITE_BUCKET=$(aws cloudformation list-exports --query "Exports[?Name=='SaaS-Operations-AppBucket'].Value" --output text)
+            - LANDING_APP_SITE_BUCKET=$(aws cloudformation list-exports --query "Exports[?Name=='SaaS-Operations-LandingAppBucket'].Value" --output text)
+            
+            - ADMIN_SITE_URL=$(aws cloudformation list-exports --query "Exports[?Name=='SaaS-Operations-AdminAppSite'].Value" --output text)
+            - APP_SITE_URL=$(aws cloudformation list-exports --query "Exports[?Name=='SaaS-Operations-ApplicationSite'].Value" --output text)
+            - LANDING_APP_SITE_URL=$(aws cloudformation list-exports --query "Exports[?Name=='SaaS-Operations-LandingApplicationSite'].Value" --output text)
+            
+            - ADMIN_APPCLIENTID=$(aws cloudformation list-exports --query "Exports[?Name=='SaaS-Operations-AdminUserPoolClientId'].Value" --output text)
+            - ADMIN_USERPOOLID=$(aws cloudformation list-exports --query "Exports[?Name=='SaaS-Operations-AdminUserPoolId'].Value" --output text)
+            - ADMIN_APIGATEWAYURL=$(aws cloudformation list-exports --query "Exports[?Name=='SaaS-Operations-AdminApiGatewayUrl'].Value" --output text)
+
+            # Configuring admin UI
+            - echo "aws s3 ls s3://${ADMIN_SITE_BUCKET}"
+            - |
+              if ! aws s3 ls "s3://${ADMIN_SITE_BUCKET}"
+              then
+                echo "Error! S3 Bucket: $ADMIN_SITE_BUCKET not readable"
+                exit 1
+              fi
+              
+            - cd $REPOPATH/App/clients/Admin
+            
+            - echo "Configuring environment for Admin Client"
+            - |
+              cat <<EoF >./src/environments/environment.prod.ts
+              export const environment = {
+                production: true,
+                apiUrl: '$ADMIN_APIGATEWAYURL',
+              };
+              
+              EoF
+            - |  
+              cat <<EoF >./src/environments/environment.ts
+              export const environment = {
+                production: false,
+                apiUrl: '$ADMIN_APIGATEWAYURL',
+              };
+              EoF
+            - |  
+              cat <<EoF >./src/aws-exports.ts
+              const awsmobile = {
+                  "aws_project_region": "$REGION",
+                  "aws_cognito_region": "$REGION",
+                  "aws_user_pools_id": "$ADMIN_USERPOOLID",
+                  "aws_user_pools_web_client_id": "$ADMIN_APPCLIENTID",
+              };
+              
+              export default awsmobile;
+              EoF
+          
+            - yarn install && yarn build
+              # npm install --legacy-peer-deps && npm run build
+              
+            - echo "aws s3 sync --delete --cache-control no-store dist s3://${ADMIN_SITE_BUCKET}"
+            - aws s3 sync --delete --cache-control no-store dist "s3://${ADMIN_SITE_BUCKET}"
+            
+            - |  
+              if [[ $? -ne 0 ]]
+              then
+                echo "Error:sync $ADMIN_SITE_BUCKET"
+                exit 1
+              fi
+              
+            - echo "Completed configuring environment for Admin Client"
+            
+              # Configuring application UI
+            - echo "aws s3 ls s3://${APP_SITE_BUCKET}"
+            - |
+              if ! aws s3 ls "s3://${APP_SITE_BUCKET}"
+              then
+                echo "Error! S3 Bucket: $APP_SITE_BUCKET not readable"
+                exit 1
+              fi
+              
+            - cd $REPOPATH/App/clients/Application
+            
+            - echo "Configuring environment for App Client"
+            
+            - |
+              cat <<EoF >./src/environments/environment.prod.ts
+              export const environment = {
+                production: true,
+                regApiGatewayUrl: '$ADMIN_APIGATEWAYURL',
+              };
+              EoF
+            - |
+              cat <<EoF >./src/environments/environment.ts
+              export const environment = {
+                production: true,
+                regApiGatewayUrl: '$ADMIN_APIGATEWAYURL',
+              };
+              EoF
+              
+            - yarn install && yarn build
+              
+              # npm install --legacy-peer-deps && npm run build
+            
+            - echo "aws s3 sync --delete --cache-control no-store dist s3://${APP_SITE_BUCKET}"
+            - aws s3 sync --delete --cache-control no-store dist "s3://${APP_SITE_BUCKET}"
+            - |
+              if [[ $? -ne 0 ]]
+              then
+                echo "Error:sync $APP_SITE_BUCKET"
+                exit 1
+              fi
+            
+            - echo "Completed configuring environment for App Client"
+            
+              # Configuring landing UI
+            
+            - echo "aws s3 ls s3://${LANDING_APP_SITE_BUCKET}"
+            - |
+              if ! aws s3 ls "s3://${LANDING_APP_SITE_BUCKET}"
+              then
+                echo "Error! S3 Bucket: $LANDING_APP_SITE_BUCKET not readable"
+                exit 1
+              fi     
+            
+            - cd $REPOPATH/App/clients/Landing
+            
+            - echo "Configuring environment for Landing Client"
+            
+            - |
+              cat <<EoF >./src/environments/environment.prod.ts
+              export const environment = {
+                production: true,
+                apiGatewayUrl: '$ADMIN_APIGATEWAYURL'
+              };
+              EoF
+            - |
+              cat <<EoF >./src/environments/environment.ts
+              export const environment = {
+                production: false,
+                apiGatewayUrl: '$ADMIN_APIGATEWAYURL'
+              };
+              EoF
+              
+            - yarn install && yarn build
+            
+            # npm install --legacy-peer-deps && npm run build
+              
+            - echo "aws s3 sync --delete --cache-control no-store dist s3://${LANDING_APP_SITE_BUCKET}"
+            - aws s3 sync --delete --cache-control no-store dist "s3://${LANDING_APP_SITE_BUCKET}"
+            - |
+              if [[ $? -ne 0 ]]
+              then
+                echo "Error:sync $LANDING_APP_SITE_BUCKET"
+                exit 1
+              fi
+
+            - |
+              while true; do
+                deplymentstatus=$(aws codepipeline get-pipeline-execution --pipeline-name saas-operations-pipeline --pipeline-execution-id $PIPELINE_EXECUTION_ID | jq -r '.pipelineExecution.status')
+                if [[ "${deplymentstatus}" == "Succeeded" ]]; then
+                    break
+                fi
+                sleep 30
+              done
+
+            #Create 4 Pooled Tenants
+            - |
+              curl --location "${ADMIN_APIGATEWAYURL}registration" \
+              --header 'Content-Type: application/json' \
+              --data-raw '{
+                  "tenantName": "PooledTenant1",
+                  "tenantEmail": "success+PooledTenant1@simulator.amazonses.com",
+                  "tenantTier": "Basic",
+                  "tenantPhone": null,
+                  "tenantAddress": null
+              }'
+            - |
+              curl --location "${ADMIN_APIGATEWAYURL}registration" \
+              --header 'Content-Type: application/json' \
+              --data-raw '{
+                  "tenantName": "PooledTenant2",
+                  "tenantEmail": "success+PooledTenant2@simulator.amazonses.com",
+                  "tenantTier": "Basic",
+                  "tenantPhone": null,
+                  "tenantAddress": null
+              }' 
+            - |
+              curl --location "${ADMIN_APIGATEWAYURL}registration" \
+              --header 'Content-Type: application/json' \
+              --data-raw '{
+                  "tenantName": "PooledTenant3",
+                  "tenantEmail": "success+PooledTenant3@simulator.amazonses.com",
+                  "tenantTier": "Basic",
+                  "tenantPhone": null,
+                  "tenantAddress": null
+              }'
+            - |
+              curl --location "${ADMIN_APIGATEWAYURL}registration" \
+              --header 'Content-Type: application/json' \
+              --data-raw '{
+                  "tenantName": "PooledTenant4",
+                  "tenantEmail": "success+PooledTenant4@simulator.amazonses.com",
+                  "tenantTier": "Basic",
+                  "tenantPhone": null,
+                  "tenantAddress": null
+              }'              
+              
+          # Provision 1 Silo tenant
+            - |
+              curl --location "${ADMIN_APIGATEWAYURL}registration" \
+              --header 'Content-Type: application/json' \
+              --data-raw '{
+                  "tenantName": "SiloedTenant1",
+                  "tenantEmail": "success+SiloedTenant1@simulator.amazonses.com",
+                  "tenantTier": "Platinum",
+                  "tenantPhone": null,
+                  "tenantAddress": null
+              }'
+
+          # Provision tenant isolation test tenants
+            - |
+              curl --location "${ADMIN_APIGATEWAYURL}registration" \
+              --header 'Content-Type: application/json' \
+              --data-raw '{
+                  "tenantName": "BasicTestTenant1",
+                  "tenantEmail": "success+BasicTestTenant1@simulator.amazonses.com",
+                  "tenantTier": "Basic",
+                  "tenantPhone": null,
+                  "tenantAddress": null
+              }'
+            - |
+              curl --location "${ADMIN_APIGATEWAYURL}registration" \
+              --header 'Content-Type: application/json' \
+              --data-raw '{
+                  "tenantName": "BasicTestTenant2",
+                  "tenantEmail": "success+BasicTestTenant2@simulator.amazonses.com",
+                  "tenantTier": "Basic",
+                  "tenantPhone": null,
+                  "tenantAddress": null
+              }'
+            - |
+              curl --location "${ADMIN_APIGATEWAYURL}registration" \
+              --header 'Content-Type: application/json' \
+              --data-raw '{
+                  "tenantName": "PlatinumTestTenant",
+                  "tenantEmail": "success+PlatinumTestTenant@simulator.amazonses.com",
+                  "tenantTier": "Platinum",
+                  "tenantPhone": null,
+                  "tenantAddress": null
+              }'
+              
+            - cd $REPOPATH
+            - sudo chown -R ec2-user .
+            - sudo chmod 755 -R .
+            - sudo chown -R ec2-user /home/ec2-user/.nvm
+            - sudo chmod 755 -R /home/ec2-user/.nvm
+
+          # Deploy dashboards
+            - cd $REPOPATH/App/server/dashboards
+            - ./deploy.sh
+
+          # Add Tenant Users
+
+            - TENANTS=("SiloedTenant1" "PooledTenant1" "PooledTenant2" "PooledTenant3" "PooledTenant4")
+
+            - |
+              for tenant in ${TENANTS[@]}; do
+                
+                TENANTUSERPOOL=$(curl "${ADMIN_APIGATEWAYURL}/tenant/init/${tenant}" | jq -r '.userPoolId')
+                TENANTID=$(aws cognito-idp list-users --user-pool-id $TENANTUSERPOOL | jq -r --arg id "${tenant}@" '.Users[] | select(.Attributes[] | .Value | contains($id)) | .Attributes[] | select(.Name == "custom:tenantId") | .Value')
+                
+                USERSCOUNT=1
+                case $tenant in
+                  SiloedTenant1)
+                    USERSCOUNT=30
+                    ;;
+                  PooledTenant1 | PooledTenant3)
+                    USERSCOUNT=10
+                    ;;
+                  PooledTenant4)
+                    USERSCOUNT=35
+                    ;;
+                  PooledTenant2)
+                    USERSCOUNT=5
+                    ;;
+                  *)
+                    echo -n "unknown"
+                    ;;
+                esac
+
+                for (( i=1 ; i<=${USERSCOUNT} ; i++ )); 
+                do
+                  USERPREFIX=$(date +%s)
+                  aws cognito-idp admin-create-user \
+                      --user-pool-id ${TENANTUSERPOOL} \
+                      --username success+${tenant}_user_${USERPREFIX}@simulator.amazonses.com  \
+                      --user-attributes Name=email,Value=success+${tenant}_user_${USERPREFIX}@simulator.amazonses.com Name=email_verified,Value=true Name=custom:tenantId,Value=${TENANTID} Name=custom:userRole,Value=TenantUser 1> /dev/null 
+                
+                  sleep 1
+                done
+              done         
+            
+  SaaSOperationsWorkshopC9BootstrapAssociation: 
+    Type: AWS::SSM::Association
+    DependsOn:
+      - SaaSOperationsWorkshopC9OutputBucket 
+      - SaaSOperationsWorkshopC9BootstrapInstanceLambda
+    Properties: 
+      Name: !Ref SaaSOperationsWorkshopC9SSMDocument
+      OutputLocation: 
+        S3Location:
+          OutputS3BucketName: !Ref SaaSOperationsWorkshopC9OutputBucket
+          OutputS3KeyPrefix: bootstrapoutput
+      Targets:
+        - Key: tag:SSMBootstrap
+          Values:
+          - Active
+
+################## INSTANCE #####################
+  SaaSOperationsWorkshopC9InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: "/"
+      Roles:
+      - Ref: SaaSOperationsWorkshopC9Role
+
+  SaaSOperationsWorkshopC9Instance:
+    Description: "-"
+    DependsOn: SaaSOperationsWorkshopC9OutputBucket
+    Type: AWS::Cloud9::EnvironmentEC2
+    Properties:
+      Description: AWS Cloud9 instance for SaaSOperationsWorkshops
+      AutomaticStopTimeMinutes: 7200
+      InstanceType:
+        Ref: EC2InstanceType
+      ImageId: "amazonlinux-2-x86_64"
+      Name:
+        Ref: AWS::StackName
+      OwnerArn: !If [UseRole, !Join [ "", [!Sub "arn:aws:sts::${AWS::AccountId}:assumed-role/", !Ref OwnerRoleName]] , !Ref "AWS::NoValue"]
+      Tags: 
+        - 
+          Key: SSMBootstrap
+          Value: Active
+        - 
+          Key: Environment
+          Value: AWS SaaSOperationsWorkshop
+
+Outputs: 
+  Cloud9IDE:
+    Value:
+      Fn::Join:
+      - ''
+      - - https://
+        - Ref: AWS::Region
+        - ".console.aws.amazon.com/cloud9/ide/"
+        - Ref: SaaSOperationsWorkshopC9Instance
+        - "?region="
+        - Ref: AWS::Region
