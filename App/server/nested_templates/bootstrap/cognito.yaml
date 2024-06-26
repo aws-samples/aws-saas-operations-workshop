@@ -100,8 +100,6 @@ Resources:
             Condition:
               ForAnyValue:StringLike:
                 "cognito-identity.amazonaws.com:amr": authenticated   
-              StringEquals:
-                "aws:PrincipalAccount": !Sub ${AWS::AccountId}         
           - Effect: Allow
             Principal:
               Federated: cognito-identity.amazonaws.com
@@ -109,8 +107,6 @@ Resources:
             Condition:
               ForAnyValue:StringLike:
                 "cognito-identity.amazonaws.com:amr": authenticated
-              StringEquals:
-                "aws:PrincipalAccount": !Sub ${AWS::AccountId}
       Policies:      
         - PolicyName: authenticated-pooled-user-policy
           PolicyDocument:
@@ -198,9 +194,7 @@ Resources:
             Action: sts:AssumeRoleWithWebIdentity
             Condition:
               ForAnyValue:StringLike:
-                "cognito-identity.amazonaws.com:amr": authenticated  
-              StringEquals:
-                "aws:PrincipalAccount": !Sub ${AWS::AccountId}        
+                "cognito-identity.amazonaws.com:amr": authenticated        
           - Effect: Allow
             Principal:
               Federated: cognito-identity.amazonaws.com
@@ -208,8 +202,6 @@ Resources:
             Condition:
               ForAnyValue:StringLike:
                 "cognito-identity.amazonaws.com:amr": authenticated
-              StringEquals:
-                "aws:PrincipalAccount": !Sub ${AWS::AccountId}
       Policies:      
         - PolicyName: authenticated-siloed-user-policy
           PolicyDocument:
