@@ -134,7 +134,7 @@ export class SaaSOperationsStack extends cdk.Stack {
     const codeRepo = codecommit.Repository.fromRepositoryName(
       this,
       'AppRepository', 
-      'aws-saas-factory-saas-operations' 
+      'aws-saas-operations-workshop' 
     );
 
     // Declare source code as an artifact
