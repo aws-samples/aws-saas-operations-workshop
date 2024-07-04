@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# Install artillery - For Load testing
-npm install -g artillery@2.0.7 --silent
-
 # Profiles used
 export PROFILE_PLATINUM='profile_platinum.yaml'
 export PROFILE_BASIC1='profile_basic1.yaml'
