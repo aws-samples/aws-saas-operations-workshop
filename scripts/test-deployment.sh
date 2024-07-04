@@ -22,8 +22,12 @@ ORDERS=$(curl -s -X GET -H "Authorization: Bearer ${P1_TOKEN}" "${P1_ENDPOINT}/o
 if [[ $PRODUCTS > 1 ]]
     then
         echo "Products found"
-        if [[ $ORDERS > 1 ]]; then echo "Orders found"
-            else echo "Orders not found. Have you initialised the workshop? Check deployment."
+        if [[ $ORDERS > 1 ]]
+            then 
+                echo "Orders found"
+                echo "Deployment tested successful. Enjoy the workshop!"
+            else
+                echo "Orders not found. Have you initialised the workshop? Check deployment."
         fi
     else
         echo "Products not found. Have you initialised the workshop? Check deployment."
