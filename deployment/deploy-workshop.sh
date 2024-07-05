@@ -7,14 +7,20 @@ echo "Deploying workshop resources..."
 alias saasops_logs="aws logs tail --follow /aws/codebuild/install-workshop-stack-codebuild"
 
 saasops_deploy_wait() {
+    START_TIME=$(date '+%s')
     STATUS=$(aws cloudformation describe-stacks --query "Stacks[?StackName=='SaaSOps'].StackStatus" --output text)
     while [ $STATUS == 'CREATE_IN_PROGRESS' ]; do
-        echo "SaaSOps Stack status: "$STATUS $(date -Iseconds)
-        sleep 10
+        CURRENT_TIME=$(date '+%s')
+        DDIFF=$(( $CURRENT_TIME - $START_TIME ))
+        echo $(date) "SaaSOps Stack status: "$STATUS", Time elapsed: "$(($DDIFF / 60))"m"$(($DDIFF % 60))"s"
+        sleep 15
         STATUS=$(aws cloudformation describe-stacks --query "Stacks[?StackName=='SaaSOps'].StackStatus" --output text)
     done
+    CURRENT_TIME=$(date '+%s')
+    DDIFF=$(( $CURRENT_TIME - $START_TIME ))
+    echo $(date) "SaaSOps Stack status: "$STATUS", Time elapsed: "$(($DDIFF / 60))"m"$(($DDIFF % 60))"s."
     if [[ $STATUS == 'CREATE_COMPLETE' ]]; then
-        echo "Stack deploy complete"
+        echo $(date) "SaaSOps workshop deployed. Please proceed and enjoy the workshop!"
     fi
 }
 
