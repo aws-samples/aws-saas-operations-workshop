@@ -15,7 +15,7 @@ done
 
 TRAILS=( "saas-ops-ddb-access-trails" "saas-ops-management-trails" )
 STACKS_1=()
-STACKS_2=( "saas-operations-controlplane" "saas-operations-pipeline" "saasOpsWorkshop-saasOperationsDashboard" "${WORKSHOP_NAME}-C9")
+STACKS_2=( "saas-operations-controlplane" "saas-operations-pipeline" "saasOpsWorkshop-saasOperationsDashboard" "${WORKSHOP_NAME}-C9" "saasOpsWorkshop-perTenantMetrics" )
 CODECOMMIT_REPOS=( "saas-operations-workshop" )
 
 get_c9_id
