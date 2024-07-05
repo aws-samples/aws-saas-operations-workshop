@@ -20,7 +20,7 @@ saasops_deploy_wait() {
 
 STACK_NAME="SaaSOps"${1:-""}
 REPO_URL="https://github.com/aws-samples/aws-saas-operations-workshop.git"
-REPO_BRANCH_NAME="davjrob"
+REPO_BRANCH_NAME="main"
 PARTICIPANT_ASSUMED_ROLE_ARN="$(aws sts get-caller-identity --query 'Arn' --output text)"
 
 STACK_ID=$(aws cloudformation create-stack \
