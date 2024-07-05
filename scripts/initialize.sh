@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo "Initialising workshop.."
+
 # Profiles used
 export PROFILE_PLATINUM='profile_platinum.yaml'
 export PROFILE_BASIC1='profile_basic1.yaml'
@@ -31,7 +33,7 @@ export LOAD_REGION=$(aws configure get region)
 export LOAD_USER_PASS=Lab@12345
 
 # Configure silo tenant
-export S1_METADATA=$(curl "${ADMIN_APIGATEWAYURL}/tenant/init/SiloedTenant1")
+export S1_METADATA=$(curl -s "${ADMIN_APIGATEWAYURL}/tenant/init/SiloedTenant1")
 export S1_USERPOOL=$(echo $S1_METADATA | jq -r '.userPoolId')
 export S1_CLIENTID=$(echo $S1_METADATA | jq -r '.appClientId')
 
@@ -45,10 +47,10 @@ echo S1_TOKEN=$(aws cognito-idp initiate-auth --region $LOAD_REGION --auth-flow 
 USERNAME=$S1_USER,PASSWORD=$LOAD_USER_PASS | jq -r .AuthenticationResult.IdToken) >> $ENV_PLATINUM
 
 # Configure pool tenants
-export P1_METADATA=$(curl "${ADMIN_APIGATEWAYURL}/tenant/init/PooledTenant1")
-export P2_METADATA=$(curl "${ADMIN_APIGATEWAYURL}/tenant/init/PooledTenant2")
-export P3_METADATA=$(curl "${ADMIN_APIGATEWAYURL}/tenant/init/PooledTenant3")
-export P4_METADATA=$(curl "${ADMIN_APIGATEWAYURL}/tenant/init/PooledTenant4")
+export P1_METADATA=$(curl -s "${ADMIN_APIGATEWAYURL}/tenant/init/PooledTenant1")
+export P2_METADATA=$(curl -s "${ADMIN_APIGATEWAYURL}/tenant/init/PooledTenant2")
+export P3_METADATA=$(curl -s "${ADMIN_APIGATEWAYURL}/tenant/init/PooledTenant3")
+export P4_METADATA=$(curl -s "${ADMIN_APIGATEWAYURL}/tenant/init/PooledTenant4")
 
 export P1_USERPOOL=$(echo $P1_METADATA | jq -r '.userPoolId')
 export P2_USERPOOL=$(echo $P2_METADATA | jq -r '.userPoolId')
@@ -97,3 +99,5 @@ nohup artillery run --dotenv $ENV_BASIC $PROFILE_BASIC2 &> $OUT_BASIC2 &
 echo $! > $PID_BASIC2
 nohup artillery run --dotenv $ENV_BASIC $PROFILE_BASIC3 &> $OUT_BASIC3 &
 echo $! > $PID_BASIC3
+
+echo "Workshop initialised."
