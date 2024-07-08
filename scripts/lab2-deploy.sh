@@ -60,7 +60,7 @@ fi
 cd  ~/environment/aws-saas-operations-workshop/App/server
 git add -A . 
 git commit -m "Lab2 changes"
-git push cc "$(git branch --show-current)":main
+git push cc "$(git branch --show-current)":main --force
 
 # deploy operations lambda layer for shared services
 cd  ~/environment/aws-saas-operations-workshop/App/server
