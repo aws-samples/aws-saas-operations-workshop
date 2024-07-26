@@ -1,11 +1,8 @@
-## My Project
+# AWS SaaS Operations workshop
 
-TODO: Fill this README out!
+This is the source code for the [AWS SaaS Operations workshop](https://catalog.workshops.aws/saas-operations/en-US).
 
-Be sure to:
-
-* Change the title in this README
-* Edit your repository description on GitHub
+If you would like to deploy this, then follow the instructions [in the workshop.](https://catalog.workshops.aws/saas-operations/en-US/0005-getting-started/020-own-account).
 
 ## Security
 
@@ -14,4 +11,3 @@ See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more inform
 ## License
 
 This library is licensed under the MIT-0 License. See the LICENSE file.
-
