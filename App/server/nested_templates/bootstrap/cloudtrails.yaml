@@ -1,0 +1,534 @@
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: MIT-0
+
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Template to enable CloudTrail auditing
+Resources:
+  ManagementTrailBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Delete
+    Properties: 
+      VersioningConfiguration:
+        Status: Suspended
+      BucketEncryption: 
+        ServerSideEncryptionConfiguration: 
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+
+  ManagementTrailBucketPolicy:
+    DependsOn:
+        - ManagementTrailBucket
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref ManagementTrailBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: "AWSCloudTrailAclCheckMgmt"
+            Effect: Allow
+            Principal:
+              Service: cloudtrail.amazonaws.com
+            Action: "s3:GetBucketAcl"
+            Resource: !Sub "arn:aws:s3:::${ManagementTrailBucket}"
+            Condition:
+              StringEquals:
+                "aws:SourceArn": !Sub "arn:aws:cloudtrail:${AWS::Region}:${AWS::AccountId}:trail/saas-ops-management-trails"
+          - Sid: "AWSCloudTrailWriteMgmt"
+            Effect: Allow
+            Principal:
+              Service: cloudtrail.amazonaws.com
+            Action: "s3:PutObject"
+            Resource: !Sub "arn:aws:s3:::${ManagementTrailBucket}/AWSLogs/${AWS::AccountId}/*"
+            Condition:
+              StringEquals:
+                "s3:x-amz-acl": "bucket-owner-full-control"
+                "aws:SourceArn": !Sub "arn:aws:cloudtrail:${AWS::Region}:${AWS::AccountId}:trail/saas-ops-management-trails"
+
+  ManagementTrail:
+    DependsOn:
+        - ManagementTrailBucketPolicy
+    Type: AWS::CloudTrail::Trail
+    Properties:
+      IsLogging: True
+      IsMultiRegionTrail: True
+      IncludeGlobalServiceEvents: True
+      EnableLogFileValidation: True
+      S3BucketName: !Ref ManagementTrailBucket
+      TrailName: saas-ops-management-trails
+      EventSelectors:
+        - ReadWriteType: All
+          IncludeManagementEvents: True 
+          ExcludeManagementEventSources:
+            - kms.amazonaws.com
+            - rdsdata.amazonaws.com
+  
+  DynamoDBAccessTrailBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Delete
+    Properties: 
+      VersioningConfiguration:
+        Status: Suspended
+      BucketEncryption: 
+        ServerSideEncryptionConfiguration: 
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+
+  DynamoDBTrailBucketPolicy:
+    DependsOn:
+        - DynamoDBAccessTrailBucket
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref DynamoDBAccessTrailBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: "AWSCloudTrailAclCheckDDB"
+            Effect: Allow
+            Principal:
+              Service: cloudtrail.amazonaws.com
+            Action: "s3:GetBucketAcl"
+            Resource: !Sub "arn:aws:s3:::${DynamoDBAccessTrailBucket}"
+            Condition:
+              StringEquals:
+                "aws:SourceArn": !Sub "arn:aws:cloudtrail:${AWS::Region}:${AWS::AccountId}:trail/saas-ops-ddb-access-trails"
+          - Sid: "AWSCloudTrailWriteDDB"
+            Effect: Allow
+            Principal:
+              Service: cloudtrail.amazonaws.com
+            Action: "s3:PutObject"
+            Resource: !Sub "arn:aws:s3:::${DynamoDBAccessTrailBucket}/AWSLogs/${AWS::AccountId}/*"
+            Condition:
+              StringEquals:
+                "s3:x-amz-acl": "bucket-owner-full-control"
+                "aws:SourceArn": !Sub "arn:aws:cloudtrail:${AWS::Region}:${AWS::AccountId}:trail/saas-ops-ddb-access-trails"
+  
+  DynamoDBAccessTrail:
+    DependsOn:
+        - DynamoDBTrailBucketPolicy
+    Type: AWS::CloudTrail::Trail
+    Properties:
+      IsLogging: True
+      IsMultiRegionTrail: False
+      EnableLogFileValidation: True
+      S3BucketName: !Ref DynamoDBAccessTrailBucket
+      TrailName: saas-ops-ddb-access-trails
+      AdvancedEventSelectors:
+        - Name: "Capture Product and Order tables access logs"
+          FieldSelectors:
+            - Field: eventCategory
+              Equals:
+                - Data
+            - Field: resources.type
+              Equals:
+                - AWS::DynamoDB::Table
+            - Field: resources.ARN
+              StartsWith:
+                - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/Product-
+                - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/Order-
+  
+  AthenaQueryResultBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Delete
+    Properties: 
+      VersioningConfiguration:
+        Status: Suspended
+      BucketEncryption: 
+        ServerSideEncryptionConfiguration: 
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+  
+  AthenaQueryWorkgroup:
+    Type: AWS::Athena::WorkGroup
+    Properties:
+      Name: saas-ops
+      Description: "Workgroup for executing SaaS Operations workshop queries"
+      RecursiveDeleteOption: True
+      State: ENABLED
+      WorkGroupConfiguration:
+        ResultConfiguration:
+          OutputLocation: !Join ["", ["s3://", !Ref AthenaQueryResultBucket]]
+
+
+  AthenaCreatePartitionedManagementTable:
+    Type: AWS::Athena::NamedQuery
+    DependsOn:
+        - AthenaQueryWorkgroup
+    Properties: 
+      Database: default
+      WorkGroup: saas-ops
+      Description: "Athena query to create partitioned table for management CloudTrail logs"
+      Name: "1. Create management trail log table"
+      QueryString: !Sub |
+        CREATE EXTERNAL TABLE management_event_logs(
+            eventVersion STRING,
+            userIdentity STRUCT<
+                type: STRING,
+                principalId: STRING,
+                arn: STRING,
+                accountId: STRING,
+                invokedBy: STRING,
+                accessKeyId: STRING,
+                userName: STRING,
+                sessionContext: STRUCT<
+                    attributes: STRUCT<
+                        mfaAuthenticated: STRING,
+                        creationDate: STRING>,
+                    sessionIssuer: STRUCT<
+                        type: STRING,
+                        principalId: STRING,
+                        arn: STRING,
+                        accountId: STRING,
+                        userName: STRING>,
+                    ec2RoleDelivery:string
+                >
+            >,
+            eventTime STRING,
+            eventSource STRING,
+            eventName STRING,
+            awsRegion STRING,
+            sourceIpAddress STRING,
+            userAgent STRING,
+            errorCode STRING,
+            errorMessage STRING,
+            requestparameters STRING,
+            responseelements STRING,
+            additionaleventdata STRING,
+            requestId STRING,
+            eventId STRING,
+            readOnly STRING,
+            resources ARRAY<STRUCT<
+                arn: STRING,
+                accountId: STRING,
+                type: STRING>>,
+            eventType STRING,
+            apiVersion STRING,
+            recipientAccountId STRING,
+            serviceEventDetails STRING,
+            sharedEventID STRING,
+            vpcendpointid STRING,
+            tlsDetails struct<
+                tlsVersion:string,
+                cipherSuite:string,
+                clientProvidedHostHeader:string>
+          )
+        PARTITIONED BY (
+          `timestamp` string)
+        ROW FORMAT SERDE 'org.apache.hive.hcatalog.data.JsonSerDe'
+        STORED AS INPUTFORMAT 'com.amazon.emr.cloudtrail.CloudTrailInputFormat'
+        OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+        LOCATION
+          's3://${ManagementTrailBucket}/AWSLogs/${AWS::AccountId}/CloudTrail/${AWS::Region}'
+        TBLPROPERTIES (
+          'projection.enabled'='true', 
+          'projection.timestamp.format'='yyyy/MM/dd', 
+          'projection.timestamp.interval'='1', 
+          'projection.timestamp.interval.unit'='DAYS', 
+          'projection.timestamp.range'='2020/01/01,NOW', 
+          'projection.timestamp.type'='date', 
+          'storage.location.template'='s3://${ManagementTrailBucket}/AWSLogs/${AWS::AccountId}/CloudTrail/${AWS::Region}/${!timestamp}')
+
+  AthenaCreatePartitionedDataTable:
+    Type: AWS::Athena::NamedQuery
+    DependsOn:
+        - AthenaQueryWorkgroup
+    Properties: 
+      Database: default
+      WorkGroup: saas-ops
+      Description: "Athena query to create partitioned table for DynamoDB tables CloudTrail logs"
+      Name: "2. Create data trail log table"
+      QueryString: !Sub |
+        CREATE EXTERNAL TABLE data_event_logs(
+            eventVersion STRING,
+            userIdentity STRUCT<
+                type: STRING,
+                principalId: STRING,
+                arn: STRING,
+                accountId: STRING,
+                invokedBy: STRING,
+                accessKeyId: STRING,
+                userName: STRING,
+                sessionContext: STRUCT<
+                    attributes: STRUCT<
+                        mfaAuthenticated: STRING,
+                        creationDate: STRING>,
+                    sessionIssuer: STRUCT<
+                        type: STRING,
+                        principalId: STRING,
+                        arn: STRING,
+                        accountId: STRING,
+                        userName: STRING>,
+                    ec2RoleDelivery:string
+                >
+            >,
+            eventTime STRING,
+            eventSource STRING,
+            eventName STRING,
+            awsRegion STRING,
+            sourceIpAddress STRING,
+            userAgent STRING,
+            errorCode STRING,
+            errorMessage STRING,
+            requestparameters STRING,
+            responseelements STRING,
+            additionaleventdata STRING,
+            requestId STRING,
+            eventId STRING,
+            readOnly STRING,
+            resources ARRAY<STRUCT<
+                arn: STRING,
+                accountId: STRING,
+                type: STRING>>,
+            eventType STRING,
+            apiVersion STRING,
+            recipientAccountId STRING,
+            serviceEventDetails STRING,
+            sharedEventID STRING,
+            vpcendpointid STRING,
+            tlsDetails struct<
+                tlsVersion:string,
+                cipherSuite:string,
+                clientProvidedHostHeader:string>
+          )
+        PARTITIONED BY (
+          `timestamp` string)
+        ROW FORMAT SERDE 'org.apache.hive.hcatalog.data.JsonSerDe'
+        STORED AS INPUTFORMAT 'com.amazon.emr.cloudtrail.CloudTrailInputFormat'
+        OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+        LOCATION
+          's3://${DynamoDBAccessTrailBucket}/AWSLogs/${AWS::AccountId}/CloudTrail/${AWS::Region}'
+        TBLPROPERTIES (
+          'projection.enabled'='true', 
+          'projection.timestamp.format'='yyyy/MM/dd', 
+          'projection.timestamp.interval'='1', 
+          'projection.timestamp.interval.unit'='DAYS', 
+          'projection.timestamp.range'='2020/01/01,NOW', 
+          'projection.timestamp.type'='date', 
+          'storage.location.template'='s3://${DynamoDBAccessTrailBucket}/AWSLogs/${AWS::AccountId}/CloudTrail/${AWS::Region}/${!timestamp}')
+
+
+  StateMachineRole:
+    Type: AWS::IAM::Role     
+    Properties:
+      RoleName: state-machine-role
+      Path: '/'
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - states.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns: 
+        - arn:aws:iam::aws:policy/CloudWatchLambdaInsightsExecutionRolePolicy    
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess  
+      Policies:
+        - PolicyName: state-machine-policy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - xray:PutTraceSegments
+                  - xray:PutTelemetryRecords
+                  - xray:GetSamplingRules
+                  - xray:GetSamplingTargets
+                Resource:
+                  - "*"
+              - Effect: Allow
+                Action:
+                  - lambda:InvokeFunction
+                Resource:
+                  - !GetAtt IsolationMetricStateMachineInitFunction.Arn
+                  - !Join ["", [!GetAtt IsolationMetricStateMachineInitFunction.Arn, ":*"]]
+                  - !GetAtt IsolationMetricPublisherFunction.Arn
+                  - !Join ["", [!GetAtt IsolationMetricPublisherFunction.Arn, ":*"]]
+              - Effect: Allow
+                Action:
+                  - athena:startQueryExecution
+                  - athena:stopQueryExecution
+                  - athena:getQueryExecution
+                  - athena:getDataCatalog
+                  - athena:GetQueryResults
+                Resource:
+                  - !Sub "arn:aws:athena:${AWS::Region}:${AWS::AccountId}:workgroup/*"
+                  - !Sub "arn:aws:athena:${AWS::Region}:${AWS::AccountId}:datacatalog/*"
+              - Effect: Allow
+                Action:
+                  - glue:CreateDatabase
+                  - glue:GetDatabase
+                  - glue:GetDatabases
+                  - glue:UpdateDatabase
+                  - glue:DeleteDatabase
+                  - glue:CreateTable
+                  - glue:UpdateTable
+                  - glue:GetTable
+                  - glue:GetTables
+                  - glue:DeleteTable
+                  - glue:BatchDeleteTable
+                  - glue:BatchCreatePartition
+                  - glue:CreatePartition
+                  - glue:UpdatePartition
+                  - glue:GetPartition
+                  - glue:GetPartitions
+                  - glue:BatchGetPartition
+                  - glue:DeletePartition
+                  - glue:BatchDeletePartition
+                Resource:
+                  - !Sub arn:aws:glue:${AWS::Region}:${AWS::AccountId}:catalog
+                  - !Sub arn:aws:glue:${AWS::Region}:${AWS::AccountId}:database/*
+                  - !Sub arn:aws:glue:${AWS::Region}:${AWS::AccountId}:table/*
+                  - !Sub arn:aws:glue:${AWS::Region}:${AWS::AccountId}:userDefinedFunction/*
+              - Effect: Allow
+                Action:
+                  - lakeformation:GetDataAccess
+                Resource:
+                  - "*"
+              - Effect: Allow
+                Action:
+                  - "s3:GetBucketLocation"
+                  - "s3:GetObject"
+                  - "s3:ListBucket"
+                  - "s3:ListBucketMultipartUploads"
+                  - "s3:ListMultipartUploadParts"
+                  - "s3:AbortMultipartUpload"
+                  - "s3:CreateBucket"
+                  - "s3:PutObject"
+                Resource:
+                  - "arn:aws:s3:::*"
+
+  StateMachineInitFunctionRole:
+    Type: AWS::IAM::Role     
+    Properties:
+      RoleName: state-machine-init-fn-role
+      Path: '/'
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns: 
+        - arn:aws:iam::aws:policy/CloudWatchLambdaInsightsExecutionRolePolicy    
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess   
+
+  IsolationMetricStateMachineInitFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../../Resources/
+      Handler: isolation_metric_initializer.lambda_handler
+      Runtime: python3.9
+      Role: !GetAtt StateMachineInitFunctionRole.Arn
+      Tracing: Active
+      AutoPublishAlias: live
+  
+  StateMachineMetricPublisherFunctionRole:
+    Type: AWS::IAM::Role     
+    Properties:
+      RoleName: state-machine-metric-publisher-fn-role
+      Path: '/'
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns: 
+        - arn:aws:iam::aws:policy/CloudWatchLambdaInsightsExecutionRolePolicy    
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess  
+      Policies:
+        - PolicyName: state-machine-metric-publisher-fn-policy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - cloudwatch:PutMetricData                                    
+                Resource:
+                  - "*"
+
+  IsolationMetricPublisherFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../../Resources/
+      Handler: publish_isolation_metric.lambda_handler
+      Runtime: python3.9
+      Role: !GetAtt StateMachineMetricPublisherFunctionRole.Arn
+      Tracing: Active
+      AutoPublishAlias: live
+  
+  TenantIsolationMonitoringStepFunction:
+    Type: AWS::StepFunctions::StateMachine
+    DependsOn:
+        - AthenaQueryWorkgroup
+    Properties:
+      RoleArn: !GetAtt StateMachineRole.Arn
+      StateMachineName: "Tenant_isolation_monitoring"
+      StateMachineType: STANDARD
+      Definition:
+        Comment: An example of the Amazon States Language using a choice state.
+        StartAt: GetParams
+        States:
+          GetParams:
+            Type: Task
+            Resource: arn:aws:states:::lambda:invoke
+            ResultPath: "$"
+            OutputPath: "$.Payload"
+            Parameters:
+              Payload: ""
+              FunctionName: !Join ["", [!GetAtt IsolationMetricStateMachineInitFunction.Arn, ":$LATEST"]]
+            Next: RunAthenaQuery
+          RunAthenaQuery:
+            Type: Task
+            Resource: arn:aws:states:::athena:startQueryExecution.sync
+            InputPath: "$"
+            ResultSelector: 
+              "queryExecutionId.$": "$.QueryExecution.QueryExecutionId"
+            ResultPath: "$"
+            Parameters:
+              WorkGroup: saas-ops
+              QueryString: |
+                SELECT minute_window, count(ddb.eventid) as total
+                FROM 
+                  (SELECT date_trunc('minute', date_parse(eventtime, '%Y-%m-%dT%H:%i:%sZ')) as minute_window, eventid, useridentity.accesskeyid, substring(json_extract_scalar(requestparameters, '$.key.shardId'), 1, 32) as tenantid 
+                  FROM "data_event_logs" where timestamp >= ? and eventtime >= ? ) as ddb 
+                left outer join 
+                  (select json_extract_scalar(requestparameters, '$.principalTags.tenantId') as tenantid, json_extract_scalar(responseelements, '$.credentials.accessKeyId') as accesskeyid 
+                  from "management_event_logs" 
+                  where 
+                    responseelements is not null 
+                    and requestparameters is not null 
+                    and eventsource = 'sts.amazonaws.com' 
+                    and timestamp >= ?) as mgmt 
+                on ddb.accesskeyid = mgmt.accesskeyid 
+                where ddb.tenantid != mgmt.tenantid 
+                group by minute_window
+              ExecutionParameters.$: "States.Array($.partition, $.start, $.partition)"
+            Next: GetQueryResults
+          GetQueryResults:
+            Type: Task
+            Resource: arn:aws:states:::athena:getQueryResults
+            Parameters:
+              MaxResults: 65
+              "QueryExecutionId.$": "$.queryExecutionId"
+            Next: PushMetrics
+            ResultPath: "$"
+          PushMetrics:
+            Type: Task
+            Resource: arn:aws:states:::lambda:invoke
+            Parameters:
+              Payload.$: "$"
+              FunctionName: !Join ["", [!GetAtt IsolationMetricPublisherFunction.Arn, ":$LATEST"]]
+            End: true

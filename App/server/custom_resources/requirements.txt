@@ -1,0 +1,2 @@
+requests==2.31.0
+crhelper==2.0.11

@@ -1,0 +1,5 @@
+requests==2.31.0
+pytest-mock==3.12.0
+aws-lambda-powertools[Tracer,Logger,Metrics]==2.26.0
+jsonpickle==3.0.2
+aws_requests_auth==0.4.3

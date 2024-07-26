@@ -1,0 +1,51 @@
+config:
+  target: "https://default.url"
+  phases:
+    - duration: 200m
+      arrivalRate: 4
+      name: Normal
+      
+scenarios:
+  - name: "GetProducts"
+    weight: 1
+    flow:
+      - log: "Get Products"
+      - get:
+          url: "{{$processEnvironment.P2_ENDPOINT}}/products"
+          headers:
+            Authorization: "Bearer {{$processEnvironment.P2_TOKEN }}"
+  - name: "GetUsers"
+    weight: 1
+    flow:
+      - log: "Get Users"
+      - get:
+          url: "{{$processEnvironment.ADMIN_APIGATEWAYURL}}/users"
+          headers:
+            Authorization: "Bearer {{$processEnvironment.P2_TOKEN }}"
+  - name: "CreateProduct"
+    weight: 7
+    flow:
+      - log: "Create Product"
+      - post:
+          url: "{{$processEnvironment.P2_ENDPOINT}}/product"
+          headers:
+            Authorization: "Bearer {{$processEnvironment.P2_TOKEN }}"
+          json:
+            name: "TestProduct"
+            price: "100"
+            sku: "100"
+            category: "category1"
+  - name: "CreateOrder"
+    weight: 14
+    flow:
+      - log: "Create Order"
+      - post:
+          url: "{{$processEnvironment.P2_ENDPOINT}}/order"
+          headers:
+            Authorization: "Bearer {{$processEnvironment.P2_TOKEN }}"
+          json:
+            orderName: "TestOrder"
+            orderProducts:
+            - productId: "{{ productId }}"
+              price: "100"
+              quantity: 1

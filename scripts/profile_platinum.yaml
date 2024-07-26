@@ -1,0 +1,75 @@
+config:
+  target: "https://default.url"
+  phases:
+    - duration: 200m
+      arrivalCount: 48000
+      name: Normal
+      
+scenarios:
+  - name: "SiloTenant1-GetOrders"
+    weight: 9
+    flow:
+      - log: "SiloTenant1 Get Orders"
+      - get:
+          url: "{{$processEnvironment.S1_ENDPOINT}}/orders"
+          headers:
+            Authorization: "Bearer {{$processEnvironment.S1_TOKEN }}"
+  - name: "SiloTenant1-GetProducts"
+    weight: 5
+    flow:
+      - log: "SiloTenant1 Get Products"
+      - get:
+          url: "{{$processEnvironment.S1_ENDPOINT}}/products"
+          headers:
+            Authorization: "Bearer {{$processEnvironment.S1_TOKEN }}"
+  - name: "SiloTenant1-GetUsers"
+    weight: 1
+    flow:
+      - log: "SiloTenant1 Get Users"
+      - get:
+          url: "{{$processEnvironment.ADMIN_APIGATEWAYURL}}/users"
+          headers:
+            Authorization: "Bearer {{$processEnvironment.S1_TOKEN }}"
+  - name: "SiloTenant1-CreateDeleteProduct"
+    weight: 1
+    flow:
+      - log: "SiloTenant1 Create & Delete Product"
+      - post:
+          url: "{{$processEnvironment.S1_ENDPOINT}}/product"
+          headers:
+            Authorization: "Bearer {{$processEnvironment.S1_TOKEN }}"
+          json:
+            name: "TestProduct"
+            price: "100"
+            sku: "100"
+            category: "category1"
+          capture:
+            - json: "$.key"
+              as: "productKey"
+            - json: "$.productId"
+              as: "productId"
+      - delete:
+          url: "{{$processEnvironment.S1_ENDPOINT}}/product/{{ productKey }}"
+          headers:
+            Authorization: "Bearer {{$processEnvironment.S1_TOKEN }}"
+  - name: "SiloTenant1-CreateDeleteOrder"
+    weight: 3
+    flow:
+      - log: "SiloTenant1 Create & Delete Order"
+      - post:
+          url: "{{$processEnvironment.S1_ENDPOINT}}/order"
+          headers:
+            Authorization: "Bearer {{$processEnvironment.S1_TOKEN }}"
+          json:
+            orderName: "TestOrder"
+            orderProducts:
+            - productId: "{{ productId }}"
+              price: "100"
+              quantity: 1
+          capture:
+            json: "$.key"
+            as: "orderKey"              
+      - delete:
+          url: "{{$processEnvironment.S1_ENDPOINT}}/order/{{ orderKey }}"
+          headers:
+            Authorization: "Bearer {{$processEnvironment.S1_TOKEN }}"

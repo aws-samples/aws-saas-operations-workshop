@@ -1,0 +1,7 @@
+{
+    "accountId": "LAB4_TODO_ACCOUNT",
+    "region": "LAB4_TODO_REGION",
+    "basicTenant1": "LAB4_TODO_BASIC_TEST_TENANT1",
+    "basicTenant2": "LAB4_TODO_BASIC_TEST_TENANT2",
+    "platinumTenant": "LAB4_TODO_PLATINUM_TEST_TENANT"
+}

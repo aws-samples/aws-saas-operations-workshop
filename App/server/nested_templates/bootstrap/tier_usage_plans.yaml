@@ -1,0 +1,60 @@
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: MIT-0
+
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Usage plans for different tiers of tenants
+
+Resources:
+  UsagePlanPlatinumTier:   
+    Type: AWS::ApiGateway::UsagePlan
+    Properties:
+      Description: Usage plan for platinum tier tenants
+      Throttle:
+        BurstLimit: 30
+        RateLimit: 15
+      UsagePlanName: Plan_Platinum_Tier
+
+  UsagePlanPremiumTier:   
+    Type: AWS::ApiGateway::UsagePlan
+    Properties:
+      Description: Usage plan for premium tier tenants
+      Quota:
+        Limit: 5000
+        Period: DAY
+      Throttle:
+        BurstLimit: 200
+        RateLimit: 100
+      UsagePlanName: Plan_Premium_Tier
+
+  UsagePlanStandardTier: 
+    Type: AWS::ApiGateway::UsagePlan
+    Properties:
+      Description: Usage plan for standard tier tenants
+      Quota:
+        Limit: 3000
+        Period: DAY
+      Throttle:
+        BurstLimit: 100
+        RateLimit: 75
+      UsagePlanName: Plan_Standard_Tier
+
+  UsagePlanBasicTier:   
+    Type: AWS::ApiGateway::UsagePlan
+    Properties:
+      Description: Usage plan for basic tier tenants
+      Throttle:
+        BurstLimit: 25
+        RateLimit: 10
+      UsagePlanName: Plan_Basic_Tier
+
+Outputs:
+  UsagePlanBasicTier: 
+    Value: !Ref UsagePlanBasicTier
+  UsagePlanStandardTier: 
+    Value: !Ref UsagePlanStandardTier
+  UsagePlanPremiumTier: 
+    Value: !Ref UsagePlanPremiumTier
+  UsagePlanPlatinumTier: 
+    Value: !Ref UsagePlanPlatinumTier
