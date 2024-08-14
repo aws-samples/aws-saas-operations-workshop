@@ -16,7 +16,7 @@ install_dependencies() {
     retry npm install -g artillery
     echo "Installed artillery"
     echo "Installing zip and unzip"
-    retry sudo apt-get install zip unzip
+    retry sudo yum install zip unzip
     echo "Installed zip and unzip"
     echo "Dependencies installed"
 }
