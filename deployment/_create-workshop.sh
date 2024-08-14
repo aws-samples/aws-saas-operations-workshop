@@ -21,6 +21,21 @@ install_dependencies() {
     echo "Dependencies installed"
 }
 
+# pack and push source code to S3 source code bucket
+upload_source_code_to_s3() {
+    echo "Uploading source code to S3"
+    SOURCE_CODE_BUCKET_NAME=$(aws cloudformation describe-stacks \
+        --stack-name saas-operations-pipeline \
+        --query "Stacks[0].Outputs[?OutputKey=='SourceCodeBucketName'].OutputValue" \
+        --output text)
+    echo "Source code bucket name: ${SOURCE_CODE_BUCKET_NAME}"
+    cd ${REPO_PATH}/
+    zip -r source.zip . -x ".git/*" -x "**/node_modules/*" -x "**/cdk.out/*"
+    aws s3 cp source.zip s3://${SOURCE_CODE_BUCKET_NAME}/source.zip
+    rm source.zip
+    echo "Source code uploaded to S3"
+}
+
 # Deploy tenant pipeline
 create_tenant_pipeline() {
     echo "Deploying tenant pipeline"

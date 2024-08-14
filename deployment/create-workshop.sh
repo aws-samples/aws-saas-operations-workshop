@@ -28,6 +28,7 @@ echo "Creating workshop"
 install_dependencies
 create_tenant_pipeline 
 create_bootstrap
+upload_source_code_to_s3
 execute_pipeline
 deploy_dashboards &
 deploy_admin_ui &
