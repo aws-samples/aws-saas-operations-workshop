@@ -15,30 +15,10 @@ install_dependencies() {
     echo "Installing artillery"
     retry npm install -g artillery
     echo "Installed artillery"
+    echo "Installing zip and unzip"
+    retry sudo apt-get install zip unzip
+    echo "Installed zip and unzip"
     echo "Dependencies installed"
-}
-
-# Create CodeCommit repository
-create_codecommit() {
-    echo "Creating CodeCommit repository"
-    cd ${REPO_PATH}
-    git init -b main
-    git config --global --add safe.directory ${REPO_PATH}
-    git add -A
-    git commit -m "Base code"
-    if ! aws codecommit get-repository --repository-name ${REPO_NAME}
-    then
-        echo "${REPO_NAME} codecommit repo is not present, will create one now"
-        CREATE_REPO=$(aws codecommit create-repository --repository-name ${REPO_NAME} --repository-description "${REPO_DESCRIPTION}")
-        echo "${CREATE_REPO}"
-    fi
-    if ! git remote add cc "${CC_REPO_URL}"
-    then
-        echo "Setting url to remote cc"
-        git remote set-url cc "${CC_REPO_URL}"
-    fi
-    git push cc "$(git branch --show-current)":main
-    echo "CodeCommit repository created"
 }
 
 # Deploy tenant pipeline

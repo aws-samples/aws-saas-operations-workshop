@@ -6,7 +6,6 @@ import * as fs from 'fs';
 import * as cdk from 'aws-cdk-lib';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as s3 from 'aws-cdk-lib/aws-s3';
-import * as codecommit from 'aws-cdk-lib/aws-codecommit';
 import * as codepipeline from 'aws-cdk-lib/aws-codepipeline';
 import * as codepipeline_actions from 'aws-cdk-lib/aws-codepipeline-actions';
 import * as codebuild from 'aws-cdk-lib/aws-codebuild';
@@ -130,12 +129,16 @@ export class SaaSOperationsStack extends cdk.Stack {
       pipelineType: codepipeline.PipelineType.V1
     });
 
-    // Import existing CodeCommit sam-app repository
-    const codeRepo = codecommit.Repository.fromRepositoryName(
-      this,
-      'AppRepository', 
-      'aws-saas-operations-workshop' 
-    );
+    // S3 bucket to hold updated code
+    const sourceCodeBucket = new s3.Bucket(this, 'SourceCodeBucket', {
+      autoDeleteObjects: true,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      encryption: s3.BucketEncryption.S3_MANAGED,
+      enforceSSL: true,
+      versioned: true,
+    });
+
+    new cdk.CfnOutput(this, 'SourceCodeBucketName', { value: sourceCodeBucket.bucketName });
 
     // Declare source code as an artifact
     const sourceOutput = new codepipeline.Artifact();
@@ -144,12 +147,12 @@ export class SaaSOperationsStack extends cdk.Stack {
     pipeline.addStage({
       stageName: 'Source',
       actions: [
-        new codepipeline_actions.CodeCommitSourceAction({
-          actionName: 'CodeCommit_Source',
-          repository: codeRepo,
-          branch: 'main',
+        new codepipeline_actions.S3SourceActions({
+          bucket: sourceCodeBucket,
+          bucketKey: 'source.zip',
+          actionName: 'S3_Source',
           output: sourceOutput,
-          variablesNamespace: 'SourceVariables'
+          trigger: codepipeline_actions.S3Trigger.NONE
         }),
       ],
     });
@@ -195,7 +198,7 @@ export class SaaSOperationsStack extends cdk.Stack {
           userParameters: {
             'artifact': 'Artifact_Build_Build-SaaS-Operations',
             'template_file': 'packaged.yaml',
-            'commit_id': '#{SourceVariables.CommitId}'
+            'commit_id': '#{SourceVariables.VersionId}'
           }
         })
       ],
@@ -228,7 +231,7 @@ export class SaaSOperationsStack extends cdk.Stack {
         }),
         new iam.PolicyStatement({
           resources: [
-            `${artifactsBucket.bucketArn}/*`,             
+            `${artifactsBucket.bucketArn}/*`,
           ],
           actions: [
                       "s3:DeleteObject",

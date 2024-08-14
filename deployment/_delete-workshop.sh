@@ -103,18 +103,6 @@ delete_buckets() {
     echo "Buckets deleted."
 }
 
-delete_codecommit_repo() {
-    REPO_NAME="$1"
-    echo "Deleting codecommit repo \"$REPO_NAME\"..."
-    repo=$(aws codecommit get-repository --repository-name "$REPO_NAME")
-    if [[ -n "${repo}" ]]; then
-        aws codecommit delete-repository --repository-name "$REPO_NAME"
-    else
-        echo "Repo \"$REPO_NAME\" does not exist..."
-    fi
-    echo "Repo \"$REPO_NAME\" deleted."
-}
-
 delete_log_groups() {
     echo "Cleaning up log groups..."
     next_token=""
