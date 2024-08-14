@@ -147,10 +147,10 @@ export class SaaSOperationsStack extends cdk.Stack {
     pipeline.addStage({
       stageName: 'Source',
       actions: [
-        new codepipeline_actions.S3SourceActions({
+        new codepipeline_actions.S3SourceAction({
           bucket: sourceCodeBucket,
           bucketKey: 'source.zip',
-          actionName: 'S3_Source',
+          actionName: 'S3Source',
           output: sourceOutput,
           trigger: codepipeline_actions.S3Trigger.NONE
         }),
