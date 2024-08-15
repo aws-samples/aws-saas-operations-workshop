@@ -30,7 +30,7 @@ upload_source_code_to_s3() {
         --output text)
     echo "Source code bucket name: ${SOURCE_CODE_BUCKET_NAME}"
     cd ${REPO_PATH}/
-    zip -r source.zip . -x ".git/*" -x "**/node_modules/*" -x "**/cdk.out/*"
+    zip -r source.zip . -x ".git/*" -x "**/node_modules/*" -x "**/cdk.out/*" -x "**/.aws-sam/*
     aws s3 cp source.zip s3://${SOURCE_CODE_BUCKET_NAME}/source.zip
     rm source.zip
     echo "Source code uploaded to S3"
