@@ -15,7 +15,6 @@ done
 
 ## Variables
 REGION=$(aws ec2 describe-availability-zones --output text --query 'AvailabilityZones[0].[RegionName]')
-REPO_DESCRIPTION="SaaS Operations architecture repository"
 REPO_PATH="/home/ec2-user/environment/${REPO_NAME}"
 
 ## Init
@@ -27,8 +26,8 @@ cd ~/environment/$REPO_NAME/deployment/cloud9 && ./resize-cloud9-ebs-vol.sh
 echo "Creating workshop"
 install_dependencies
 create_tenant_pipeline 
-create_bootstrap
 upload_source_code_to_s3
+create_bootstrap
 execute_pipeline
 deploy_dashboards &
 deploy_admin_ui &

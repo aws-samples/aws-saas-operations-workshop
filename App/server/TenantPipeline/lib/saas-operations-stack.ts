@@ -137,6 +137,9 @@ export class SaaSOperationsStack extends cdk.Stack {
       enforceSSL: true,
       versioned: true,
     });
+    NagSuppressions.addResourceSuppressions(sourceCodeBucket, [
+      { id: "AwsSolutions-S1", reason: "Used only for internal temporary use (upload source for consumption in pipeline)."}
+    ]);
 
     new cdk.CfnOutput(this, 'SourceCodeBucketName', { value: sourceCodeBucket.bucketName });
 
@@ -144,16 +147,18 @@ export class SaaSOperationsStack extends cdk.Stack {
     const sourceOutput = new codepipeline.Artifact();
 
     // Add source stage to pipeline
+    const s3SourceAction = new codepipeline_actions.S3SourceAction({
+      bucket: sourceCodeBucket,
+      bucketKey: 'source.zip',
+      actionName: 'S3Source',
+      output: sourceOutput,
+      trigger: codepipeline_actions.S3Trigger.NONE
+    });
+    
     pipeline.addStage({
       stageName: 'Source',
       actions: [
-        new codepipeline_actions.S3SourceAction({
-          bucket: sourceCodeBucket,
-          bucketKey: 'source.zip',
-          actionName: 'S3Source',
-          output: sourceOutput,
-          trigger: codepipeline_actions.S3Trigger.NONE
-        }),
+        s3SourceAction,
       ],
     });
 
@@ -198,7 +203,7 @@ export class SaaSOperationsStack extends cdk.Stack {
           userParameters: {
             'artifact': 'Artifact_Build_Build-SaaS-Operations',
             'template_file': 'packaged.yaml',
-            'commit_id': '#{SourceVariables.VersionId}'
+            'commit_id': s3SourceAction.variables.versionId
           }
         })
       ],
