@@ -43,6 +43,8 @@ Parameters:
     Description: "Enter Tenant Management userpool call back url"  
   SiloedTenantRoleArn:
     Type: String  
+  SiloedTenantRoleName:
+    Type: String
   LambdaCanaryDeploymentPreference:
     Type: String    
     Default: "False"
@@ -251,9 +253,10 @@ Resources:
                   - !Ref TenantDetailsTableArn
               - Effect: Allow
                 Action:
-                  - iam:PassRole
+                  - iam:*
                 Resource:
                   - !Ref SiloedTenantRoleArn
+
   CreateTenantAdminUserFunction:
     Type: AWS::Serverless::Function
     DependsOn: CreateUserLambdaExecutionRole
@@ -268,6 +271,7 @@ Resources:
       Environment:
         Variables:
           SILO_TENANT_ROLE_ARN: !Ref SiloedTenantRoleArn
+          SILO_TENANT_ROLE_NAME: !Ref SiloedTenantRoleName
           TENANT_USER_POOL_ID: !Ref CognitoUserPoolId
           TENANT_IDENTITY_POOL_ID: !Ref CognitoIdentityPoolId
           TENANT_APP_CLIENT_ID: !Ref CognitoUserPoolClientId

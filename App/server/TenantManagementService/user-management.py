@@ -16,6 +16,7 @@ tracer = Tracer()
 client = boto3.client('cognito-idp')
 id_client = boto3.client('cognito-identity')
 dynamodb = boto3.resource('dynamodb')
+iam = boto3.client('iam')
 table_tenant_user_map = dynamodb.Table('SaaSOperations-TenantUserMapping')
 table_tenant_details = dynamodb.Table('SaaSOperations-TenantDetails')
 
@@ -25,6 +26,7 @@ def create_tenant_admin_user(event, context):
     tenant_app_client_id = os.environ['TENANT_APP_CLIENT_ID']
     region = os.environ['AWS_REGION']
     siloed_tenant_role_arn = os.environ['SILO_TENANT_ROLE_ARN']
+    siloed_tenant_role_name = os.environ['SILO_TENANT_ROLE_NAME']
     
     tenant_details = json.loads(event['body'])
     tenant_id = tenant_details['tenantId']
@@ -48,7 +50,8 @@ def create_tenant_admin_user(event, context):
             tenant_id,
             user_pool_id,
             app_client_id,
-            siloed_tenant_role_arn
+            siloed_tenant_role_arn,
+            siloed_tenant_role_name
         )
         identity_pool_id = identity_pool_response['IdentityPoolId']
         logger.info(identity_pool_id)
@@ -485,7 +488,26 @@ class UserManagement:
         )
         return response
 
-    def create_identity_pool(self, region, tenant_id, userpool_id, userpool_client_id, user_role_arn):
+    def _add_identity_pool_to_role_trust_policy(self, identity_pool_id, user_role_name):
+        
+        aud_key = 'cognito-identity.amazonaws.com:aud'
+
+        role = iam.get_role(RoleName=user_role_name)
+        trust = role['Role']['AssumeRolePolicyDocument']
+
+        for s in trust['Statement']:
+            if s['Action'] in ['sts:AssumeRoleWithWebIdentity', 'sts:TagSession'] and aud_key in s['Condition']['StringEquals']:
+                val = s['Condition']['StringEquals'][aud_key]
+                if type(val) == type(''):
+                    s['Condition']['StringEquals'][aud_key] = [val, identity_pool_id]
+                elif type(val) == type([]):
+                    s['Condition']['StringEquals'][aud_key].append(identity_pool_id)
+                else:
+                    s['Condition']['StringEquals'][aud_key] = identity_pool_id
+
+        iam.update_assume_role_policy(RoleName=user_role_name, PolicyDocument=json.dumps(trust))
+
+    def create_identity_pool(self, region, tenant_id, userpool_id, userpool_client_id, user_role_arn, user_role_name):
         userpool_provider_name = 'cognito-idp.'+region+'.amazonaws.com/'+userpool_id
         userpool_provider_url = 'https://' + userpool_provider_name
 
@@ -502,6 +524,7 @@ class UserManagement:
         )
 
         identity_pool_id = idpool_response['IdentityPoolId']
+        self._add_identity_pool_to_role_trust_policy(identity_pool_id, user_role_name)
 
         id_client.set_identity_pool_roles(
             IdentityPoolId=identity_pool_id,

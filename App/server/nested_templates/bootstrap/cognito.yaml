@@ -86,6 +86,16 @@ Resources:
       Domain: !Join ["-", [pooledtenant-saasoperations,!Ref "AWS::AccountId"]]
       UserPoolId: !Ref CognitoUserPool
 
+  CognitoIdentityPool:
+    Type: AWS::Cognito::IdentityPool
+    Properties:
+      IdentityPoolName: PooledTenant-SaaSOperationsIdentityPool
+      AllowUnauthenticatedIdentities: False
+      CognitoIdentityProviders: 
+        - ClientId: !Ref CognitoUserPoolClient
+          ProviderName: !GetAtt CognitoUserPool.ProviderName
+          ServerSideTokenCheck: True
+
   AuthenticatedPooledUserRole:
     Type: AWS::IAM::Role
     Properties:
@@ -99,7 +109,9 @@ Resources:
             Action: sts:AssumeRoleWithWebIdentity
             Condition:
               ForAnyValue:StringLike:
-                "cognito-identity.amazonaws.com:amr": authenticated   
+                "cognito-identity.amazonaws.com:amr": authenticated 
+              StringEquals:
+                "cognito-identity.amazonaws.com:aud": !Ref CognitoIdentityPool  
           - Effect: Allow
             Principal:
               Federated: cognito-identity.amazonaws.com
@@ -107,6 +119,8 @@ Resources:
             Condition:
               ForAnyValue:StringLike:
                 "cognito-identity.amazonaws.com:amr": authenticated
+              StringEquals:
+                "cognito-identity.amazonaws.com:aud": !Ref CognitoIdentityPool
       Policies:      
         - PolicyName: authenticated-pooled-user-policy
           PolicyDocument:
@@ -194,7 +208,9 @@ Resources:
             Action: sts:AssumeRoleWithWebIdentity
             Condition:
               ForAnyValue:StringLike:
-                "cognito-identity.amazonaws.com:amr": authenticated        
+                "cognito-identity.amazonaws.com:amr": authenticated    
+              StringEquals:
+                "cognito-identity.amazonaws.com:aud": []   
           - Effect: Allow
             Principal:
               Federated: cognito-identity.amazonaws.com
@@ -202,6 +218,8 @@ Resources:
             Condition:
               ForAnyValue:StringLike:
                 "cognito-identity.amazonaws.com:amr": authenticated
+              StringEquals:
+                "cognito-identity.amazonaws.com:aud": []
       Policies:      
         - PolicyName: authenticated-siloed-user-policy
           PolicyDocument:
@@ -276,15 +294,7 @@ Resources:
                   StringEquals:
                     "SystemAdmin": "${aws:PrincipalTag/userRole}"
  
-  CognitoIdentityPool:
-    Type: AWS::Cognito::IdentityPool
-    Properties:
-      IdentityPoolName: PooledTenant-SaaSOperationsIdentityPool
-      AllowUnauthenticatedIdentities: False
-      CognitoIdentityProviders: 
-        - ClientId: !Ref CognitoUserPoolClient
-          ProviderName: !GetAtt CognitoUserPool.ProviderName
-          ServerSideTokenCheck: True
+  
 
   CognitoIdentityPoolRoleAttachement:
     Type: AWS::Cognito::IdentityPoolRoleAttachment
@@ -432,6 +442,8 @@ Outputs:
     Value: !Ref CognitoIdentityPool
   SiloedTenantRoleArn:
     Value: !GetAtt AuthenticatedSiloedUserRole.Arn
+  SiloedTenantRoleName:
+    Value: !GetAtt AuthenticatedSiloedUserRole.RoleName
   CognitoUserPoolClientId:
     Value: !Ref CognitoUserPoolClient
   CognitoOperationUsersUserPoolId:
