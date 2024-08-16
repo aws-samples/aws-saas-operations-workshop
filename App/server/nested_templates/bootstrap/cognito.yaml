@@ -15,7 +15,10 @@ Parameters:
     Description: "Enter Admin Management userpool call back url"
   TenantUserPoolCallbackURLParameter:
     Type: String
-    Description: "Enter Tenant Management userpool call back url"  
+    Description: "Enter Tenant Management userpool call back url" 
+  SiloedTenantRoleName:
+    Type: String
+    Default: authenticated-siloed-user-role
 Resources:
   CognitoUserPool:
     Type: "AWS::Cognito::UserPool"
@@ -198,7 +201,7 @@ Resources:
   AuthenticatedSiloedUserRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: authenticated-siloed-user-role
+      RoleName: !Ref SiloedTenantRoleName
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -443,7 +446,7 @@ Outputs:
   SiloedTenantRoleArn:
     Value: !GetAtt AuthenticatedSiloedUserRole.Arn
   SiloedTenantRoleName:
-    Value: !GetAtt AuthenticatedSiloedUserRole.RoleName
+    Value: !Ref SiloedTenantRoleName
   CognitoUserPoolClientId:
     Value: !Ref CognitoUserPoolClient
   CognitoOperationUsersUserPoolId:

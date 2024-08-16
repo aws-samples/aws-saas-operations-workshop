@@ -61,7 +61,7 @@ cd  ~/environment/aws-saas-operations-workshop/App/server
 git add -A . 
 git commit -m "Lab2 changes"
 cd ~/environment/aws-saas-operations-workshop
-zip -r source.zip . -x ".git/*" -x "**/node_modules/*" -x "**/cdk.out/*"
+zip -r source.zip . -x ".git/*" -x "**/node_modules/*" -x "**/cdk.out/*" -x "**/.aws-sam/*"
 SOURCE_CODE_BUCKET_NAME=$(aws cloudformation describe-stacks \
   --stack-name saas-operations-pipeline \
   --query "Stacks[0].Outputs[?OutputKey=='SourceCodeBucketName'].OutputValue" \
