@@ -118,6 +118,7 @@ replace_instance_profile() {
 get_c9_id() {
     C9_ID=$(aws ec2 describe-instances \
         --filter "Name=tag:Workshop,Values=$WORKSHOP_NAME" \
+        --filter "Name=instance-state-name,Values=pending,running,shutting-down,stopping,stopped" \
         --query 'Reservations[].Instances[].{Instance:InstanceId}' \
         --output text)
 }

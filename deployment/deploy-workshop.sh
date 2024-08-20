@@ -6,6 +6,11 @@ echo "Deploying workshop resources..."
 
 alias saasops_logs="aws logs tail --follow /aws/codebuild/install-workshop-stack-codebuild"
 
+STACK_NAME="SaaSOps"${1:-""}
+REPO_URL="https://github.com/aws-samples/aws-saas-operations-workshop.git"
+REPO_BRANCH_NAME="main"
+PARTICIPANT_ASSUMED_ROLE_ARN="$(aws sts get-caller-identity --query 'Arn' --output text)"
+
 saasops_deploy_wait() {
     START_TIME=$(date '+%s')
     STATUS=$(aws cloudformation describe-stacks --query "Stacks[?StackName=='SaaSOps'].StackStatus" --output text)
@@ -14,7 +19,7 @@ saasops_deploy_wait() {
         DDIFF=$(( $CURRENT_TIME - $START_TIME ))
         echo $(date) "SaaSOps Stack status: "$STATUS", Time elapsed: "$(($DDIFF / 60))"m"$(($DDIFF % 60))"s"
         sleep 15
-        STATUS=$(aws cloudformation describe-stacks --query "Stacks[?StackName=='SaaSOps'].StackStatus" --output text)
+        STATUS=$(aws cloudformation describe-stacks --query "Stacks[?StackName=='$STACK_NAME'].StackStatus" --output text)
     done
     CURRENT_TIME=$(date '+%s')
     DDIFF=$(( $CURRENT_TIME - $START_TIME ))
@@ -24,10 +29,7 @@ saasops_deploy_wait() {
     fi
 }
 
-STACK_NAME="SaaSOps"${1:-""}
-REPO_URL="https://github.com/aws-samples/aws-saas-operations-workshop.git"
-REPO_BRANCH_NAME="main"
-PARTICIPANT_ASSUMED_ROLE_ARN="$(aws sts get-caller-identity --query 'Arn' --output text)"
+
 
 STACK_ID=$(aws cloudformation create-stack \
     --stack-name "$STACK_NAME" \

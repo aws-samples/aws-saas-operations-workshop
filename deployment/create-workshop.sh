@@ -15,9 +15,7 @@ done
 
 ## Variables
 REGION=$(aws ec2 describe-availability-zones --output text --query 'AvailabilityZones[0].[RegionName]')
-REPO_DESCRIPTION="SaaS Operations architecture repository"
 REPO_PATH="/home/ec2-user/environment/${REPO_NAME}"
-CC_REPO_URL="codecommit::${REGION}://${REPO_NAME}"
 
 ## Init
 rm -vf ~/.aws/credentials
@@ -27,8 +25,8 @@ cd ~/environment/$REPO_NAME/deployment/cloud9 && ./resize-cloud9-ebs-vol.sh
 ## Create SaaS application
 echo "Creating workshop"
 install_dependencies
-create_codecommit
 create_tenant_pipeline 
+upload_source_code_to_s3
 create_bootstrap
 execute_pipeline
 deploy_dashboards &

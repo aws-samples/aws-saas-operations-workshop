@@ -15,30 +15,25 @@ install_dependencies() {
     echo "Installing artillery"
     retry npm install -g artillery
     echo "Installed artillery"
+    echo "Installing zip and unzip"
+    retry sudo yum install zip unzip
+    echo "Installed zip and unzip"
     echo "Dependencies installed"
 }
 
-# Create CodeCommit repository
-create_codecommit() {
-    echo "Creating CodeCommit repository"
-    cd ${REPO_PATH}
-    git init -b main
-    git config --global --add safe.directory ${REPO_PATH}
-    git add -A
-    git commit -m "Base code"
-    if ! aws codecommit get-repository --repository-name ${REPO_NAME}
-    then
-        echo "${REPO_NAME} codecommit repo is not present, will create one now"
-        CREATE_REPO=$(aws codecommit create-repository --repository-name ${REPO_NAME} --repository-description "${REPO_DESCRIPTION}")
-        echo "${CREATE_REPO}"
-    fi
-    if ! git remote add cc "${CC_REPO_URL}"
-    then
-        echo "Setting url to remote cc"
-        git remote set-url cc "${CC_REPO_URL}"
-    fi
-    git push cc "$(git branch --show-current)":main
-    echo "CodeCommit repository created"
+# pack and push source code to S3 source code bucket
+upload_source_code_to_s3() {
+    echo "Uploading source code to S3"
+    SOURCE_CODE_BUCKET_NAME=$(aws cloudformation describe-stacks \
+        --stack-name saas-operations-pipeline \
+        --query "Stacks[0].Outputs[?OutputKey=='SourceCodeBucketName'].OutputValue" \
+        --output text)
+    echo "Source code bucket name: ${SOURCE_CODE_BUCKET_NAME}"
+    cd ${REPO_PATH}/
+    zip -r source.zip . -x ".git/*" -x "**/node_modules/*" -x "**/cdk.out/*" -x "**/.aws-sam/*"
+    aws s3 cp source.zip s3://${SOURCE_CODE_BUCKET_NAME}/source.zip
+    rm source.zip
+    echo "Source code uploaded to S3"
 }
 
 # Deploy tenant pipeline

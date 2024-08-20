@@ -60,7 +60,16 @@ fi
 cd  ~/environment/aws-saas-operations-workshop/App/server
 git add -A . 
 git commit -m "Lab2 changes"
-git push cc "$(git branch --show-current)":main --force
+cd ~/environment/aws-saas-operations-workshop
+zip -r source.zip . -x ".git/*" -x "**/node_modules/*" -x "**/cdk.out/*" -x "**/.aws-sam/*"
+SOURCE_CODE_BUCKET_NAME=$(aws cloudformation describe-stacks \
+  --stack-name saas-operations-pipeline \
+  --query "Stacks[0].Outputs[?OutputKey=='SourceCodeBucketName'].OutputValue" \
+  --output text)
+echo "Source code S3 bucket name: ${SOURCE_CODE_BUCKET_NAME}"
+aws s3 cp source.zip s3://${SOURCE_CODE_BUCKET_NAME}/source.zip
+rm source.zip
+aws codepipeline start-pipeline-execution --name saas-operations-pipeline
 
 # deploy operations lambda layer for shared services
 cd  ~/environment/aws-saas-operations-workshop/App/server

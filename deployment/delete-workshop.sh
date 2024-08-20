@@ -16,7 +16,6 @@ done
 TRAILS=( "saas-ops-ddb-access-trails" "saas-ops-management-trails" )
 STACKS_1=()
 STACKS_2=( "saas-operations-controlplane" "saas-operations-pipeline" "saasOpsWorkshop-saasOperationsDashboard" "${WORKSHOP_NAME}-C9" "saasOpsWorkshop-perTenantMetrics" )
-CODECOMMIT_REPOS=( "saas-operations-workshop" )
 
 get_c9_id
 aws ec2 create-tags --resources $C9_ID --tags "Key=Workshop,Value=${WORKSHOP_NAME}Old"
@@ -33,9 +32,7 @@ for STACK in "${STACKS_2[@]}"; do
     delete_stack "${STACK}" &
 done
 wait_for_background_jobs
-for REPO in "${CODECOMMIT_REPOS[@]}"; do
-    delete_codecommit_repo "${REPO}" &
-done
+
 delete_log_groups &
 delete_user_pools &
 delete_api_keys &
