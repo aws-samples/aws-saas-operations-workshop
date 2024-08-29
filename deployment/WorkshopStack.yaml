@@ -234,7 +234,7 @@ Resources:
           PROJECT_NAME:
             Ref: InstallWorkshopStack
       Handler: index.lambda_handler
-      Runtime: python3.11
+      Runtime: python3.12
       Timeout: 900
       ReservedConcurrentExecutions: 1
     DependsOn:
