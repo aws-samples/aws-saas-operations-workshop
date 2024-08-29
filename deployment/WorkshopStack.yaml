@@ -187,6 +187,7 @@ Resources:
         ZipFile: |-
           import boto3
           import os
+          import cfnresponse
 
           def lambda_handler(event, context):
               print(event)
@@ -225,6 +226,7 @@ Resources:
                   },
               ]
               cb_cli.start_build(projectName=project_name, environmentVariablesOverride=cb_env_vars)
+              return cfnresponse.send(event, context, 'SUCCESS', {}, "trigger-codebuild-function")
       Role:
         Fn::GetAtt:
           - CodeBuildTriggerLambdaRole
