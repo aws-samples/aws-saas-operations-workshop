@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT-0
 
 ## Import workshop configuration
-# This contains the create_workshop() and delete_workshop() functions
+# This contains the create_workshop( ignoreAuditingLab ) and delete_workshop() functions
 FUNCTIONS=( _workshop-conf.sh _manage-workshop-stack.sh _workshop-shared-functions.sh )
 for FUNCTION in "${FUNCTIONS[@]}"; do
     if [ -f $FUNCTION ]; then
@@ -17,7 +17,7 @@ done
 manage_workshop_stack() {
     STACK_OPERATION=$(echo "$1" | tr '[:upper:]' '[:lower:]')
     if [[ "$STACK_OPERATION" == "create" || "$STACK_OPERATION" == "update" ]]; then
-        create_workshop
+        create_workshop "$IGNORE_AUDITING_LAB"
     elif [ "$STACK_OPERATION" == "delete" ]; then
         delete_workshop
     else

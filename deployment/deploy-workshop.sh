@@ -10,6 +10,29 @@ STACK_NAME="SaaSOps"${1:-""}
 REPO_URL="https://github.com/aws-samples/aws-saas-operations-workshop.git"
 REPO_BRANCH_NAME="main"
 PARTICIPANT_ASSUMED_ROLE_ARN="$(aws sts get-caller-identity --query 'Arn' --output text)"
+IGNORE_AUDITING_LAB="False"
+
+while getopts "xh" flag; do
+    case $flag in
+        x) # Handle the -x flag
+            echo "-x flag specified"
+            echo "Ignoreing Auditing tenant isolation lab resources"
+            IGNORE_AUDITING_LAB="True"
+            exit
+        ;;
+        h) # Handle the -h flag
+            echo "Initiates the workshop deployment process"
+            echo "Optional flags:"
+            echo "-h (help) Prints this help message"
+            echo "-x (exclude) Skips deploying resources for Auditing tenant isolation lab."
+            exit
+        ;;
+        \?) # Handle invalid flag
+            echo "Unknown flag. Use -h to see usages"
+            exit
+        ;;
+    esac
+done
 
 saasops_deploy_wait() {
     START_TIME=$(date '+%s')
@@ -39,6 +62,7 @@ STACK_ID=$(aws cloudformation create-stack \
         ParameterKey=RepoUrl,ParameterValue="$REPO_URL" \
         ParameterKey=RepoBranchName,ParameterValue="$REPO_BRANCH_NAME" \
         ParameterKey=ParticipantAssumedRoleArn,ParameterValue="$PARTICIPANT_ASSUMED_ROLE_ARN" \
+        ParameterKey=IgnoreAuditingLab,ParameterValue="$IGNORE_AUDITING_LAB" \
     --query StackId --output text)
 
 echo "STACK_ID: $STACK_ID"

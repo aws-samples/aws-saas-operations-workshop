@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: MIT-0
 
 REPO_URL=$1
+IGNORE_AUDITING_LAB=$2
 
 FUNCTIONS=( _workshop-conf.sh _workshop-shared-functions.sh _create-workshop.sh )
 for FUNCTION in "${FUNCTIONS[@]}"; do
@@ -27,7 +28,7 @@ echo "Creating workshop"
 install_dependencies
 create_tenant_pipeline 
 upload_source_code_to_s3
-create_bootstrap
+create_bootstrap $IGNORE_AUDITING_LAB
 execute_pipeline
 deploy_dashboards &
 deploy_admin_ui &
