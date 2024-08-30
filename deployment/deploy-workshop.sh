@@ -6,7 +6,7 @@ echo "Deploying workshop resources..."
 
 alias saasops_logs="aws logs tail --follow /aws/codebuild/install-workshop-stack-codebuild"
 
-STACK_NAME="SaaSOps"${1:-""}
+STACK_NAME="SaaSOps"
 REPO_URL="https://github.com/aws-samples/aws-saas-operations-workshop.git"
 REPO_BRANCH_NAME="main"
 PARTICIPANT_ASSUMED_ROLE_ARN="$(aws sts get-caller-identity --query 'Arn' --output text)"
@@ -18,7 +18,6 @@ while getopts "xh" flag; do
             echo "-x flag specified"
             echo "Ignoreing Auditing tenant isolation lab resources"
             IGNORE_AUDITING_LAB="True"
-            exit
         ;;
         h) # Handle the -h flag
             echo "Initiates the workshop deployment process"
