@@ -8,7 +8,7 @@ alias saasops_logs="aws logs tail --follow /aws/codebuild/install-workshop-stack
 
 STACK_NAME="SaaSOps"
 REPO_URL="https://github.com/aws-samples/aws-saas-operations-workshop.git"
-REPO_BRANCH_NAME="main"
+REPO_BRANCH_NAME="ignore-auditing"
 PARTICIPANT_ASSUMED_ROLE_ARN="$(aws sts get-caller-identity --query 'Arn' --output text)"
 IGNORE_AUDITING_LAB="False"
 
