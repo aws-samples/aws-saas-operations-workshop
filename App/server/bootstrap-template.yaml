@@ -18,6 +18,12 @@ Parameters:
     Type: String
     Default: "False"
     Description: "Pass it as True if you want to enable the canary release for Lambda"
+  IgnoreAuditingLab:
+    Type: String
+    Default: "False"
+    Description: "Does not deploy auditing tenant-isolation lab when set to True. Default is to deploy auditing tenant-isolation lab."
+Conditions:
+  DeployAuditingLab: !Not [ !Equals [ !Ref IgnoreAuditingLab, "True"] ]
 Resources:
   DynamoDBTables:
     Type: AWS::Serverless::Application
@@ -26,6 +32,7 @@ Resources:
 
   CloudTrailAuditing:
     Type: AWS::Serverless::Application
+    Condition: DeployAuditingLab
     Properties:
       Location: nested_templates/bootstrap/cloudtrails.yaml
 

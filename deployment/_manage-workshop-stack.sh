@@ -2,6 +2,7 @@
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: MIT-0
 
+# parameters: (1) ignoreAuditingWorkshop (True/False: string)
 create_workshop() {
     bootstrap_cdk
     cd cloud9
@@ -17,7 +18,7 @@ create_workshop() {
 
     replace_instance_profile $BUILD_C9_INSTANCE_PROFILE_PARAMETER_NAME
     run_ssm_command "cd ~/environment ; git clone --branch $REPO_BRANCH_NAME $REPO_URL || echo 'Repo already exists.'"
-    run_ssm_command "cd ~/environment/$REPO_NAME/deployment && ./create-workshop.sh $REPO_URL | tee .ws-create.log"
+    run_ssm_command "cd ~/environment/$REPO_NAME/deployment && ./create-workshop.sh $REPO_URL "$1" | tee .ws-create.log"
 
     replace_instance_profile $PARTICIPANT_C9_INSTANCE_PROFILE_PARAMETER_NAME
 }

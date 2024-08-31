@@ -48,6 +48,7 @@ create_tenant_pipeline() {
 }
 
 # Create application
+# parameters: (1) ignoreAuditingLab (True/False: stirng)
 create_bootstrap() {
     echo "Deploying application"
     cd ${REPO_PATH}/App/server
@@ -70,8 +71,8 @@ create_bootstrap() {
         # Update samconfig-bootstrap.toml with new bucket name
         ex -sc '%s/s3_bucket = .*/s3_bucket = \"'"${SAM_S3_BUCKET}"'\"/|x' samconfig-bootstrap.toml
     fi
-    sam build -t bootstrap-template.yaml --use-container --region="$REGION"
-    sam deploy --config-file samconfig-bootstrap.toml --region="$REGION" --no-confirm-changeset
+    sam build -t bootstrap-template.yaml --use-container --region="$REGION" --parameter-overrides ParameterKey=IgnoreAuditingLab,ParameterValue="$1"
+    sam deploy --config-file samconfig-bootstrap.toml --region="$REGION" --no-confirm-changeset --parameter-overrides IgnoreAuditingLab="$1"
     if [[ $? -ne 0 ]]
     then
         echo "Error! bootstrap-template.yaml deploy failed"
