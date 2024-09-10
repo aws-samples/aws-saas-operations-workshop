@@ -6,14 +6,14 @@
 install_dependencies() {
     echo "Installing dependencies"
     echo "Enabling yarn"
-    corepack enable || retry npm install --global yarn
+    corepack enable || retry sudo npm install --global yarn
     echo "yarn enabled"
     echo "Installing isolation test packages"
     cd ${REPO_PATH}/App/isolation-test/
     retry npm install
     echo "Isolation test packages installed"
     echo "Installing artillery"
-    retry npm install -g artillery
+    retry sudo npm install -g artillery
     echo "Installed artillery"
     echo "Installing zip and unzip"
     retry sudo yum install zip unzip
