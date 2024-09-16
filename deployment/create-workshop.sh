@@ -5,6 +5,10 @@
 REPO_URL=$1
 IGNORE_AUDITING_LAB=$2
 
+if [ -z $IGNORE_AUDITING_LAB ]; then
+    IGNORE_AUDITING_LAB=false
+fi
+
 FUNCTIONS=( _workshop-conf.sh _workshop-shared-functions.sh _create-workshop.sh )
 for FUNCTION in "${FUNCTIONS[@]}"; do
     if [ -f $FUNCTION ]; then

@@ -51,7 +51,7 @@ saasops_deploy_wait() {
     fi
 }
 
-
+echo "IGNORE_AUDITING_LAB="$IGNORE_AUDITING_LAB
 
 STACK_ID=$(aws cloudformation create-stack \
     --stack-name "$STACK_NAME" \
