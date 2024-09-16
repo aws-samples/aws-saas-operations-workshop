@@ -28,6 +28,7 @@ echo "Creating workshop"
 install_dependencies
 create_tenant_pipeline 
 upload_source_code_to_s3
+echo "IGNORE_AUDITING_LAB=$IGNORE_AUDITING_LAB"
 create_bootstrap $IGNORE_AUDITING_LAB
 execute_pipeline
 deploy_dashboards &

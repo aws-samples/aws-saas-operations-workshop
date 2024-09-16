@@ -71,6 +71,7 @@ create_bootstrap() {
         # Update samconfig-bootstrap.toml with new bucket name
         ex -sc '%s/s3_bucket = .*/s3_bucket = \"'"${SAM_S3_BUCKET}"'\"/|x' samconfig-bootstrap.toml
     fi
+    echo "Create bootstrap : IGNORE_AUDITING "$1
     sam build -t bootstrap-template.yaml --use-container --region="$REGION" --parameter-overrides ParameterKey=IgnoreAuditingLab,ParameterValue="$1"
     sam deploy --config-file samconfig-bootstrap.toml --region="$REGION" --no-confirm-changeset --parameter-overrides IgnoreAuditingLab="$1"
     if [[ $? -ne 0 ]]
