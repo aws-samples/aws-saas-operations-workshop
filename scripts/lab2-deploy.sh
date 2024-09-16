@@ -1,5 +1,7 @@
 #!/bin/bash
 
+python3 -m pip install pylint
+
 # default variables
 solve=false
 
