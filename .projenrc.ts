@@ -31,7 +31,8 @@ const project = new awscdk.AwsCdkTypeScriptApp({
 });
 project.tasks.tryFind('deploy')?.reset('cdk deploy --require-approval=never SaaSOpsV2-controlplane');
 project.tasks.tryFind('destroy')?.reset('cdk destroy --force SaaSOpsV2-controlplane');
-project.addTask('zip', {
-  exec: "/usr/bin/zip -r workshop.zip . -x '.git/*' 'cdk.out/*' 'coverage/*' 'node_modules/*'"
+const zip = project.addTask('zip', {
+  exec: "rm workshop.zip"
 })
+zip.exec("/usr/bin/zip -r workshop.zip . -x '.git/*' 'cdk.out/*' 'coverage/*' 'node_modules/*' 'own-account/*'")
 project.synth();

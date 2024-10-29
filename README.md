@@ -1,13 +1,11 @@
 # README
 
-To deploy workshop (SaaS control plane + basic cell):
+To deploy workshop:
 
-`./deploy_workshop.sh`
+`cd own-account && ./deploy.sh && cd ..`
 
-To load the interface commands:
+IDE details are in the output of the `SaaSOpsV2-Vscode` CloudFormation stack.
 
-`source ./test_interface.sh`
-
-To delete the entire workshop:
+To delete the workshop:
 
 `./delete_workshop.sh`
