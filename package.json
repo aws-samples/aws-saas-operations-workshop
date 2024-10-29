@@ -21,6 +21,7 @@
     "test:watch": "npx projen test:watch",
     "upgrade": "npx projen upgrade",
     "watch": "npx projen watch",
+    "zip": "npx projen zip",
     "projen": "npx projen"
   },
   "devDependencies": {

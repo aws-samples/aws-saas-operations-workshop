@@ -236,6 +236,14 @@
           "exec": "cdk watch"
         }
       ]
+    },
+    "zip": {
+      "name": "zip",
+      "steps": [
+        {
+          "exec": "/usr/bin/zip -r workshop.zip . -x '.git/*' 'cdk.out/*' 'coverage/*' 'node_modules/*'"
+        }
+      ]
     }
   },
   "env": {
