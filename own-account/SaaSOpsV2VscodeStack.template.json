@@ -1,0 +1,1004 @@
+{
+ "Description": "Creates the lab environment for the workshop",
+ "Resources": {
+  "IdeIdeVPC9D98B345": {
+   "Type": "AWS::EC2::VPC",
+   "Properties": {
+    "CidrBlock": "192.168.0.0/16",
+    "EnableDnsHostnames": true,
+    "EnableDnsSupport": true,
+    "InstanceTenancy": "default",
+    "Tags": [
+     {
+      "Key": "Name",
+      "Value": "SaaSOpsV2VscodeStack/Ide/IdeVPC"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "SaaSOpsV2VscodeStack/Ide/IdeVPC/Resource"
+   }
+  },
+  "IdeIdeVPCPublicSubnet1Subnet1267AD8E": {
+   "Type": "AWS::EC2::Subnet",
+   "Properties": {
+    "AvailabilityZone": {
+     "Fn::Select": [
+      0,
+      {
+       "Fn::GetAZs": ""
+      }
+     ]
+    },
+    "CidrBlock": "192.168.0.0/24",
+    "MapPublicIpOnLaunch": true,
+    "Tags": [
+     {
+      "Key": "aws-cdk:subnet-name",
+      "Value": "Public"
+     },
+     {
+      "Key": "aws-cdk:subnet-type",
+      "Value": "Public"
+     },
+     {
+      "Key": "Name",
+      "Value": "SaaSOpsV2VscodeStack/Ide/IdeVPC/PublicSubnet1"
+     }
+    ],
+    "VpcId": {
+     "Ref": "IdeIdeVPC9D98B345"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "SaaSOpsV2VscodeStack/Ide/IdeVPC/PublicSubnet1/Subnet"
+   }
+  },
+  "IdeIdeVPCPublicSubnet1RouteTable6556DACF": {
+   "Type": "AWS::EC2::RouteTable",
+   "Properties": {
+    "Tags": [
+     {
+      "Key": "Name",
+      "Value": "SaaSOpsV2VscodeStack/Ide/IdeVPC/PublicSubnet1"
+     }
+    ],
+    "VpcId": {
+     "Ref": "IdeIdeVPC9D98B345"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "SaaSOpsV2VscodeStack/Ide/IdeVPC/PublicSubnet1/RouteTable"
+   }
+  },
+  "IdeIdeVPCPublicSubnet1RouteTableAssociation757CEC08": {
+   "Type": "AWS::EC2::SubnetRouteTableAssociation",
+   "Properties": {
+    "RouteTableId": {
+     "Ref": "IdeIdeVPCPublicSubnet1RouteTable6556DACF"
+    },
+    "SubnetId": {
+     "Ref": "IdeIdeVPCPublicSubnet1Subnet1267AD8E"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "SaaSOpsV2VscodeStack/Ide/IdeVPC/PublicSubnet1/RouteTableAssociation"
+   }
+  },
+  "IdeIdeVPCPublicSubnet1DefaultRoute02BF5DBE": {
+   "Type": "AWS::EC2::Route",
+   "Properties": {
+    "DestinationCidrBlock": "0.0.0.0/0",
+    "GatewayId": {
+     "Ref": "IdeIdeVPCIGW54D8C3DD"
+    },
+    "RouteTableId": {
+     "Ref": "IdeIdeVPCPublicSubnet1RouteTable6556DACF"
+    }
+   },
+   "DependsOn": [
+    "IdeIdeVPCVPCGW931A13DA"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "SaaSOpsV2VscodeStack/Ide/IdeVPC/PublicSubnet1/DefaultRoute"
+   }
+  },
+  "IdeIdeVPCIGW54D8C3DD": {
+   "Type": "AWS::EC2::InternetGateway",
+   "Properties": {
+    "Tags": [
+     {
+      "Key": "Name",
+      "Value": "SaaSOpsV2VscodeStack/Ide/IdeVPC"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "SaaSOpsV2VscodeStack/Ide/IdeVPC/IGW"
+   }
+  },
+  "IdeIdeVPCVPCGW931A13DA": {
+   "Type": "AWS::EC2::VPCGatewayAttachment",
+   "Properties": {
+    "InternetGatewayId": {
+     "Ref": "IdeIdeVPCIGW54D8C3DD"
+    },
+    "VpcId": {
+     "Ref": "IdeIdeVPC9D98B345"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "SaaSOpsV2VscodeStack/Ide/IdeVPC/VPCGW"
+   }
+  },
+  "IdeIdePrefixListFunctionServiceRole604983EB": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "SaaSOpsV2VscodeStack/Ide/IdePrefixListFunction/ServiceRole/Resource"
+   }
+  },
+  "IdeIdePrefixListFunctionServiceRoleDefaultPolicy6569D412": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": "ec2:DescribeManagedPrefixLists",
+       "Effect": "Allow",
+       "Resource": "*"
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "IdeIdePrefixListFunctionServiceRoleDefaultPolicy6569D412",
+    "Roles": [
+     {
+      "Ref": "IdeIdePrefixListFunctionServiceRole604983EB"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "SaaSOpsV2VscodeStack/Ide/IdePrefixListFunction/ServiceRole/DefaultPolicy/Resource"
+   }
+  },
+  "IdeIdePrefixListFunctionA0A35822": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "ZipFile": "from __future__ import print_function\nimport boto3\nimport traceback\nimport cfnresponse\n\ndef lambda_handler(event, context):\n    print('Event: {}'.format(event))\n    print('context: {}'.format(context))\n    responseData = {}\n\n    status = cfnresponse.SUCCESS\n\n    if event['RequestType'] == 'Delete':\n        responseData = {'Success': 'Custom Resource removed'}\n        cfnresponse.send(event, context, status, responseData, 'CustomResourcePhysicalID')\n    else:\n        try:\n            # Open AWS clients\n            ec2 = boto3.client('ec2')\n\n            res = ec2.describe_managed_prefix_lists(\n               Filters=[{\n                  'Name': 'prefix-list-name',\n                  'Values': ['com.amazonaws.global.cloudfront.origin-facing']\n               }]\n            )\n\n            responseData = {'PrefixListId': str(res['PrefixLists'][0]['PrefixListId'])}\n        except Exception as e:\n            status = cfnresponse.FAILED\n            tb_err = traceback.format_exc()\n            print(tb_err)\n            responseData = {'Error': tb_err}\n        finally:\n            cfnresponse.send(event, context, status, responseData, 'CustomResourcePhysicalID')"
+    },
+    "Handler": "index.lambda_handler",
+    "Role": {
+     "Fn::GetAtt": [
+      "IdeIdePrefixListFunctionServiceRole604983EB",
+      "Arn"
+     ]
+    },
+    "Runtime": "python3.12",
+    "Timeout": 180
+   },
+   "DependsOn": [
+    "IdeIdePrefixListFunctionServiceRoleDefaultPolicy6569D412",
+    "IdeIdePrefixListFunctionServiceRole604983EB"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "SaaSOpsV2VscodeStack/Ide/IdePrefixListFunction/Resource"
+   }
+  },
+  "IdeIdePrefixListResource36A54207": {
+   "Type": "AWS::CloudFormation::CustomResource",
+   "Properties": {
+    "ServiceToken": {
+     "Fn::GetAtt": [
+      "IdeIdePrefixListFunctionA0A35822",
+      "Arn"
+     ]
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "SaaSOpsV2VscodeStack/Ide/IdePrefixListResource/Default"
+   }
+  },
+  "IdeIdeRoleD654ADD4": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "ec2.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/AmazonSSMManagedInstanceCore"
+       ]
+      ]
+     },
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/ReadOnlyAccess"
+       ]
+      ]
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "SaaSOpsV2VscodeStack/Ide/IdeRole/Resource"
+   }
+  },
+  "IdeIdeRoleDefaultPolicyB84B17D1": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "logs:CreateLogStream",
+        "logs:PutLogEvents"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::GetAtt": [
+         "IdeIdeLogGroupB4F3B2BD",
+         "Arn"
+        ]
+       }
+      },
+      {
+       "Action": [
+        "secretsmanager:DescribeSecret",
+        "secretsmanager:GetSecretValue"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Ref": "IdeIdePasswordSecretF3482811"
+       }
+      },
+      {
+       "Action": [
+        "cloudformation:*",
+        "ecr:*",
+        "events:PutEvents",
+        "iam:*",
+        "logs:CreateLogGroup",
+        "s3:*",
+        "ssm:*"
+       ],
+       "Effect": "Allow",
+       "Resource": "*"
+      },
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Resource": "arn:aws:iam::*:role/cdk-*"
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "IdeIdeRoleDefaultPolicyB84B17D1",
+    "Roles": [
+     {
+      "Ref": "IdeIdeRoleD654ADD4"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "SaaSOpsV2VscodeStack/Ide/IdeRole/DefaultPolicy/Resource"
+   }
+  },
+  "IdeIdeSecurityGroup5C503C8A": {
+   "Type": "AWS::EC2::SecurityGroup",
+   "Properties": {
+    "GroupDescription": "IDE security group",
+    "SecurityGroupEgress": [
+     {
+      "CidrIp": "0.0.0.0/0",
+      "Description": "Allow all outbound traffic by default",
+      "IpProtocol": "-1"
+     }
+    ],
+    "VpcId": {
+     "Ref": "IdeIdeVPC9D98B345"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "SaaSOpsV2VscodeStack/Ide/IdeSecurityGroup/Resource"
+   }
+  },
+  "IdeIdeSecurityGroupfromIndirectPeer802BA7B90C": {
+   "Type": "AWS::EC2::SecurityGroupIngress",
+   "Properties": {
+    "Description": "HTTP from CloudFront only",
+    "FromPort": 80,
+    "GroupId": {
+     "Fn::GetAtt": [
+      "IdeIdeSecurityGroup5C503C8A",
+      "GroupId"
+     ]
+    },
+    "IpProtocol": "tcp",
+    "SourcePrefixListId": {
+     "Fn::GetAtt": [
+      "IdeIdePrefixListResource36A54207",
+      "PrefixListId"
+     ]
+    },
+    "ToPort": 80
+   },
+   "Metadata": {
+    "aws:cdk:path": "SaaSOpsV2VscodeStack/Ide/IdeSecurityGroup/from {IndirectPeer}:80"
+   }
+  },
+  "IdeInstanceProfile5175B2C4": {
+   "Type": "AWS::IAM::InstanceProfile",
+   "Properties": {
+    "Roles": [
+     {
+      "Ref": "IdeIdeRoleD654ADD4"
+     }
+    ]
+   },
+   "DependsOn": [
+    "IdeIdeVPCIGW54D8C3DD",
+    "IdeIdeVPCPublicSubnet1DefaultRoute02BF5DBE",
+    "IdeIdeVPCPublicSubnet1RouteTable6556DACF",
+    "IdeIdeVPCPublicSubnet1RouteTableAssociation757CEC08",
+    "IdeIdeVPCPublicSubnet1Subnet1267AD8E",
+    "IdeIdeVPC9D98B345",
+    "IdeIdeVPCVPCGW931A13DA"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "SaaSOpsV2VscodeStack/Ide/Ide/InstanceProfile"
+   }
+  },
+  "IdeAF12312E641a0cee2d30d2eb": {
+   "Type": "AWS::EC2::Instance",
+   "Properties": {
+    "AvailabilityZone": {
+     "Fn::Select": [
+      0,
+      {
+       "Fn::GetAZs": ""
+      }
+     ]
+    },
+    "BlockDeviceMappings": [
+     {
+      "DeviceName": "/dev/xvda",
+      "Ebs": {
+       "DeleteOnTermination": true,
+       "Encrypted": true,
+       "VolumeSize": 30,
+       "VolumeType": "gp3"
+      }
+     }
+    ],
+    "IamInstanceProfile": {
+     "Ref": "IdeInstanceProfile5175B2C4"
+    },
+    "ImageId": {
+     "Ref": "SsmParameterValueawsserviceamiamazonlinuxlatestal2023amikernel61x8664C96584B6F00A464EAD1953AFF4B05118Parameter"
+    },
+    "InstanceType": "t3.medium",
+    "NetworkInterfaces": [
+     {
+      "AssociatePublicIpAddress": true,
+      "DeviceIndex": "0",
+      "GroupSet": [
+       {
+        "Fn::GetAtt": [
+         "IdeIdeSecurityGroup5C503C8A",
+         "GroupId"
+        ]
+       }
+      ],
+      "SubnetId": {
+       "Ref": "IdeIdeVPCPublicSubnet1Subnet1267AD8E"
+      }
+     }
+    ],
+    "Tags": [
+     {
+      "Key": "Name",
+      "Value": "SaaSOpsV2VscodeStack/Ide/Ide"
+     }
+    ],
+    "UserData": {
+     "Fn::Base64": "#!/bin/bash"
+    }
+   },
+   "DependsOn": [
+    "IdeIdeRoleDefaultPolicyB84B17D1",
+    "IdeIdeRoleD654ADD4",
+    "IdeIdeVPCIGW54D8C3DD",
+    "IdeIdeVPCPublicSubnet1DefaultRoute02BF5DBE",
+    "IdeIdeVPCPublicSubnet1RouteTable6556DACF",
+    "IdeIdeVPCPublicSubnet1RouteTableAssociation757CEC08",
+    "IdeIdeVPCPublicSubnet1Subnet1267AD8E",
+    "IdeIdeVPC9D98B345",
+    "IdeIdeVPCVPCGW931A13DA"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "SaaSOpsV2VscodeStack/Ide/Ide/Resource"
+   }
+  },
+  "IdeIdeBootstrapFunctionServiceRole3EF03D7B": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "SaaSOpsV2VscodeStack/Ide/IdeBootstrapFunction/ServiceRole/Resource"
+   }
+  },
+  "IdeIdeBootstrapFunctionServiceRoleDefaultPolicyAE5117F0": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": "iam:PassRole",
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::GetAtt": [
+         "IdeIdeRoleD654ADD4",
+         "Arn"
+        ]
+       }
+      },
+      {
+       "Action": [
+        "ec2:DescribeInstances",
+        "iam:ListInstanceProfiles",
+        "ssm:DescribeInstanceInformation",
+        "ssm:GetCommandInvocation",
+        "ssm:SendCommand"
+       ],
+       "Effect": "Allow",
+       "Resource": "*"
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "IdeIdeBootstrapFunctionServiceRoleDefaultPolicyAE5117F0",
+    "Roles": [
+     {
+      "Ref": "IdeIdeBootstrapFunctionServiceRole3EF03D7B"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "SaaSOpsV2VscodeStack/Ide/IdeBootstrapFunction/ServiceRole/DefaultPolicy/Resource"
+   }
+  },
+  "IdeIdeBootstrapFunction478BE411": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "ZipFile": "from __future__ import print_function\nimport boto3\nimport json\nimport os\nimport time\nimport traceback\nimport cfnresponse\nfrom botocore.exceptions import WaiterError\n\ndef lambda_handler(event, context):\n    print('Event: {}'.format(event))\n    print('context: {}'.format(context))\n    responseData = {}\n\n    status = cfnresponse.SUCCESS\n\n    if event['RequestType'] == 'Delete':\n        responseData = {'Success': 'Custom Resource removed'}\n        cfnresponse.send(event, context, status, responseData, 'CustomResourcePhysicalID')\n    else:\n        try:\n            # Open AWS clients\n            ec2 = boto3.client('ec2')\n            ssm = boto3.client('ssm')\n\n            instance_id = event['ResourceProperties']['InstanceId']\n\n            print('Waiting for the instance to be ready...')\n            # Wait for Instance to become ready\n            instance_state = 'unknown'\n            print('Instance is currently in state'.format(instance_state))\n            while instance_state != 'running':\n                time.sleep(5)\n                di = ec2.describe_instances(InstanceIds=[instance_id])\n                instance_state = di['Reservations'][0]['Instances'][0]['State']['Name']\n                print('Waiting for instance in state: {}'.format(instance_state))\n\n            print('Instance is ready')\n\n            print('Waiting for instance to come online in SSM...')\n            for i in range(1, 60):\n              response = ssm.describe_instance_information(Filters=[{'Key': 'InstanceIds', 'Values': [instance_id]}])\n              if len(response[\"InstanceInformationList\"]) == 0:\n                print('No instances in SSM')\n              elif len(response[\"InstanceInformationList\"]) > 0 and \\\n                    response[\"InstanceInformationList\"][0][\"PingStatus\"] == \"Online\" and \\\n                    response[\"InstanceInformationList\"][0][\"InstanceId\"] == instance_id:\n                print('Instance is online in SSM')\n                break\n              time.sleep(10)\n\n            ssm_document = event['ResourceProperties']['SsmDocument']\n\n            ssm.send_command(\n                InstanceIds=[instance_id],\n                DocumentName=ssm_document,\n                CloudWatchOutputConfig={\n                    'CloudWatchLogGroupName': event['ResourceProperties']['LogGroupName'],\n                    'CloudWatchOutputEnabled': True\n                })\n\n            responseData = {'Success': 'Started bootstrapping for instance: '+instance_id}\n        except Exception as e:\n            status = cfnresponse.FAILED\n            tb_err = traceback.format_exc()\n            print(tb_err)\n            responseData = {'Error': tb_err}\n        finally:\n            cfnresponse.send(event, context, status, responseData, 'CustomResourcePhysicalID')"
+    },
+    "Handler": "index.lambda_handler",
+    "Role": {
+     "Fn::GetAtt": [
+      "IdeIdeBootstrapFunctionServiceRole3EF03D7B",
+      "Arn"
+     ]
+    },
+    "Runtime": "python3.12",
+    "Timeout": 900
+   },
+   "DependsOn": [
+    "IdeIdeBootstrapFunctionServiceRoleDefaultPolicyAE5117F0",
+    "IdeIdeBootstrapFunctionServiceRole3EF03D7B"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "SaaSOpsV2VscodeStack/Ide/IdeBootstrapFunction/Resource"
+   }
+  },
+  "IdeIdeLogGroupB4F3B2BD": {
+   "Type": "AWS::Logs::LogGroup",
+   "Properties": {
+    "RetentionInDays": 7
+   },
+   "UpdateReplacePolicy": "Retain",
+   "DeletionPolicy": "Retain",
+   "Metadata": {
+    "aws:cdk:path": "SaaSOpsV2VscodeStack/Ide/IdeLogGroup/Resource"
+   }
+  },
+  "IdeIdePasswordSecretF3482811": {
+   "Type": "AWS::SecretsManager::Secret",
+   "Properties": {
+    "GenerateSecretString": {
+     "ExcludeCharacters": "\"@/\\",
+     "ExcludePunctuation": true,
+     "GenerateStringKey": "password",
+     "IncludeSpace": false,
+     "PasswordLength": 32,
+     "SecretStringTemplate": "{\"password\":\"\"}"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "SaaSOpsV2VscodeStack/Ide/IdePasswordSecret/Resource"
+   }
+  },
+  "IdeIdeDistribution02808462": {
+   "Type": "AWS::CloudFront::Distribution",
+   "Properties": {
+    "DistributionConfig": {
+     "DefaultCacheBehavior": {
+      "AllowedMethods": [
+       "GET",
+       "HEAD",
+       "OPTIONS",
+       "PUT",
+       "PATCH",
+       "POST",
+       "DELETE"
+      ],
+      "CachePolicyId": "4135ea2d-6df8-44a3-9df3-4b5a84be39ad",
+      "Compress": true,
+      "OriginRequestPolicyId": "216adef6-5c7f-47e4-b989-5492eafa07d3",
+      "TargetOriginId": "SaaSOpsV2VscodeStackIdeIdeDistributionOrigin1B30CF0EE",
+      "ViewerProtocolPolicy": "allow-all"
+     },
+     "Enabled": true,
+     "HttpVersion": "http2",
+     "IPV6Enabled": true,
+     "Origins": [
+      {
+       "CustomOriginConfig": {
+        "HTTPPort": 80,
+        "OriginProtocolPolicy": "http-only",
+        "OriginSSLProtocols": [
+         "TLSv1.2"
+        ]
+       },
+       "DomainName": {
+        "Fn::GetAtt": [
+         "IdeAF12312E641a0cee2d30d2eb",
+         "PublicDnsName"
+        ]
+       },
+       "Id": "SaaSOpsV2VscodeStackIdeIdeDistributionOrigin1B30CF0EE"
+      }
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "SaaSOpsV2VscodeStack/Ide/IdeDistribution/Resource"
+   }
+  },
+  "IdeIdeBootstrapWaitConditionHandleEA0A1D15": {
+   "Type": "AWS::CloudFormation::WaitConditionHandle",
+   "Metadata": {
+    "aws:cdk:path": "SaaSOpsV2VscodeStack/Ide/IdeBootstrapWaitConditionHandle"
+   }
+  },
+  "IdeIdeBootstrapWaitCondition94599134": {
+   "Type": "AWS::CloudFormation::WaitCondition",
+   "Properties": {
+    "Count": 1,
+    "Handle": {
+     "Ref": "IdeIdeBootstrapWaitConditionHandleEA0A1D15"
+    },
+    "Timeout": "900"
+   },
+   "DependsOn": [
+    "IdeInstanceProfile5175B2C4",
+    "IdeAF12312E641a0cee2d30d2eb",
+    "IdeIdeBootstrapDocumentF9F84747"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "SaaSOpsV2VscodeStack/Ide/IdeBootstrapWaitCondition"
+   }
+  },
+  "IdeIdeBootstrapDocumentF9F84747": {
+   "Type": "AWS::SSM::Document",
+   "Properties": {
+    "Content": {
+     "schemaVersion": "2.2",
+     "description": "Bootstrap IDE",
+     "parameters": {
+      "BootstrapScript": {
+       "type": "String",
+       "description": "(Optional) Custom bootstrap script to run.",
+       "default": ""
+      }
+     },
+     "mainSteps": [
+      {
+       "action": "aws:runShellScript",
+       "name": "IdeBootstrapFunction",
+       "inputs": {
+        "runCommand": [
+         {
+          "Fn::Sub": [
+           "bash << 'HEREDOC'\nset -e\n\necho \"Retrieving IDE password...\"\n\nPASSWORD_SECRET_VALUE=$(aws secretsmanager get-secret-value --secret-id \"${passwordName}\" --query 'SecretString' --output text)\n\nexport IDE_PASSWORD=$(echo \"$PASSWORD_SECRET_VALUE\" | jq -r '.password')\n\necho \"Setting profile variables...\"\n\n# Set some useful variables\nexport TOKEN=$(curl -X PUT \"http://169.254.169.254/latest/api/token\" -H \"X-aws-ec2-metadata-token-ttl-seconds: 21600\")\nexport AWS_REGION=$(curl -H \"X-aws-ec2-metadata-token: $TOKEN\" -s http://169.254.169.254/latest/dynamic/instance-identity/document | grep region | awk -F\\\" '{print $4}')\nexport EC2_PRIVATE_IP=$(curl -H \"X-aws-ec2-metadata-token: $TOKEN\" -s http://169.254.169.254/latest/meta-data/local-ipv4)\n\ntee /etc/profile.d/workshop.sh <<EOF\nexport INSTANCE_IAM_ROLE_NAME=\"${instanceIamRoleName}\"\nexport INSTANCE_IAM_ROLE_ARN=\"${instanceIamRoleArn}\"\n\nexport AWS_REGION=\"$AWS_REGION\"\nexport EC2_PRIVATE_IP=\"$EC2_PRIVATE_IP\"\n\nexport IDE_DOMAIN=\"${domain}\"\nexport IDE_URL=\"https://${domain}\"\nexport IDE_PASSWORD=\"$IDE_PASSWORD\"\n\nalias code=\"code-server\"\nEOF\n\nsource /etc/profile.d/workshop.sh\n\necho \"Setting PS1...\"\n\n# Set PS1\ntee /etc/profile.d/custom_prompt.sh <<EOF\n#!/bin/sh\n\nexport PROMPT_COMMAND='export PS1=\"\\u:\\w:$ \"'\nEOF\n\necho \"Generating SSH key...\"\n\n# Generate an SSH key for ec2-user\nsudo -u ec2-user bash -c \"ssh-keygen -t rsa -N '' -f ~/.ssh/id_rsa -m pem <<< y\"\n\necho \"Installing AWS CLI...\"\n\n# Install AWS CLI\ncurl -LSsf -o /tmp/aws-cli.zip https://awscli.amazonaws.com/awscli-exe-linux-$(uname -m).zip\nunzip -q -d /tmp /tmp/aws-cli.zip\n/tmp/aws/install --update\nrm -rf /tmp/aws\n\necho \"Installing Docker...\"\n\n# Install docker and base package\ndnf install -y -q docker git\nservice docker start\nusermod -aG docker ec2-user\n\necho \"Installing code-server...\"\n\n# Install code-server\ncodeServer=$(dnf list installed code-server | wc -l)\nif [ \"$codeServer\" -eq \"0\" ]; then\n  sudo -u ec2-user \"codeServerVersion=${codeServerVersion}\" bash -c 'curl -fsSL https://code-server.dev/install.sh | sh -s -- --version ${codeServerVersion}'\n  systemctl enable --now code-server@ec2-user\nfi\n\nsudo -u ec2-user bash -c 'mkdir -p ~/.config/code-server'\nsudo -u ec2-user bash -c 'touch ~/.config/code-server/config.yaml'\ntee /home/ec2-user/.config/code-server/config.yaml <<EOF\ncert: false\nauth: password\npassword: \"$IDE_PASSWORD\"\nbind-addr: 127.0.0.1:8889\nEOF\n\n# Create default directory for workspace\nsudo -u ec2-user bash -c 'mkdir -p ~/environment'\n\nENVIRONMENT_CONTENTS_ZIP=${environmentContentsZip}\n\nif [ ! -z \"$ENVIRONMENT_CONTENTS_ZIP\" ]; then\n  echo \"Adding environments archive...\"\n\n  if [[ $ENVIRONMENT_CONTENTS_ZIP == s3:* ]]; then\n    aws s3 cp $ENVIRONMENT_CONTENTS_ZIP /tmp/environment.zip\n  else\n    curl -LSsf -o /tmp/environment.zip $ENVIRONMENT_CONTENTS_ZIP\n  fi\n\n  sudo -u ec2-user bash -c 'unzip -q /tmp/environment.zip -d ~/environment'\n\n  rm -rf /tmp/environment.zip\nfi\n\nSTARTUP_EDITOR='none'\n\nTERMINAL_ON_STARTUP=\"${terminalOnStartup}\"\nREADME_URL=\"${readmeUrl}\"\n\nif [ ! -z \"$README_URL\" ]; then\n  echo \"Adding README...\"\n  if [[ $README_URL == s3:* ]]; then\n    aws s3 cp $README_URL /home/ec2-user/environment/README.md\n  else\n    curl -LSsf -o /home/ec2-user/environment/README.md $README_URL\n  fi\nfi\n\nif [ \"$TERMINAL_ON_STARTUP\" = \"true\" ]; then\n  STARTUP_EDITOR='terminal'\nelif [ -f /home/ec2-user/environment/README.md ]; then\n  STARTUP_EDITOR='readme'\nfi\n\necho \"Configuring code-server...\"\n\nsudo -u ec2-user bash -c 'mkdir -p ~/.local/share/code-server/User'\nsudo -u ec2-user bash -c 'touch ~/.local/share/code-server/User/settings.json'\ntee /home/ec2-user/.local/share/code-server/User/settings.json <<EOF\n{\n  \"extensions.autoUpdate\": false,\n  \"extensions.autoCheckUpdates\": false,\n  \"security.workspace.trust.enabled\": false,\n  \"workbench.startupEditor\": \"$STARTUP_EDITOR\",\n  \"task.allowAutomaticTasks\": \"on\",\n  \"telemetry.telemetryLevel\": \"off\"\n}\nEOF\n\nsudo -u ec2-user bash -c 'touch ~/.local/share/code-server/User/keybindings.json'\ntee /home/ec2-user/.local/share/code-server/User/keybindings.json << 'EOF'\n[\n  {\n    \"key\": \"shift+cmd+/\",\n    \"command\": \"remote.tunnel.forwardCommandPalette\"\n  }\n]\nEOF\n\nif [ ! -z \"${splashUrl}\" ]; then\necho \"Configuring splash URL...\"\n\nsudo -u ec2-user bash -c 'touch ~/.local/share/code-server/User/tasks.json'\ntee /home/ec2-user/.local/share/code-server/User/tasks.json << 'EOF'\n{\n  \"version\": \"2.0.0\",\n  \"tasks\": [\n    {\n      \"label\": \"Open Splash\",\n      \"command\": \"${!input:openSimpleBrowser}\",\n      \"presentation\": {\n        \"reveal\": \"always\",\n        \"panel\": \"new\"\n      },\n      \"runOptions\": {\n        \"runOn\": \"folderOpen\"\n      }\n    }\n  ],\n  \"inputs\": [\n    {\n      \"id\": \"openSimpleBrowser\",\n      \"type\": \"command\",\n      \"command\": \"simpleBrowser.show\",\n      \"args\": [\n        \"${splashUrl}\"\n      ]\n    }\n  ]\n}\nEOF\nfi\n\necho \"Installing code-server extensions...\"\n\nEXTENSIONS=\"${extensions}\"\n\nIFS=',' read -ra array <<< \"$EXTENSIONS\"\n\n# Iterate over each entry in the array\nfor extension in \"${!array[@]}\"; do\n  # Use retries as extension installation seems unreliable\n  sudo -u ec2-user bash -c \"set -e; (r=5;while ! code-server --install-extension $extension --force ; do ((--r))||exit;sleep 5;done)\"\ndone\n\nif [ ! -f \"/home/ec2-user/.local/share/code-server/coder.json\" ]; then\n  sudo -u ec2-user bash -c 'touch ~/.local/share/code-server/coder.json'\n  echo '{ \"query\": { \"folder\": \"/home/ec2-user/environment\" } }' > /home/ec2-user/.local/share/code-server/coder.json\nfi\n\necho \"Restarting code-server...\"\n\nsystemctl restart code-server@ec2-user\n\necho \"Installing Caddy...\"\n\n# Install caddy\ndnf copr enable -y -q @caddy/caddy epel-9-x86_64\ndnf install -y -q caddy\nsystemctl enable --now caddy\n\ntee /etc/caddy/Caddyfile <<EOF\nhttp://${domain} {\n  handle /* {\n    reverse_proxy 127.0.0.1:8889\n  }\n  #GITEA\n}\nEOF\n\necho \"Restarting caddy...\"\n\nsystemctl restart caddy\n\nif [ ! -f \"/home/ec2-user/.local/share/code-server/coder.json\" ]; then\n  sudo -u ec2-user bash -c 'touch ~/.local/share/code-server/coder.json'\n  echo '{ \"query\": { \"folder\": \"/home/ec2-user/environment\" } }' > /home/ec2-user/.local/share/code-server/coder.json\nfi\n\n${installGitea}\n\necho \"Running custom bootstrap script...\"\n\n${customBootstrapScript}\nHEREDOC\n\nexit_code=$?\n\n/opt/aws/bin/cfn-signal -e $exit_code '${waitConditionHandleUrl}'\n\nexit $exit_code",
+           {
+            "instanceIamRoleName": {
+             "Ref": "IdeIdeRoleD654ADD4"
+            },
+            "instanceIamRoleArn": {
+             "Fn::GetAtt": [
+              "IdeIdeRoleD654ADD4",
+              "Arn"
+             ]
+            },
+            "passwordName": {
+             "Fn::Join": [
+              "-",
+              [
+               {
+                "Fn::Select": [
+                 0,
+                 {
+                  "Fn::Split": [
+                   "-",
+                   {
+                    "Fn::Select": [
+                     6,
+                     {
+                      "Fn::Split": [
+                       ":",
+                       {
+                        "Ref": "IdeIdePasswordSecretF3482811"
+                       }
+                      ]
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                ]
+               },
+               {
+                "Fn::Select": [
+                 1,
+                 {
+                  "Fn::Split": [
+                   "-",
+                   {
+                    "Fn::Select": [
+                     6,
+                     {
+                      "Fn::Split": [
+                       ":",
+                       {
+                        "Ref": "IdeIdePasswordSecretF3482811"
+                       }
+                      ]
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                ]
+               }
+              ]
+             ]
+            },
+            "domain": {
+             "Fn::GetAtt": [
+              "IdeIdeDistribution02808462",
+              "DomainName"
+             ]
+            },
+            "codeServerVersion": "4.91.1",
+            "waitConditionHandleUrl": {
+             "Ref": "IdeIdeBootstrapWaitConditionHandleEA0A1D15"
+            },
+            "customBootstrapScript": "\nsudo -u ec2-user bash -c 'echo \"source ~/environment/test_interface.sh\" >> ~/.bashrc'\nsudo -u ec2-user bash -c 'cd $HOME/environment && ./deploy_workshop.sh'\n",
+            "installGitea": "",
+            "splashUrl": "",
+            "readmeUrl": "",
+            "environmentContentsZip": "https://github.com/aws-samples/aws-saas-operations-workshop/raw/refs/heads/v2/workshop.zip",
+            "extensions": "",
+            "terminalOnStartup": "true"
+           }
+          ]
+         }
+        ]
+       }
+      }
+     ]
+    },
+    "DocumentFormat": "YAML",
+    "DocumentType": "Command",
+    "UpdateMethod": "NewVersion"
+   },
+   "Metadata": {
+    "aws:cdk:path": "SaaSOpsV2VscodeStack/Ide/IdeBootstrapDocument"
+   }
+  },
+  "IdeIdeBootstrapResourceD97EAA87": {
+   "Type": "AWS::CloudFormation::CustomResource",
+   "Properties": {
+    "ServiceToken": {
+     "Fn::GetAtt": [
+      "IdeIdeBootstrapFunction478BE411",
+      "Arn"
+     ]
+    },
+    "InstanceId": {
+     "Ref": "IdeAF12312E641a0cee2d30d2eb"
+    },
+    "SsmDocument": {
+     "Ref": "IdeIdeBootstrapDocumentF9F84747"
+    },
+    "LogGroupName": {
+     "Ref": "IdeIdeLogGroupB4F3B2BD"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "SaaSOpsV2VscodeStack/Ide/IdeBootstrapResource/Default"
+   }
+  },
+  "IdeIdePasswordExporterFunctionServiceRole94596137": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "SaaSOpsV2VscodeStack/Ide/IdePasswordExporterFunction/ServiceRole/Resource"
+   }
+  },
+  "IdeIdePasswordExporterFunctionServiceRoleDefaultPolicy4702FAFD": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "secretsmanager:DescribeSecret",
+        "secretsmanager:GetSecretValue"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Ref": "IdeIdePasswordSecretF3482811"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "IdeIdePasswordExporterFunctionServiceRoleDefaultPolicy4702FAFD",
+    "Roles": [
+     {
+      "Ref": "IdeIdePasswordExporterFunctionServiceRole94596137"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "SaaSOpsV2VscodeStack/Ide/IdePasswordExporterFunction/ServiceRole/DefaultPolicy/Resource"
+   }
+  },
+  "IdeIdePasswordExporterFunction7857BDD6": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "ZipFile": "import traceback\nimport cfnresponse\nimport boto3\nimport json\n\ndef lambda_handler(event, context):\n    print('Event: {}'.format(event))\n    print('context: {}'.format(context))\n    responseData = {}\n\n    status = cfnresponse.SUCCESS\n\n    if event['RequestType'] == 'Delete':\n        cfnresponse.send(event, context, status, responseData, 'CustomResourcePhysicalID')\n    else:\n        try:\n            passwordName = event['ResourceProperties']['PasswordName']\n\n            secretsmanager = boto3.client('secretsmanager')\n\n            response = secretsmanager.get_secret_value(\n                SecretId=passwordName,\n            )\n            \n            responseData = json.loads(response['SecretString'])\n        except Exception as e:\n            status = cfnresponse.FAILED\n            tb_err = traceback.format_exc()\n            print(tb_err)\n            responseData = {'Error': tb_err}\n        finally:\n            cfnresponse.send(event, context, status, responseData, 'CustomResourcePhysicalID')"
+    },
+    "Handler": "index.lambda_handler",
+    "Role": {
+     "Fn::GetAtt": [
+      "IdeIdePasswordExporterFunctionServiceRole94596137",
+      "Arn"
+     ]
+    },
+    "Runtime": "python3.12",
+    "Timeout": 180
+   },
+   "DependsOn": [
+    "IdeIdePasswordExporterFunctionServiceRoleDefaultPolicy4702FAFD",
+    "IdeIdePasswordExporterFunctionServiceRole94596137"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "SaaSOpsV2VscodeStack/Ide/IdePasswordExporterFunction/Resource"
+   }
+  },
+  "IdeIdePasswordExporter6F7702A3": {
+   "Type": "AWS::CloudFormation::CustomResource",
+   "Properties": {
+    "ServiceToken": {
+     "Fn::GetAtt": [
+      "IdeIdePasswordExporterFunction7857BDD6",
+      "Arn"
+     ]
+    },
+    "PasswordName": {
+     "Fn::Join": [
+      "-",
+      [
+       {
+        "Fn::Select": [
+         0,
+         {
+          "Fn::Split": [
+           "-",
+           {
+            "Fn::Select": [
+             6,
+             {
+              "Fn::Split": [
+               ":",
+               {
+                "Ref": "IdeIdePasswordSecretF3482811"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "Fn::Select": [
+         1,
+         {
+          "Fn::Split": [
+           "-",
+           {
+            "Fn::Select": [
+             6,
+             {
+              "Fn::Split": [
+               ":",
+               {
+                "Ref": "IdeIdePasswordSecretF3482811"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     ]
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "SaaSOpsV2VscodeStack/Ide/IdePasswordExporter/Default"
+   }
+  }
+ },
+ "Parameters": {
+  "SsmParameterValueawsserviceamiamazonlinuxlatestal2023amikernel61x8664C96584B6F00A464EAD1953AFF4B05118Parameter": {
+   "Type": "AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>",
+   "Default": "/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-6.1-x86_64"
+  }
+ },
+ "Outputs": {
+  "IdeUrl": {
+   "Value": {
+    "Fn::Join": [
+     "",
+     [
+      "https://",
+      {
+       "Fn::GetAtt": [
+        "IdeIdeDistribution02808462",
+        "DomainName"
+       ]
+      }
+     ]
+    ]
+   }
+  },
+  "IdePassword": {
+   "Value": {
+    "Fn::GetAtt": [
+     "IdeIdePasswordExporter6F7702A3",
+     "password"
+    ]
+   }
+  }
+ }
+}
