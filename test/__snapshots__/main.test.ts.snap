@@ -1,0 +1,5437 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Snapshot 1`] = `
+{
+  "Mappings": {
+    "LatestNodeRuntimeMap": {
+      "af-south-1": {
+        "value": "nodejs20.x",
+      },
+      "ap-east-1": {
+        "value": "nodejs20.x",
+      },
+      "ap-northeast-1": {
+        "value": "nodejs20.x",
+      },
+      "ap-northeast-2": {
+        "value": "nodejs20.x",
+      },
+      "ap-northeast-3": {
+        "value": "nodejs20.x",
+      },
+      "ap-south-1": {
+        "value": "nodejs20.x",
+      },
+      "ap-south-2": {
+        "value": "nodejs20.x",
+      },
+      "ap-southeast-1": {
+        "value": "nodejs20.x",
+      },
+      "ap-southeast-2": {
+        "value": "nodejs20.x",
+      },
+      "ap-southeast-3": {
+        "value": "nodejs20.x",
+      },
+      "ap-southeast-4": {
+        "value": "nodejs20.x",
+      },
+      "ap-southeast-5": {
+        "value": "nodejs20.x",
+      },
+      "ap-southeast-7": {
+        "value": "nodejs20.x",
+      },
+      "ca-central-1": {
+        "value": "nodejs20.x",
+      },
+      "ca-west-1": {
+        "value": "nodejs20.x",
+      },
+      "cn-north-1": {
+        "value": "nodejs18.x",
+      },
+      "cn-northwest-1": {
+        "value": "nodejs18.x",
+      },
+      "eu-central-1": {
+        "value": "nodejs20.x",
+      },
+      "eu-central-2": {
+        "value": "nodejs20.x",
+      },
+      "eu-isoe-west-1": {
+        "value": "nodejs18.x",
+      },
+      "eu-north-1": {
+        "value": "nodejs20.x",
+      },
+      "eu-south-1": {
+        "value": "nodejs20.x",
+      },
+      "eu-south-2": {
+        "value": "nodejs20.x",
+      },
+      "eu-west-1": {
+        "value": "nodejs20.x",
+      },
+      "eu-west-2": {
+        "value": "nodejs20.x",
+      },
+      "eu-west-3": {
+        "value": "nodejs20.x",
+      },
+      "il-central-1": {
+        "value": "nodejs20.x",
+      },
+      "me-central-1": {
+        "value": "nodejs20.x",
+      },
+      "me-south-1": {
+        "value": "nodejs20.x",
+      },
+      "mx-central-1": {
+        "value": "nodejs20.x",
+      },
+      "sa-east-1": {
+        "value": "nodejs20.x",
+      },
+      "us-east-1": {
+        "value": "nodejs20.x",
+      },
+      "us-east-2": {
+        "value": "nodejs20.x",
+      },
+      "us-gov-east-1": {
+        "value": "nodejs18.x",
+      },
+      "us-gov-west-1": {
+        "value": "nodejs18.x",
+      },
+      "us-iso-east-1": {
+        "value": "nodejs18.x",
+      },
+      "us-iso-west-1": {
+        "value": "nodejs18.x",
+      },
+      "us-isob-east-1": {
+        "value": "nodejs18.x",
+      },
+      "us-west-1": {
+        "value": "nodejs20.x",
+      },
+      "us-west-2": {
+        "value": "nodejs20.x",
+      },
+    },
+  },
+  "Outputs": {
+    "ArchiveBucket": {
+      "Value": {
+        "Ref": "ControlplaneArchiveBucket1CDB1B9F",
+      },
+    },
+    "TemporaryBucket": {
+      "Value": {
+        "Ref": "ControlplaneTempBucketA4AFA24C",
+      },
+    },
+  },
+  "Parameters": {
+    "BootstrapVersion": {
+      "Default": "/cdk-bootstrap/hnb659fds/version",
+      "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]",
+      "Type": "AWS::SSM::Parameter::Value<String>",
+    },
+  },
+  "Resources": {
+    "AWS679f53fac002430cb0da5b7982bd22872D164C4C": {
+      "DependsOn": [
+        "AWS679f53fac002430cb0da5b7982bd2287ServiceRoleC1EA0FF2",
+      ],
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
+          },
+          "S3Key": "ce2f3595a340d6c519a65888ef97e3b9b64f053f83608e32cc28162e22d7d99a.zip",
+        },
+        "Handler": "index.handler",
+        "Role": {
+          "Fn::GetAtt": [
+            "AWS679f53fac002430cb0da5b7982bd2287ServiceRoleC1EA0FF2",
+            "Arn",
+          ],
+        },
+        "Runtime": {
+          "Fn::FindInMap": [
+            "LatestNodeRuntimeMap",
+            {
+              "Ref": "AWS::Region",
+            },
+            "value",
+          ],
+        },
+        "Timeout": 120,
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "AWS679f53fac002430cb0da5b7982bd2287ServiceRoleC1EA0FF2": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+              ],
+            ],
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "ControlplaneArchiveBucket1CDB1B9F": {
+      "DeletionPolicy": "Delete",
+      "Properties": {
+        "BucketEncryption": {
+          "ServerSideEncryptionConfiguration": [
+            {
+              "ServerSideEncryptionByDefault": {
+                "SSEAlgorithm": "AES256",
+              },
+            },
+          ],
+        },
+        "LifecycleConfiguration": {
+          "Rules": [
+            {
+              "Status": "Enabled",
+              "Transitions": [
+                {
+                  "StorageClass": "GLACIER",
+                  "TransitionInDays": 30,
+                },
+              ],
+            },
+            {
+              "ExpirationInDays": 2555,
+              "Id": "DeleteAfter7Years",
+              "Status": "Enabled",
+            },
+          ],
+        },
+        "PublicAccessBlockConfiguration": {
+          "BlockPublicAcls": true,
+          "BlockPublicPolicy": true,
+          "IgnorePublicAcls": true,
+          "RestrictPublicBuckets": true,
+        },
+        "Tags": [
+          {
+            "Key": "aws-cdk:auto-delete-objects",
+            "Value": "true",
+          },
+        ],
+      },
+      "Type": "AWS::S3::Bucket",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "ControlplaneArchiveBucketAutoDeleteObjectsCustomResourceAC683FB7": {
+      "DeletionPolicy": "Delete",
+      "DependsOn": [
+        "ControlplaneArchiveBucketPolicy0F54AB35",
+      ],
+      "Properties": {
+        "BucketName": {
+          "Ref": "ControlplaneArchiveBucket1CDB1B9F",
+        },
+        "ServiceToken": {
+          "Fn::GetAtt": [
+            "CustomS3AutoDeleteObjectsCustomResourceProviderHandler9D90184F",
+            "Arn",
+          ],
+        },
+      },
+      "Type": "Custom::S3AutoDeleteObjects",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "ControlplaneArchiveBucketPolicy0F54AB35": {
+      "Properties": {
+        "Bucket": {
+          "Ref": "ControlplaneArchiveBucket1CDB1B9F",
+        },
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": "s3:*",
+              "Condition": {
+                "Bool": {
+                  "aws:SecureTransport": "false",
+                },
+              },
+              "Effect": "Deny",
+              "Principal": {
+                "AWS": "*",
+              },
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "ControlplaneArchiveBucket1CDB1B9F",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "ControlplaneArchiveBucket1CDB1B9F",
+                          "Arn",
+                        ],
+                      },
+                      "/*",
+                    ],
+                  ],
+                },
+              ],
+            },
+            {
+              "Action": [
+                "s3:PutBucketPolicy",
+                "s3:GetBucket*",
+                "s3:List*",
+                "s3:DeleteObject*",
+              ],
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": {
+                  "Fn::GetAtt": [
+                    "CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092",
+                    "Arn",
+                  ],
+                },
+              },
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "ControlplaneArchiveBucket1CDB1B9F",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "ControlplaneArchiveBucket1CDB1B9F",
+                          "Arn",
+                        ],
+                      },
+                      "/*",
+                    ],
+                  ],
+                },
+              ],
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+      },
+      "Type": "AWS::S3::BucketPolicy",
+    },
+    "ControlplaneEventBusDEPROVISIONINGREQUESTRuleE55A91AB": {
+      "Properties": {
+        "EventBusName": {
+          "Ref": "ControlplaneEventBusEventBusEventBus294F3902",
+        },
+        "EventPattern": {
+          "detail-type": [
+            "DEPROVISIONING_REQUEST",
+          ],
+          "source": [
+            "SAAS_CONTROL_PLANE",
+          ],
+        },
+        "Name": "DEPROVISIONING_REQUEST",
+        "State": "ENABLED",
+        "Targets": [
+          {
+            "Arn": {
+              "Ref": "RMResourceMgmtDeprovisioningStackDeprovSfn9CEC0EA9",
+            },
+            "Id": "Target0",
+            "RoleArn": {
+              "Fn::GetAtt": [
+                "RMResourceMgmtDeprovisioningStackDeprovSfnEventsRole7F2A4EF9",
+                "Arn",
+              ],
+            },
+          },
+        ],
+      },
+      "Type": "AWS::Events::Rule",
+    },
+    "ControlplaneEventBusEventBusEventBus294F3902": {
+      "Properties": {
+        "Name": "SaaSOpsV2-EventBus",
+      },
+      "Type": "AWS::Events::EventBus",
+    },
+    "ControlplaneEventBusEventBusLogGroup47DDE3FD": {
+      "DeletionPolicy": "Delete",
+      "Properties": {
+        "LogGroupName": {
+          "Fn::Join": [
+            "",
+            [
+              "/",
+              {
+                "Ref": "AWS::StackName",
+              },
+              "/EventBus",
+            ],
+          ],
+        },
+        "RetentionInDays": 1,
+      },
+      "Type": "AWS::Logs::LogGroup",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "ControlplaneEventBusEventBusLogRule9D0AAC49": {
+      "Properties": {
+        "EventBusName": {
+          "Ref": "ControlplaneEventBusEventBusEventBus294F3902",
+        },
+        "EventPattern": {
+          "source": [
+            {
+              "prefix": "",
+            },
+          ],
+        },
+        "Name": "LogRule",
+        "State": "ENABLED",
+        "Targets": [
+          {
+            "Arn": {
+              "Fn::Join": [
+                "",
+                [
+                  "arn:",
+                  {
+                    "Ref": "AWS::Partition",
+                  },
+                  ":logs:",
+                  {
+                    "Ref": "AWS::Region",
+                  },
+                  ":",
+                  {
+                    "Ref": "AWS::AccountId",
+                  },
+                  ":log-group:",
+                  {
+                    "Ref": "ControlplaneEventBusEventBusLogGroup47DDE3FD",
+                  },
+                ],
+              ],
+            },
+            "Id": "Target0",
+          },
+        ],
+      },
+      "Type": "AWS::Events::Rule",
+    },
+    "ControlplaneEventBusOFFBOARDINGREQUESTRuleB78EEFF8": {
+      "Properties": {
+        "EventBusName": {
+          "Ref": "ControlplaneEventBusEventBusEventBus294F3902",
+        },
+        "EventPattern": {
+          "detail-type": [
+            "OFFBOARDING_REQUEST",
+          ],
+          "source": [
+            "SAAS_CONTROL_PLANE",
+          ],
+        },
+        "Name": "OFFBOARDING_REQUEST",
+        "State": "ENABLED",
+        "Targets": [
+          {
+            "Arn": {
+              "Ref": "TMTenantMgmtOffboardingTenantOffboardingSfnA64B6083",
+            },
+            "Id": "Target0",
+            "RoleArn": {
+              "Fn::GetAtt": [
+                "TMTenantMgmtOffboardingTenantOffboardingSfnEventsRole33AB7D6B",
+                "Arn",
+              ],
+            },
+          },
+        ],
+      },
+      "Type": "AWS::Events::Rule",
+    },
+    "ControlplaneEventBusONBOARDINGREQUESTRule140B7243": {
+      "Properties": {
+        "EventBusName": {
+          "Ref": "ControlplaneEventBusEventBusEventBus294F3902",
+        },
+        "EventPattern": {
+          "detail-type": [
+            "ONBOARDING_REQUEST",
+          ],
+          "source": [
+            "SAAS_CONTROL_PLANE",
+          ],
+        },
+        "Name": "ONBOARDING_REQUEST",
+        "State": "ENABLED",
+        "Targets": [
+          {
+            "Arn": {
+              "Ref": "TMTenantMgmtOnboardingTenantProvSfnCE5315EB",
+            },
+            "Id": "Target0",
+            "RoleArn": {
+              "Fn::GetAtt": [
+                "TMTenantMgmtOnboardingTenantProvSfnEventsRoleCDD13ACF",
+                "Arn",
+              ],
+            },
+          },
+        ],
+      },
+      "Type": "AWS::Events::Rule",
+    },
+    "ControlplaneEventBusPROVISIONINGREQUESTRule82074DC1": {
+      "Properties": {
+        "EventBusName": {
+          "Ref": "ControlplaneEventBusEventBusEventBus294F3902",
+        },
+        "EventPattern": {
+          "detail-type": [
+            "PROVISIONING_REQUEST",
+          ],
+          "source": [
+            "SAAS_CONTROL_PLANE",
+          ],
+        },
+        "Name": "PROVISIONING_REQUEST",
+        "State": "ENABLED",
+        "Targets": [
+          {
+            "Arn": {
+              "Ref": "RMResourceMgmtProvisioningStackProvSfn4B9F644E",
+            },
+            "Id": "Target0",
+            "RoleArn": {
+              "Fn::GetAtt": [
+                "RMResourceMgmtProvisioningStackProvSfnEventsRole4155A1DB",
+                "Arn",
+              ],
+            },
+          },
+        ],
+      },
+      "Type": "AWS::Events::Rule",
+    },
+    "ControlplaneEventBusSfnCallbackSfnCallbackFn4BD0FED0": {
+      "DependsOn": [
+        "ControlplaneEventBusSfnCallbackSfnCallbackFnServiceRoleDefaultPolicyD588FEFB",
+        "ControlplaneEventBusSfnCallbackSfnCallbackFnServiceRoleB9BE9A49",
+      ],
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
+          },
+          "S3Key": "26af5bf2ad0e33e1812574271b761fe202a96f8880da99efab29f0adc10dd9b4.zip",
+        },
+        "Environment": {
+          "Variables": {
+            "LOG_LEVEL": "INFO",
+          },
+        },
+        "FunctionName": "SaaSOpsV2-EventBusSfnCallback",
+        "Handler": "index.sfnCallback",
+        "LoggingConfig": {
+          "LogGroup": {
+            "Ref": "ControlplaneEventBusEventBusLogGroup47DDE3FD",
+          },
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "ControlplaneEventBusSfnCallbackSfnCallbackFnServiceRoleB9BE9A49",
+            "Arn",
+          ],
+        },
+        "Runtime": "nodejs18.x",
+        "Timeout": 30,
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "ControlplaneEventBusSfnCallbackSfnCallbackFnServiceRoleB9BE9A49": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+              ],
+            ],
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "ControlplaneEventBusSfnCallbackSfnCallbackFnServiceRoleDefaultPolicyD588FEFB": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "states:SendTaskSuccess",
+                "states:SendTaskFailure",
+              ],
+              "Effect": "Allow",
+              "Resource": "*",
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "ControlplaneEventBusSfnCallbackSfnCallbackFnServiceRoleDefaultPolicyD588FEFB",
+        "Roles": [
+          {
+            "Ref": "ControlplaneEventBusSfnCallbackSfnCallbackFnServiceRoleB9BE9A49",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "ControlplaneEventBusSfnCallbackSfnCallbackRule378FA27D": {
+      "Properties": {
+        "EventBusName": {
+          "Ref": "ControlplaneEventBusEventBusEventBus294F3902",
+        },
+        "EventPattern": {
+          "detail": {
+            "status": [
+              "FAILED",
+              "SUCCEEDED",
+            ],
+            "taskToken": [
+              {
+                "exists": true,
+              },
+            ],
+          },
+          "detail-type": [
+            "SFN_CALLBACK",
+          ],
+          "source": [
+            "SAAS_CONTROL_PLANE",
+          ],
+        },
+        "Name": "SfnCallbackRule",
+        "State": "ENABLED",
+        "Targets": [
+          {
+            "Arn": {
+              "Fn::GetAtt": [
+                "ControlplaneEventBusSfnCallbackSfnCallbackFn4BD0FED0",
+                "Arn",
+              ],
+            },
+            "Id": "Target0",
+          },
+        ],
+      },
+      "Type": "AWS::Events::Rule",
+    },
+    "ControlplaneEventBusSfnCallbackSfnCallbackRuleAllowEventRuletestControlplaneEventBusSfnCallbackSfnCallbackFn1E05F71F6935636D": {
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "ControlplaneEventBusSfnCallbackSfnCallbackFn4BD0FED0",
+            "Arn",
+          ],
+        },
+        "Principal": "events.amazonaws.com",
+        "SourceArn": {
+          "Fn::GetAtt": [
+            "ControlplaneEventBusSfnCallbackSfnCallbackRule378FA27D",
+            "Arn",
+          ],
+        },
+      },
+      "Type": "AWS::Lambda::Permission",
+    },
+    "ControlplaneTableEAEAF271": {
+      "DeletionPolicy": "Delete",
+      "Properties": {
+        "AttributeDefinitions": [
+          {
+            "AttributeName": "pk",
+            "AttributeType": "S",
+          },
+          {
+            "AttributeName": "sk",
+            "AttributeType": "S",
+          },
+          {
+            "AttributeName": "tier",
+            "AttributeType": "S",
+          },
+          {
+            "AttributeName": "gsiTierSk",
+            "AttributeType": "S",
+          },
+        ],
+        "BillingMode": "PAY_PER_REQUEST",
+        "GlobalSecondaryIndexes": [
+          {
+            "IndexName": "gsiTier",
+            "KeySchema": [
+              {
+                "AttributeName": "tier",
+                "KeyType": "HASH",
+              },
+              {
+                "AttributeName": "gsiTierSk",
+                "KeyType": "RANGE",
+              },
+            ],
+            "Projection": {
+              "ProjectionType": "KEYS_ONLY",
+            },
+          },
+        ],
+        "KeySchema": [
+          {
+            "AttributeName": "pk",
+            "KeyType": "HASH",
+          },
+          {
+            "AttributeName": "sk",
+            "KeyType": "RANGE",
+          },
+        ],
+        "Replicas": [
+          {
+            "GlobalSecondaryIndexes": [
+              {
+                "IndexName": "gsiTier",
+              },
+            ],
+            "Region": {
+              "Ref": "AWS::Region",
+            },
+          },
+        ],
+        "TableName": "SaaSOpsV2-TenantCatalog",
+      },
+      "Type": "AWS::DynamoDB::GlobalTable",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "ControlplaneTempBucketA4AFA24C": {
+      "DeletionPolicy": "Delete",
+      "Properties": {
+        "BucketEncryption": {
+          "ServerSideEncryptionConfiguration": [
+            {
+              "ServerSideEncryptionByDefault": {
+                "SSEAlgorithm": "AES256",
+              },
+            },
+          ],
+        },
+        "LifecycleConfiguration": {
+          "Rules": [
+            {
+              "ExpirationInDays": 1,
+              "Id": "DeleteAfter1Day",
+              "Status": "Enabled",
+            },
+          ],
+        },
+        "PublicAccessBlockConfiguration": {
+          "BlockPublicAcls": true,
+          "BlockPublicPolicy": true,
+          "IgnorePublicAcls": true,
+          "RestrictPublicBuckets": true,
+        },
+        "Tags": [
+          {
+            "Key": "aws-cdk:auto-delete-objects",
+            "Value": "true",
+          },
+        ],
+      },
+      "Type": "AWS::S3::Bucket",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "ControlplaneTempBucketAutoDeleteObjectsCustomResourceB7177448": {
+      "DeletionPolicy": "Delete",
+      "DependsOn": [
+        "ControlplaneTempBucketPolicyD37781FB",
+      ],
+      "Properties": {
+        "BucketName": {
+          "Ref": "ControlplaneTempBucketA4AFA24C",
+        },
+        "ServiceToken": {
+          "Fn::GetAtt": [
+            "CustomS3AutoDeleteObjectsCustomResourceProviderHandler9D90184F",
+            "Arn",
+          ],
+        },
+      },
+      "Type": "Custom::S3AutoDeleteObjects",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "ControlplaneTempBucketPolicyD37781FB": {
+      "Properties": {
+        "Bucket": {
+          "Ref": "ControlplaneTempBucketA4AFA24C",
+        },
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": "s3:*",
+              "Condition": {
+                "Bool": {
+                  "aws:SecureTransport": "false",
+                },
+              },
+              "Effect": "Deny",
+              "Principal": {
+                "AWS": "*",
+              },
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "ControlplaneTempBucketA4AFA24C",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "ControlplaneTempBucketA4AFA24C",
+                          "Arn",
+                        ],
+                      },
+                      "/*",
+                    ],
+                  ],
+                },
+              ],
+            },
+            {
+              "Action": [
+                "s3:PutBucketPolicy",
+                "s3:GetBucket*",
+                "s3:List*",
+                "s3:DeleteObject*",
+              ],
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": {
+                  "Fn::GetAtt": [
+                    "CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092",
+                    "Arn",
+                  ],
+                },
+              },
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "ControlplaneTempBucketA4AFA24C",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "ControlplaneTempBucketA4AFA24C",
+                          "Arn",
+                        ],
+                      },
+                      "/*",
+                    ],
+                  ],
+                },
+              ],
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+      },
+      "Type": "AWS::S3::BucketPolicy",
+    },
+    "CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C81C01536": {
+      "DependsOn": [
+        "CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756CServiceRoleDefaultPolicy88902FDF",
+        "CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756CServiceRole89A01265",
+      ],
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
+          },
+          "S3Key": "c6358465bf49dfae556bb430bf9c81fa578c221b82c308e3707901b1dd654762.zip",
+        },
+        "Environment": {
+          "Variables": {
+            "AWS_CA_BUNDLE": "/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem",
+          },
+        },
+        "Handler": "index.handler",
+        "Layers": [
+          {
+            "Ref": "RMResourceMgmtBucketDeploymentAwsCliLayer730A3F20",
+          },
+        ],
+        "Role": {
+          "Fn::GetAtt": [
+            "CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756CServiceRole89A01265",
+            "Arn",
+          ],
+        },
+        "Runtime": "python3.11",
+        "Timeout": 900,
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756CServiceRole89A01265": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+              ],
+            ],
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756CServiceRoleDefaultPolicy88902FDF": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "s3:GetObject*",
+                "s3:GetBucket*",
+                "s3:List*",
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":s3:::",
+                      {
+                        "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
+                      },
+                    ],
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":s3:::",
+                      {
+                        "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
+                      },
+                      "/*",
+                    ],
+                  ],
+                },
+              ],
+            },
+            {
+              "Action": [
+                "s3:GetObject*",
+                "s3:GetBucket*",
+                "s3:List*",
+                "s3:DeleteObject*",
+                "s3:PutObject",
+                "s3:PutObjectLegalHold",
+                "s3:PutObjectRetention",
+                "s3:PutObjectTagging",
+                "s3:PutObjectVersionTagging",
+                "s3:Abort*",
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "RMResourceMgmtBucket97F20757",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "RMResourceMgmtBucket97F20757",
+                          "Arn",
+                        ],
+                      },
+                      "/*",
+                    ],
+                  ],
+                },
+              ],
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756CServiceRoleDefaultPolicy88902FDF",
+        "Roles": [
+          {
+            "Ref": "CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756CServiceRole89A01265",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "CustomS3AutoDeleteObjectsCustomResourceProviderHandler9D90184F": {
+      "DependsOn": [
+        "CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092",
+      ],
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
+          },
+          "S3Key": "faa95a81ae7d7373f3e1f242268f904eb748d8d0fdd306e8a6fe515a1905a7d6.zip",
+        },
+        "Description": {
+          "Fn::Join": [
+            "",
+            [
+              "Lambda function for auto-deleting objects in ",
+              {
+                "Ref": "ControlplaneArchiveBucket1CDB1B9F",
+              },
+              " S3 bucket.",
+            ],
+          ],
+        },
+        "Handler": "index.handler",
+        "MemorySize": 128,
+        "Role": {
+          "Fn::GetAtt": [
+            "CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092",
+            "Arn",
+          ],
+        },
+        "Runtime": {
+          "Fn::FindInMap": [
+            "LatestNodeRuntimeMap",
+            {
+              "Ref": "AWS::Region",
+            },
+            "value",
+          ],
+        },
+        "Timeout": 900,
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Sub": "arn:\${AWS::Partition}:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "DBDashboardsDashboard437444AF": {
+      "Properties": {
+        "DashboardBody": {
+          "Fn::Join": [
+            "",
+            [
+              "{"start":"-PT1H","widgets":[{"type":"text","width":24,"height":1,"x":0,"y":0,"properties":{"markdown":"# Application plane"}},{"type":"text","width":24,"height":1,"x":0,"y":1,"properties":{"markdown":"# /orders"}},{"type":"metric","width":8,"height":4,"x":0,"y":2,"properties":{"view":"timeSeries","title":"Usage per cell","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[[{"label":"/orders","expression":"SELECT COUNT(orders) FROM SCHEMA(SaaSOpsV2, status, tenantId, stackName) GROUP BY stackName","period":60}]],"yAxis":{},"liveData":true}},{"type":"metric","width":8,"height":4,"x":8,"y":2,"properties":{"view":"timeSeries","title":"Latency per cell","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[[{"label":"/orders","expression":"SELECT AVG(orders) FROM SCHEMA(SaaSOpsV2, status, tenantId, stackName) WHERE status = '200' GROUP BY stackName","period":60}]],"yAxis":{},"liveData":true}},{"type":"metric","width":4,"height":4,"x":16,"y":2,"properties":{"view":"singleValue","title":"Average Latency","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","sparkline":true,"metrics":[[{"label":"/orders","expression":"SELECT AVG(orders) FROM SCHEMA(SaaSOpsV2, status, tenantId, stackName) WHERE status = '200'","period":60}]]}},{"type":"metric","width":4,"height":4,"x":20,"y":2,"properties":{"view":"singleValue","title":"Error rate","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","sparkline":true,"metrics":[[{"label":"/orders","expression":"SELECT COUNT(orders) FROM SCHEMA(SaaSOpsV2, status, tenantId, stackName) WHERE status != '200'","period":60}]]}},{"type":"text","width":24,"height":1,"x":0,"y":6,"properties":{"markdown":"# /products"}},{"type":"metric","width":8,"height":4,"x":0,"y":7,"properties":{"view":"timeSeries","title":"Usage per cell","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[[{"label":"/products","expression":"SELECT COUNT(products) FROM SCHEMA(SaaSOpsV2, status, tenantId, stackName) GROUP BY stackName","period":60}]],"yAxis":{},"liveData":true}},{"type":"metric","width":8,"height":4,"x":8,"y":7,"properties":{"view":"timeSeries","title":"Latency per cell","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[[{"label":"/products","expression":"SELECT AVG(products) FROM SCHEMA(SaaSOpsV2, status, tenantId, stackName) WHERE status = '200' GROUP BY stackName","period":60}]],"yAxis":{},"liveData":true}},{"type":"metric","width":4,"height":4,"x":16,"y":7,"properties":{"view":"singleValue","title":"Average Latency","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","sparkline":true,"metrics":[[{"label":"/products","expression":"SELECT AVG(products) FROM SCHEMA(SaaSOpsV2, status, tenantId, stackName) WHERE status = '200'","period":60}]]}},{"type":"metric","width":4,"height":4,"x":20,"y":7,"properties":{"view":"singleValue","title":"Error rate","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","sparkline":true,"metrics":[[{"label":"/products","expression":"SELECT COUNT(products) FROM SCHEMA(SaaSOpsV2, status, tenantId, stackName) WHERE status != '200'","period":60}]]}},{"type":"text","width":24,"height":1,"x":0,"y":11,"properties":{"markdown":"# /users"}},{"type":"metric","width":8,"height":4,"x":0,"y":12,"properties":{"view":"timeSeries","title":"Usage per cell","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[[{"label":"/users","expression":"SELECT COUNT(users) FROM SCHEMA(SaaSOpsV2, status, tenantId, stackName) GROUP BY stackName","period":60}]],"yAxis":{},"liveData":true}},{"type":"metric","width":8,"height":4,"x":8,"y":12,"properties":{"view":"timeSeries","title":"Latency per cell","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[[{"label":"/users","expression":"SELECT AVG(users) FROM SCHEMA(SaaSOpsV2, status, tenantId, stackName) WHERE status = '200' GROUP BY stackName","period":60}]],"yAxis":{},"liveData":true}},{"type":"metric","width":4,"height":4,"x":16,"y":12,"properties":{"view":"singleValue","title":"Average Latency","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","sparkline":true,"metrics":[[{"label":"/users","expression":"SELECT AVG(users) FROM SCHEMA(SaaSOpsV2, status, tenantId, stackName) WHERE status = '200'","period":60}]]}},{"type":"metric","width":4,"height":4,"x":20,"y":12,"properties":{"view":"singleValue","title":"Error rate","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","sparkline":true,"metrics":[[{"label":"/users","expression":"SELECT COUNT(users) FROM SCHEMA(SaaSOpsV2, status, tenantId, stackName) WHERE status != '200'","period":60}]]}},{"type":"text","width":24,"height":1,"x":0,"y":16,"properties":{"markdown":"# /auth"}},{"type":"metric","width":8,"height":4,"x":0,"y":17,"properties":{"view":"timeSeries","title":"Usage per cell","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[[{"label":"/auth","expression":"SELECT COUNT(auth) FROM SCHEMA(SaaSOpsV2, status, tenantId, stackName) GROUP BY stackName","period":60}]],"yAxis":{},"liveData":true}},{"type":"metric","width":8,"height":4,"x":8,"y":17,"properties":{"view":"timeSeries","title":"Latency per cell","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[[{"label":"/auth","expression":"SELECT AVG(auth) FROM SCHEMA(SaaSOpsV2, status, tenantId, stackName) WHERE status = '200' GROUP BY stackName","period":60}]],"yAxis":{},"liveData":true}},{"type":"metric","width":4,"height":4,"x":16,"y":17,"properties":{"view":"singleValue","title":"Average Latency","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","sparkline":true,"metrics":[[{"label":"/auth","expression":"SELECT AVG(auth) FROM SCHEMA(SaaSOpsV2, status, tenantId, stackName) WHERE status = '200'","period":60}]]}},{"type":"metric","width":4,"height":4,"x":20,"y":17,"properties":{"view":"singleValue","title":"Error rate","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","sparkline":true,"metrics":[[{"label":"/auth","expression":"SELECT COUNT(auth) FROM SCHEMA(SaaSOpsV2, status, tenantId, stackName) WHERE status != '200'","period":60}]]}}]}",
+            ],
+          ],
+        },
+        "DashboardName": "SaaSOpsV2-Overview",
+      },
+      "Type": "AWS::CloudWatch::Dashboard",
+    },
+    "EventsLogGroupPolicytestControlplaneEventBusEventBusLogRuleC6C0AA503EB49C7F": {
+      "DeletionPolicy": "Delete",
+      "DependsOn": [
+        "EventsLogGroupPolicytestControlplaneEventBusEventBusLogRuleC6C0AA50CustomResourcePolicy3D93C3D5",
+      ],
+      "Properties": {
+        "Create": {
+          "Fn::Join": [
+            "",
+            [
+              "{"service":"CloudWatchLogs","action":"putResourcePolicy","parameters":{"policyName":"testEventsLogGroupPolicytestControlplaneEventBusEventBusLogRuleC6C0AA50D4633E0C","policyDocument":"{\\"Statement\\":[{\\"Action\\":[\\"logs:PutLogEvents\\",\\"logs:CreateLogStream\\"],\\"Effect\\":\\"Allow\\",\\"Principal\\":{\\"Service\\":\\"events.amazonaws.com\\"},\\"Resource\\":\\"",
+              {
+                "Fn::GetAtt": [
+                  "ControlplaneEventBusEventBusLogGroup47DDE3FD",
+                  "Arn",
+                ],
+              },
+              "\\"}],\\"Version\\":\\"2012-10-17\\"}"},"physicalResourceId":{"id":"EventsLogGroupPolicytestControlplaneEventBusEventBusLogRuleC6C0AA50"}}",
+            ],
+          ],
+        },
+        "Delete": "{"service":"CloudWatchLogs","action":"deleteResourcePolicy","parameters":{"policyName":"testEventsLogGroupPolicytestControlplaneEventBusEventBusLogRuleC6C0AA50D4633E0C"},"ignoreErrorCodesMatching":"ResourceNotFoundException"}",
+        "InstallLatestAwsSdk": true,
+        "ServiceToken": {
+          "Fn::GetAtt": [
+            "AWS679f53fac002430cb0da5b7982bd22872D164C4C",
+            "Arn",
+          ],
+        },
+        "Update": {
+          "Fn::Join": [
+            "",
+            [
+              "{"service":"CloudWatchLogs","action":"putResourcePolicy","parameters":{"policyName":"testEventsLogGroupPolicytestControlplaneEventBusEventBusLogRuleC6C0AA50D4633E0C","policyDocument":"{\\"Statement\\":[{\\"Action\\":[\\"logs:PutLogEvents\\",\\"logs:CreateLogStream\\"],\\"Effect\\":\\"Allow\\",\\"Principal\\":{\\"Service\\":\\"events.amazonaws.com\\"},\\"Resource\\":\\"",
+              {
+                "Fn::GetAtt": [
+                  "ControlplaneEventBusEventBusLogGroup47DDE3FD",
+                  "Arn",
+                ],
+              },
+              "\\"}],\\"Version\\":\\"2012-10-17\\"}"},"physicalResourceId":{"id":"EventsLogGroupPolicytestControlplaneEventBusEventBusLogRuleC6C0AA50"}}",
+            ],
+          ],
+        },
+      },
+      "Type": "Custom::CloudwatchLogResourcePolicy",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "EventsLogGroupPolicytestControlplaneEventBusEventBusLogRuleC6C0AA50CustomResourcePolicy3D93C3D5": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": "logs:PutResourcePolicy",
+              "Effect": "Allow",
+              "Resource": "*",
+            },
+            {
+              "Action": "logs:DeleteResourcePolicy",
+              "Effect": "Allow",
+              "Resource": "*",
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "EventsLogGroupPolicytestControlplaneEventBusEventBusLogRuleC6C0AA50CustomResourcePolicy3D93C3D5",
+        "Roles": [
+          {
+            "Ref": "AWS679f53fac002430cb0da5b7982bd2287ServiceRoleC1EA0FF2",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "RMResourceMgmtBucket97F20757": {
+      "DeletionPolicy": "Delete",
+      "Properties": {
+        "Tags": [
+          {
+            "Key": "aws-cdk:auto-delete-objects",
+            "Value": "true",
+          },
+          {
+            "Key": "aws-cdk:cr-owned:5e75a202",
+            "Value": "true",
+          },
+        ],
+      },
+      "Type": "AWS::S3::Bucket",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "RMResourceMgmtBucketAutoDeleteObjectsCustomResourceE54D7136": {
+      "DeletionPolicy": "Delete",
+      "DependsOn": [
+        "RMResourceMgmtBucketPolicy9DCA8692",
+      ],
+      "Properties": {
+        "BucketName": {
+          "Ref": "RMResourceMgmtBucket97F20757",
+        },
+        "ServiceToken": {
+          "Fn::GetAtt": [
+            "CustomS3AutoDeleteObjectsCustomResourceProviderHandler9D90184F",
+            "Arn",
+          ],
+        },
+      },
+      "Type": "Custom::S3AutoDeleteObjects",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "RMResourceMgmtBucketDeploymentAwsCliLayer730A3F20": {
+      "Properties": {
+        "Content": {
+          "S3Bucket": {
+            "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
+          },
+          "S3Key": "a8803356d66dc4f7473f836fc7e3391429b67f4c1423406f678cf6b5f5e14081.zip",
+        },
+        "Description": "/opt/awscli/aws",
+      },
+      "Type": "AWS::Lambda::LayerVersion",
+    },
+    "RMResourceMgmtBucketDeploymentCustomResource0D3E02B5": {
+      "DeletionPolicy": "Delete",
+      "Properties": {
+        "DestinationBucketName": {
+          "Ref": "RMResourceMgmtBucket97F20757",
+        },
+        "Extract": false,
+        "OutputObjectKeys": true,
+        "Prune": true,
+        "RetainOnDelete": false,
+        "ServiceToken": {
+          "Fn::GetAtt": [
+            "CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C81C01536",
+            "Arn",
+          ],
+        },
+        "SourceBucketNames": [
+          {
+            "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
+          },
+        ],
+        "SourceObjectKeys": [
+          "04a6bb49665af34cb1d2fe5aae0a00ee691593d58357ec0b04786800571c0886.zip",
+        ],
+      },
+      "Type": "Custom::CDKBucketDeployment",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "RMResourceMgmtBucketPolicy9DCA8692": {
+      "Properties": {
+        "Bucket": {
+          "Ref": "RMResourceMgmtBucket97F20757",
+        },
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "s3:PutBucketPolicy",
+                "s3:GetBucket*",
+                "s3:List*",
+                "s3:DeleteObject*",
+              ],
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": {
+                  "Fn::GetAtt": [
+                    "CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092",
+                    "Arn",
+                  ],
+                },
+              },
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "RMResourceMgmtBucket97F20757",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "RMResourceMgmtBucket97F20757",
+                          "Arn",
+                        ],
+                      },
+                      "/*",
+                    ],
+                  ],
+                },
+              ],
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+      },
+      "Type": "AWS::S3::BucketPolicy",
+    },
+    "RMResourceMgmtDeleteCellEntryFn81867436": {
+      "DependsOn": [
+        "RMResourceMgmtDeleteCellEntryFnServiceRoleDefaultPolicyBFE9F0A5",
+        "RMResourceMgmtDeleteCellEntryFnServiceRole37DD23ED",
+      ],
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
+          },
+          "S3Key": "e0d990c9f5dc86fce0eca93eeadd2233bb43367687affe12b1f289f9a414e48f.zip",
+        },
+        "Environment": {
+          "Variables": {
+            "LOG_LEVEL": "INFO",
+            "TABLE_NAME": {
+              "Ref": "ControlplaneTableEAEAF271",
+            },
+          },
+        },
+        "FunctionName": {
+          "Fn::Join": [
+            "",
+            [
+              {
+                "Ref": "AWS::StackName",
+              },
+              "-ResourceMgmt-DeleteCellEntry",
+            ],
+          ],
+        },
+        "Handler": "index.deleteCellEntry",
+        "LoggingConfig": {
+          "LogGroup": {
+            "Ref": "RMResourceMgmtLogGroupB63B1805",
+          },
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "RMResourceMgmtDeleteCellEntryFnServiceRole37DD23ED",
+            "Arn",
+          ],
+        },
+        "Runtime": "nodejs20.x",
+        "Timeout": 30,
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "RMResourceMgmtDeleteCellEntryFnServiceRole37DD23ED": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+              ],
+            ],
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "RMResourceMgmtDeleteCellEntryFnServiceRoleDefaultPolicyBFE9F0A5": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "dynamodb:BatchGetItem",
+                "dynamodb:GetRecords",
+                "dynamodb:GetShardIterator",
+                "dynamodb:Query",
+                "dynamodb:GetItem",
+                "dynamodb:Scan",
+                "dynamodb:ConditionCheckItem",
+                "dynamodb:BatchWriteItem",
+                "dynamodb:PutItem",
+                "dynamodb:UpdateItem",
+                "dynamodb:DeleteItem",
+                "dynamodb:DescribeTable",
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "ControlplaneTableEAEAF271",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "ControlplaneTableEAEAF271",
+                          "Arn",
+                        ],
+                      },
+                      "/index/*",
+                    ],
+                  ],
+                },
+              ],
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "RMResourceMgmtDeleteCellEntryFnServiceRoleDefaultPolicyBFE9F0A5",
+        "Roles": [
+          {
+            "Ref": "RMResourceMgmtDeleteCellEntryFnServiceRole37DD23ED",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "RMResourceMgmtDeprovisioningProject362E0F8C": {
+      "Properties": {
+        "Artifacts": {
+          "Type": "NO_ARTIFACTS",
+        },
+        "Cache": {
+          "Type": "NO_CACHE",
+        },
+        "EncryptionKey": "alias/aws/s3",
+        "Environment": {
+          "ComputeType": "BUILD_LAMBDA_2GB",
+          "Image": "aws/codebuild/amazonlinux-aarch64-lambda-standard:nodejs20",
+          "PrivilegedMode": false,
+          "Type": "ARM_LAMBDA_CONTAINER",
+        },
+        "LogsConfig": {
+          "CloudWatchLogs": {
+            "GroupName": {
+              "Ref": "RMResourceMgmtLogGroupB63B1805",
+            },
+            "Status": "ENABLED",
+          },
+        },
+        "Name": "SaaSOpsV2-CellDeprovisioning",
+        "ServiceRole": {
+          "Fn::GetAtt": [
+            "RMResourceMgmtDeprovisioningProjectRole30DD23F2",
+            "Arn",
+          ],
+        },
+        "Source": {
+          "BuildSpec": "{
+  "version": 0.2,
+  "phases": {
+    "build": {
+      "commands": [
+        "chmod +x ./deprovision_application-cell.sh",
+        "./deprovision_application-cell.sh"
+      ]
+    }
+  }
+}",
+          "Location": {
+            "Fn::Join": [
+              "",
+              [
+                {
+                  "Ref": "RMResourceMgmtBucket97F20757",
+                },
+                "/",
+                {
+                  "Fn::Select": [
+                    0,
+                    {
+                      "Fn::GetAtt": [
+                        "RMResourceMgmtBucketDeploymentCustomResource0D3E02B5",
+                        "SourceObjectKeys",
+                      ],
+                    },
+                  ],
+                },
+              ],
+            ],
+          },
+          "Type": "S3",
+        },
+      },
+      "Type": "AWS::CodeBuild::Project",
+    },
+    "RMResourceMgmtDeprovisioningProjectRole30DD23F2": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "codebuild.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "ManagedPolicyArns": [
+          "arn:aws:iam::aws:policy/AdministratorAccess",
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "RMResourceMgmtDeprovisioningProjectRoleDefaultPolicy469E4C38": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "s3:GetObject*",
+                "s3:GetBucket*",
+                "s3:List*",
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "RMResourceMgmtBucket97F20757",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "RMResourceMgmtBucket97F20757",
+                          "Arn",
+                        ],
+                      },
+                      "/",
+                      {
+                        "Fn::Select": [
+                          0,
+                          {
+                            "Fn::GetAtt": [
+                              "RMResourceMgmtBucketDeploymentCustomResource0D3E02B5",
+                              "SourceObjectKeys",
+                            ],
+                          },
+                        ],
+                      },
+                    ],
+                  ],
+                },
+              ],
+            },
+            {
+              "Action": [
+                "logs:CreateLogStream",
+                "logs:PutLogEvents",
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::GetAtt": [
+                  "RMResourceMgmtLogGroupB63B1805",
+                  "Arn",
+                ],
+              },
+            },
+            {
+              "Action": [
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents",
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":logs:",
+                      {
+                        "Ref": "AWS::Region",
+                      },
+                      ":",
+                      {
+                        "Ref": "AWS::AccountId",
+                      },
+                      ":log-group:/aws/codebuild/",
+                      {
+                        "Ref": "RMResourceMgmtDeprovisioningProject362E0F8C",
+                      },
+                    ],
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":logs:",
+                      {
+                        "Ref": "AWS::Region",
+                      },
+                      ":",
+                      {
+                        "Ref": "AWS::AccountId",
+                      },
+                      ":log-group:/aws/codebuild/",
+                      {
+                        "Ref": "RMResourceMgmtDeprovisioningProject362E0F8C",
+                      },
+                      ":*",
+                    ],
+                  ],
+                },
+              ],
+            },
+            {
+              "Action": [
+                "codebuild:CreateReportGroup",
+                "codebuild:CreateReport",
+                "codebuild:UpdateReport",
+                "codebuild:BatchPutTestCases",
+                "codebuild:BatchPutCodeCoverages",
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition",
+                    },
+                    ":codebuild:",
+                    {
+                      "Ref": "AWS::Region",
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId",
+                    },
+                    ":report-group/",
+                    {
+                      "Ref": "RMResourceMgmtDeprovisioningProject362E0F8C",
+                    },
+                    "-*",
+                  ],
+                ],
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "RMResourceMgmtDeprovisioningProjectRoleDefaultPolicy469E4C38",
+        "Roles": [
+          {
+            "Ref": "RMResourceMgmtDeprovisioningProjectRole30DD23F2",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "RMResourceMgmtDeprovisioningStackDeprovCellDeprovisioningRole96CDA3F0": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "states.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+              ],
+            ],
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "RMResourceMgmtDeprovisioningStackDeprovCellDeprovisioningRoleDefaultPolicy22DFDB81": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": "codebuild:StartBuild",
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::GetAtt": [
+                  "RMResourceMgmtDeprovisioningProject362E0F8C",
+                  "Arn",
+                ],
+              },
+            },
+            {
+              "Action": "lambda:InvokeFunction",
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "RMResourceMgmtDeprovisioningStackDeprovUpdateCellDeprovisioningFn5058C5F7",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "RMResourceMgmtDeprovisioningStackDeprovUpdateCellDeprovisioningFn5058C5F7",
+                          "Arn",
+                        ],
+                      },
+                      ":*",
+                    ],
+                  ],
+                },
+              ],
+            },
+            {
+              "Action": [
+                "codebuild:StartBuild",
+                "codebuild:StopBuild",
+                "codebuild:BatchGetBuilds",
+                "codebuild:BatchGetReports",
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::GetAtt": [
+                  "RMResourceMgmtDeprovisioningProject362E0F8C",
+                  "Arn",
+                ],
+              },
+            },
+            {
+              "Action": [
+                "events:PutTargets",
+                "events:PutRule",
+                "events:DescribeRule",
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition",
+                    },
+                    ":events:",
+                    {
+                      "Ref": "AWS::Region",
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId",
+                    },
+                    ":rule/StepFunctionsGetEventForCodeBuildStartBuildRule",
+                  ],
+                ],
+              },
+            },
+            {
+              "Action": "lambda:InvokeFunction",
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "RMResourceMgmtDeleteCellEntryFn81867436",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "RMResourceMgmtDeleteCellEntryFn81867436",
+                          "Arn",
+                        ],
+                      },
+                      ":*",
+                    ],
+                  ],
+                },
+              ],
+            },
+            {
+              "Action": "events:PutEvents",
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::GetAtt": [
+                  "ControlplaneEventBusEventBusEventBus294F3902",
+                  "Arn",
+                ],
+              },
+            },
+            {
+              "Action": [
+                "logs:CreateLogDelivery",
+                "logs:GetLogDelivery",
+                "logs:UpdateLogDelivery",
+                "logs:DeleteLogDelivery",
+                "logs:ListLogDeliveries",
+                "logs:PutResourcePolicy",
+                "logs:DescribeResourcePolicies",
+                "logs:DescribeLogGroups",
+              ],
+              "Effect": "Allow",
+              "Resource": "*",
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "RMResourceMgmtDeprovisioningStackDeprovCellDeprovisioningRoleDefaultPolicy22DFDB81",
+        "Roles": [
+          {
+            "Ref": "RMResourceMgmtDeprovisioningStackDeprovCellDeprovisioningRole96CDA3F0",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "RMResourceMgmtDeprovisioningStackDeprovSfn9CEC0EA9": {
+      "DeletionPolicy": "Delete",
+      "DependsOn": [
+        "RMResourceMgmtDeprovisioningStackDeprovCellDeprovisioningRoleDefaultPolicy22DFDB81",
+        "RMResourceMgmtDeprovisioningStackDeprovCellDeprovisioningRole96CDA3F0",
+      ],
+      "Properties": {
+        "DefinitionString": {
+          "Fn::Join": [
+            "",
+            [
+              "{"StartAt":"Update stack status to DEPROVISIONING in tenant catalog","States":{"Update stack status to DEPROVISIONING in tenant catalog":{"Next":"Deprovision application stack","Retry":[{"ErrorEquals":["Lambda.ClientExecutionTimeoutException","Lambda.ServiceException","Lambda.AWSLambdaException","Lambda.SdkClientException"],"IntervalSeconds":2,"MaxAttempts":6,"BackoffRate":2}],"Type":"Task","ResultPath":null,"Resource":"arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":states:::lambda:invoke","Parameters":{"FunctionName":"",
+              {
+                "Fn::GetAtt": [
+                  "RMResourceMgmtDeprovisioningStackDeprovUpdateCellDeprovisioningFn5058C5F7",
+                  "Arn",
+                ],
+              },
+              "","Payload":{"stackName.$":"$.detail.stackName","status":"DEPROVISIONING"}}},"Deprovision application stack":{"Next":"Delete stack entry in tenant catalog","Type":"Task","ResultPath":null,"Resource":"arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":states:::codebuild:startBuild.sync","Parameters":{"ProjectName":"",
+              {
+                "Ref": "RMResourceMgmtDeprovisioningProject362E0F8C",
+              },
+              "","EnvironmentVariablesOverride":[{"Name":"STACK_NAME","Type":"PLAINTEXT","Value.$":"$.detail.stackName"}]}},"Delete stack entry in tenant catalog":{"Next":"Send DEPROVISIONING_SUCCESS event","Retry":[{"ErrorEquals":["Lambda.ClientExecutionTimeoutException","Lambda.ServiceException","Lambda.AWSLambdaException","Lambda.SdkClientException"],"IntervalSeconds":2,"MaxAttempts":6,"BackoffRate":2}],"Type":"Task","ResultPath":null,"Resource":"arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":states:::lambda:invoke","Parameters":{"FunctionName":"",
+              {
+                "Fn::GetAtt": [
+                  "RMResourceMgmtDeleteCellEntryFn81867436",
+                  "Arn",
+                ],
+              },
+              "","Payload":{"stackName.$":"$.detail.stackName"}}},"Send DEPROVISIONING_SUCCESS event":{"Next":"Is another step function waiting on a callback?","Type":"Task","ResultPath":null,"Resource":"arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":states:::events:putEvents","Parameters":{"Entries":[{"Detail":{"stackName.$":"$.detail.stackName"},"DetailType":"DEPROVISIONING_SUCCESS","EventBusName":"",
+              {
+                "Fn::GetAtt": [
+                  "ControlplaneEventBusEventBusEventBus294F3902",
+                  "Arn",
+                ],
+              },
+              "","Source":"SAAS_CONTROL_PLANE"}]}},"Is another step function waiting on a callback?":{"Type":"Choice","Choices":[{"Variable":"$.detail.taskToken","IsPresent":true,"Next":"Task token present"}],"Default":"No task token present"},"No task token present":{"Type":"Pass","End":true},"Task token present":{"Type":"Pass","Next":"Send successful SFN_CALLBACK event"},"Send successful SFN_CALLBACK event":{"End":true,"Type":"Task","ResultPath":null,"Resource":"arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":states:::events:putEvents","Parameters":{"Entries":[{"Detail":{"status":"SUCCEEDED","taskToken.$":"$.detail.taskToken","output.$":"$.detail.stackName"},"DetailType":"SFN_CALLBACK","EventBusName":"",
+              {
+                "Fn::GetAtt": [
+                  "ControlplaneEventBusEventBusEventBus294F3902",
+                  "Arn",
+                ],
+              },
+              "","Source":"SAAS_CONTROL_PLANE"}]}}},"TimeoutSeconds":900,"Comment":"Deprovision an application stack"}",
+            ],
+          ],
+        },
+        "LoggingConfiguration": {
+          "Destinations": [
+            {
+              "CloudWatchLogsLogGroup": {
+                "LogGroupArn": {
+                  "Fn::GetAtt": [
+                    "RMResourceMgmtLogGroupB63B1805",
+                    "Arn",
+                  ],
+                },
+              },
+            },
+          ],
+          "Level": "ERROR",
+        },
+        "RoleArn": {
+          "Fn::GetAtt": [
+            "RMResourceMgmtDeprovisioningStackDeprovCellDeprovisioningRole96CDA3F0",
+            "Arn",
+          ],
+        },
+        "StateMachineName": "SaaSOpsV2-StackDeprovisioning",
+      },
+      "Type": "AWS::StepFunctions::StateMachine",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "RMResourceMgmtDeprovisioningStackDeprovSfnEventsRole7F2A4EF9": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "events.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "RMResourceMgmtDeprovisioningStackDeprovSfnEventsRoleDefaultPolicy93568881": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": "states:StartExecution",
+              "Effect": "Allow",
+              "Resource": {
+                "Ref": "RMResourceMgmtDeprovisioningStackDeprovSfn9CEC0EA9",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "RMResourceMgmtDeprovisioningStackDeprovSfnEventsRoleDefaultPolicy93568881",
+        "Roles": [
+          {
+            "Ref": "RMResourceMgmtDeprovisioningStackDeprovSfnEventsRole7F2A4EF9",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "RMResourceMgmtDeprovisioningStackDeprovUpdateCellDeprovisioningFn5058C5F7": {
+      "DependsOn": [
+        "RMResourceMgmtDeprovisioningStackDeprovUpdateCellDeprovisioningFnServiceRoleDefaultPolicyD1240A65",
+        "RMResourceMgmtDeprovisioningStackDeprovUpdateCellDeprovisioningFnServiceRole4B4C56D6",
+      ],
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
+          },
+          "S3Key": "e0d990c9f5dc86fce0eca93eeadd2233bb43367687affe12b1f289f9a414e48f.zip",
+        },
+        "Environment": {
+          "Variables": {
+            "LOG_LEVEL": "INFO",
+            "TABLE_NAME": {
+              "Ref": "ControlplaneTableEAEAF271",
+            },
+          },
+        },
+        "FunctionName": {
+          "Fn::Join": [
+            "",
+            [
+              {
+                "Ref": "AWS::StackName",
+              },
+              "-StackDeprov-UpdateCellDeprovisioning",
+            ],
+          ],
+        },
+        "Handler": "index.updateCellEntry",
+        "LoggingConfig": {
+          "LogGroup": {
+            "Ref": "RMResourceMgmtLogGroupB63B1805",
+          },
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "RMResourceMgmtDeprovisioningStackDeprovUpdateCellDeprovisioningFnServiceRole4B4C56D6",
+            "Arn",
+          ],
+        },
+        "Runtime": "nodejs20.x",
+        "Timeout": 30,
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "RMResourceMgmtDeprovisioningStackDeprovUpdateCellDeprovisioningFnServiceRole4B4C56D6": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+              ],
+            ],
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "RMResourceMgmtDeprovisioningStackDeprovUpdateCellDeprovisioningFnServiceRoleDefaultPolicyD1240A65": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "dynamodb:BatchGetItem",
+                "dynamodb:GetRecords",
+                "dynamodb:GetShardIterator",
+                "dynamodb:Query",
+                "dynamodb:GetItem",
+                "dynamodb:Scan",
+                "dynamodb:ConditionCheckItem",
+                "dynamodb:BatchWriteItem",
+                "dynamodb:PutItem",
+                "dynamodb:UpdateItem",
+                "dynamodb:DeleteItem",
+                "dynamodb:DescribeTable",
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "ControlplaneTableEAEAF271",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "ControlplaneTableEAEAF271",
+                          "Arn",
+                        ],
+                      },
+                      "/index/*",
+                    ],
+                  ],
+                },
+              ],
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "RMResourceMgmtDeprovisioningStackDeprovUpdateCellDeprovisioningFnServiceRoleDefaultPolicyD1240A65",
+        "Roles": [
+          {
+            "Ref": "RMResourceMgmtDeprovisioningStackDeprovUpdateCellDeprovisioningFnServiceRole4B4C56D6",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "RMResourceMgmtLogGroupB63B1805": {
+      "DeletionPolicy": "Delete",
+      "Properties": {
+        "LogGroupName": {
+          "Fn::Join": [
+            "",
+            [
+              "/",
+              {
+                "Ref": "AWS::StackName",
+              },
+              "/ResourceMgmt",
+            ],
+          ],
+        },
+        "RetentionInDays": 1,
+      },
+      "Type": "AWS::Logs::LogGroup",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "RMResourceMgmtProvisioningProjectFF13FB91": {
+      "Properties": {
+        "Artifacts": {
+          "Type": "NO_ARTIFACTS",
+        },
+        "Cache": {
+          "Type": "NO_CACHE",
+        },
+        "EncryptionKey": "alias/aws/s3",
+        "Environment": {
+          "ComputeType": "BUILD_LAMBDA_2GB",
+          "Image": "aws/codebuild/amazonlinux-aarch64-lambda-standard:nodejs20",
+          "PrivilegedMode": false,
+          "Type": "ARM_LAMBDA_CONTAINER",
+        },
+        "LogsConfig": {
+          "CloudWatchLogs": {
+            "GroupName": {
+              "Ref": "RMResourceMgmtLogGroupB63B1805",
+            },
+            "Status": "ENABLED",
+          },
+        },
+        "Name": "SaaSOpsV2-CellProvisioning",
+        "ServiceRole": {
+          "Fn::GetAtt": [
+            "RMResourceMgmtProvisioningProjectRole1DCC21FE",
+            "Arn",
+          ],
+        },
+        "Source": {
+          "BuildSpec": "{
+  "version": 0.2,
+  "phases": {
+    "build": {
+      "commands": [
+        "chmod +x ./provision_application-cell.sh",
+        "./provision_application-cell.sh"
+      ]
+    }
+  }
+}",
+          "Location": {
+            "Fn::Join": [
+              "",
+              [
+                {
+                  "Ref": "RMResourceMgmtBucket97F20757",
+                },
+                "/",
+                {
+                  "Fn::Select": [
+                    0,
+                    {
+                      "Fn::GetAtt": [
+                        "RMResourceMgmtBucketDeploymentCustomResource0D3E02B5",
+                        "SourceObjectKeys",
+                      ],
+                    },
+                  ],
+                },
+              ],
+            ],
+          },
+          "Type": "S3",
+        },
+      },
+      "Type": "AWS::CodeBuild::Project",
+    },
+    "RMResourceMgmtProvisioningProjectRole1DCC21FE": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "codebuild.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "ManagedPolicyArns": [
+          "arn:aws:iam::aws:policy/AdministratorAccess",
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "RMResourceMgmtProvisioningProjectRoleDefaultPolicyA2B0C8D6": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "s3:GetObject*",
+                "s3:GetBucket*",
+                "s3:List*",
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "RMResourceMgmtBucket97F20757",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "RMResourceMgmtBucket97F20757",
+                          "Arn",
+                        ],
+                      },
+                      "/",
+                      {
+                        "Fn::Select": [
+                          0,
+                          {
+                            "Fn::GetAtt": [
+                              "RMResourceMgmtBucketDeploymentCustomResource0D3E02B5",
+                              "SourceObjectKeys",
+                            ],
+                          },
+                        ],
+                      },
+                    ],
+                  ],
+                },
+              ],
+            },
+            {
+              "Action": [
+                "logs:CreateLogStream",
+                "logs:PutLogEvents",
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::GetAtt": [
+                  "RMResourceMgmtLogGroupB63B1805",
+                  "Arn",
+                ],
+              },
+            },
+            {
+              "Action": [
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents",
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":logs:",
+                      {
+                        "Ref": "AWS::Region",
+                      },
+                      ":",
+                      {
+                        "Ref": "AWS::AccountId",
+                      },
+                      ":log-group:/aws/codebuild/",
+                      {
+                        "Ref": "RMResourceMgmtProvisioningProjectFF13FB91",
+                      },
+                    ],
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":logs:",
+                      {
+                        "Ref": "AWS::Region",
+                      },
+                      ":",
+                      {
+                        "Ref": "AWS::AccountId",
+                      },
+                      ":log-group:/aws/codebuild/",
+                      {
+                        "Ref": "RMResourceMgmtProvisioningProjectFF13FB91",
+                      },
+                      ":*",
+                    ],
+                  ],
+                },
+              ],
+            },
+            {
+              "Action": [
+                "codebuild:CreateReportGroup",
+                "codebuild:CreateReport",
+                "codebuild:UpdateReport",
+                "codebuild:BatchPutTestCases",
+                "codebuild:BatchPutCodeCoverages",
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition",
+                    },
+                    ":codebuild:",
+                    {
+                      "Ref": "AWS::Region",
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId",
+                    },
+                    ":report-group/",
+                    {
+                      "Ref": "RMResourceMgmtProvisioningProjectFF13FB91",
+                    },
+                    "-*",
+                  ],
+                ],
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "RMResourceMgmtProvisioningProjectRoleDefaultPolicyA2B0C8D6",
+        "Roles": [
+          {
+            "Ref": "RMResourceMgmtProvisioningProjectRole1DCC21FE",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "RMResourceMgmtProvisioningStackProvCellProvisioningRole2205F44F": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "states.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+              ],
+            ],
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "RMResourceMgmtProvisioningStackProvCellProvisioningRoleDefaultPolicyF005C3EC": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": "codebuild:StartBuild",
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::GetAtt": [
+                  "RMResourceMgmtProvisioningProjectFF13FB91",
+                  "Arn",
+                ],
+              },
+            },
+            {
+              "Action": "lambda:InvokeFunction",
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "RMResourceMgmtUpdateCellEntryFn6A5F159B",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "RMResourceMgmtUpdateCellEntryFn6A5F159B",
+                          "Arn",
+                        ],
+                      },
+                      ":*",
+                    ],
+                  ],
+                },
+              ],
+            },
+            {
+              "Action": [
+                "codebuild:StartBuild",
+                "codebuild:StopBuild",
+                "codebuild:BatchGetBuilds",
+                "codebuild:BatchGetReports",
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::GetAtt": [
+                  "RMResourceMgmtProvisioningProjectFF13FB91",
+                  "Arn",
+                ],
+              },
+            },
+            {
+              "Action": [
+                "events:PutTargets",
+                "events:PutRule",
+                "events:DescribeRule",
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition",
+                    },
+                    ":events:",
+                    {
+                      "Ref": "AWS::Region",
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId",
+                    },
+                    ":rule/StepFunctionsGetEventForCodeBuildStartBuildRule",
+                  ],
+                ],
+              },
+            },
+            {
+              "Action": "lambda:InvokeFunction",
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "RMResourceMgmtProvisioningStackProvGetStackDetailsFnC83123EF",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "RMResourceMgmtProvisioningStackProvGetStackDetailsFnC83123EF",
+                          "Arn",
+                        ],
+                      },
+                      ":*",
+                    ],
+                  ],
+                },
+              ],
+            },
+            {
+              "Action": "events:PutEvents",
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::GetAtt": [
+                  "ControlplaneEventBusEventBusEventBus294F3902",
+                  "Arn",
+                ],
+              },
+            },
+            {
+              "Action": [
+                "logs:CreateLogDelivery",
+                "logs:GetLogDelivery",
+                "logs:UpdateLogDelivery",
+                "logs:DeleteLogDelivery",
+                "logs:ListLogDeliveries",
+                "logs:PutResourcePolicy",
+                "logs:DescribeResourcePolicies",
+                "logs:DescribeLogGroups",
+              ],
+              "Effect": "Allow",
+              "Resource": "*",
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "RMResourceMgmtProvisioningStackProvCellProvisioningRoleDefaultPolicyF005C3EC",
+        "Roles": [
+          {
+            "Ref": "RMResourceMgmtProvisioningStackProvCellProvisioningRole2205F44F",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "RMResourceMgmtProvisioningStackProvGetStackDetailsFnC83123EF": {
+      "DependsOn": [
+        "RMResourceMgmtProvisioningStackProvGetStackDetailsFnServiceRoleDefaultPolicy64E03460",
+        "RMResourceMgmtProvisioningStackProvGetStackDetailsFnServiceRole10117606",
+      ],
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
+          },
+          "S3Key": "e0d990c9f5dc86fce0eca93eeadd2233bb43367687affe12b1f289f9a414e48f.zip",
+        },
+        "Environment": {
+          "Variables": {
+            "LOG_LEVEL": "INFO",
+          },
+        },
+        "FunctionName": {
+          "Fn::Join": [
+            "",
+            [
+              {
+                "Ref": "AWS::StackName",
+              },
+              "-StackProv-GetStackDetails",
+            ],
+          ],
+        },
+        "Handler": "index.getStackDetails",
+        "LoggingConfig": {
+          "LogGroup": {
+            "Ref": "RMResourceMgmtLogGroupB63B1805",
+          },
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "RMResourceMgmtProvisioningStackProvGetStackDetailsFnServiceRole10117606",
+            "Arn",
+          ],
+        },
+        "Runtime": "nodejs20.x",
+        "Timeout": 30,
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "RMResourceMgmtProvisioningStackProvGetStackDetailsFnServiceRole10117606": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+              ],
+            ],
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "RMResourceMgmtProvisioningStackProvGetStackDetailsFnServiceRoleDefaultPolicy64E03460": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "cloudformation:ListStacks",
+                "cloudformation:DescribeStacks",
+              ],
+              "Effect": "Allow",
+              "Resource": "*",
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "RMResourceMgmtProvisioningStackProvGetStackDetailsFnServiceRoleDefaultPolicy64E03460",
+        "Roles": [
+          {
+            "Ref": "RMResourceMgmtProvisioningStackProvGetStackDetailsFnServiceRole10117606",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "RMResourceMgmtProvisioningStackProvSfn4B9F644E": {
+      "DeletionPolicy": "Delete",
+      "DependsOn": [
+        "RMResourceMgmtProvisioningStackProvCellProvisioningRoleDefaultPolicyF005C3EC",
+        "RMResourceMgmtProvisioningStackProvCellProvisioningRole2205F44F",
+      ],
+      "Properties": {
+        "DefinitionString": {
+          "Fn::Join": [
+            "",
+            [
+              "{"StartAt":"Update cell status to PROVISIONING in tenant catalog","States":{"Update cell status to PROVISIONING in tenant catalog":{"Next":"Provision or update an application cell","Retry":[{"ErrorEquals":["Lambda.ClientExecutionTimeoutException","Lambda.ServiceException","Lambda.AWSLambdaException","Lambda.SdkClientException"],"IntervalSeconds":2,"MaxAttempts":6,"BackoffRate":2}],"Type":"Task","ResultPath":null,"Resource":"arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":states:::lambda:invoke","Parameters":{"FunctionName":"",
+              {
+                "Fn::GetAtt": [
+                  "RMResourceMgmtUpdateCellEntryFn6A5F159B",
+                  "Arn",
+                ],
+              },
+              "","Payload":{"stackName.$":"$.detail.stackName","status":"PROVISIONING","tier.$":"$.detail.tier"}}},"Provision or update an application cell":{"Next":"Get stack details","Type":"Task","ResultPath":null,"Resource":"arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":states:::codebuild:startBuild.sync","Parameters":{"ProjectName":"",
+              {
+                "Ref": "RMResourceMgmtProvisioningProjectFF13FB91",
+              },
+              "","EnvironmentVariablesOverride":[{"Name":"STACK_NAME","Type":"PLAINTEXT","Value.$":"$.detail.stackName"}]}},"Get stack details":{"Next":"Update stack status to ACTIVE in tenant catalog","Retry":[{"ErrorEquals":["Lambda.ClientExecutionTimeoutException","Lambda.ServiceException","Lambda.AWSLambdaException","Lambda.SdkClientException"],"IntervalSeconds":2,"MaxAttempts":6,"BackoffRate":2}],"Type":"Task","ResultPath":"$.stack","ResultSelector":{"clientId.$":"$.Payload.clientId","dataTableArn.$":"$.Payload.dataTableArn","dataTableName.$":"$.Payload.dataTableName","url.$":"$.Payload.url","userPoolId.$":"$.Payload.userPoolId"},"Resource":"arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":states:::lambda:invoke","Parameters":{"FunctionName":"",
+              {
+                "Fn::GetAtt": [
+                  "RMResourceMgmtProvisioningStackProvGetStackDetailsFnC83123EF",
+                  "Arn",
+                ],
+              },
+              "","Payload":{"stackName.$":"$.detail.stackName"}}},"Update stack status to ACTIVE in tenant catalog":{"Next":"Send PROVISIONING_SUCCESS event","Retry":[{"ErrorEquals":["Lambda.ClientExecutionTimeoutException","Lambda.ServiceException","Lambda.AWSLambdaException","Lambda.SdkClientException"],"IntervalSeconds":2,"MaxAttempts":6,"BackoffRate":2}],"Type":"Task","ResultPath":null,"Resource":"arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":states:::lambda:invoke","Parameters":{"FunctionName":"",
+              {
+                "Fn::GetAtt": [
+                  "RMResourceMgmtUpdateCellEntryFn6A5F159B",
+                  "Arn",
+                ],
+              },
+              "","Payload":{"stackName.$":"$.detail.stackName","status":"ACTIVE","tier.$":"$.detail.tier","clientId.$":"$.stack.clientId","dataTableArn.$":"$.stack.dataTableArn","dataTableName.$":"$.stack.dataTableName","userPoolId.$":"$.stack.userPoolId","url.$":"$.stack.url"}}},"Send PROVISIONING_SUCCESS event":{"Next":"Is another step function waiting on a callback?","Type":"Task","ResultPath":null,"Resource":"arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":states:::events:putEvents","Parameters":{"Entries":[{"Detail":{"stackName.$":"$.detail.stackName"},"DetailType":"PROVISIONING_SUCCESS","EventBusName":"",
+              {
+                "Fn::GetAtt": [
+                  "ControlplaneEventBusEventBusEventBus294F3902",
+                  "Arn",
+                ],
+              },
+              "","Source":"SAAS_CONTROL_PLANE"}]}},"Is another step function waiting on a callback?":{"Type":"Choice","Choices":[{"Variable":"$.detail.taskToken","IsPresent":true,"Next":"Task token present"}],"Default":"No task token present"},"No task token present":{"Type":"Pass","End":true},"Task token present":{"Type":"Pass","Next":"Send successful SFN_CALLBACK event"},"Send successful SFN_CALLBACK event":{"End":true,"Type":"Task","ResultPath":null,"Resource":"arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":states:::events:putEvents","Parameters":{"Entries":[{"Detail":{"status":"SUCCEEDED","taskToken.$":"$.detail.taskToken","output.$":"$.detail.stackName"},"DetailType":"SFN_CALLBACK","EventBusName":"",
+              {
+                "Fn::GetAtt": [
+                  "ControlplaneEventBusEventBusEventBus294F3902",
+                  "Arn",
+                ],
+              },
+              "","Source":"SAAS_CONTROL_PLANE"}]}}},"TimeoutSeconds":900,"Comment":"Provision an application stack"}",
+            ],
+          ],
+        },
+        "LoggingConfiguration": {
+          "Destinations": [
+            {
+              "CloudWatchLogsLogGroup": {
+                "LogGroupArn": {
+                  "Fn::GetAtt": [
+                    "RMResourceMgmtLogGroupB63B1805",
+                    "Arn",
+                  ],
+                },
+              },
+            },
+          ],
+          "Level": "ERROR",
+        },
+        "RoleArn": {
+          "Fn::GetAtt": [
+            "RMResourceMgmtProvisioningStackProvCellProvisioningRole2205F44F",
+            "Arn",
+          ],
+        },
+        "StateMachineName": "SaaSOpsV2-StackProvisioning",
+      },
+      "Type": "AWS::StepFunctions::StateMachine",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "RMResourceMgmtProvisioningStackProvSfnEventsRole4155A1DB": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "events.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "RMResourceMgmtProvisioningStackProvSfnEventsRoleDefaultPolicyF8AE4A73": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": "states:StartExecution",
+              "Effect": "Allow",
+              "Resource": {
+                "Ref": "RMResourceMgmtProvisioningStackProvSfn4B9F644E",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "RMResourceMgmtProvisioningStackProvSfnEventsRoleDefaultPolicyF8AE4A73",
+        "Roles": [
+          {
+            "Ref": "RMResourceMgmtProvisioningStackProvSfnEventsRole4155A1DB",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "RMResourceMgmtReadCellEntryFn146DAA56": {
+      "DependsOn": [
+        "RMResourceMgmtReadCellEntryFnServiceRoleDefaultPolicyFFAD96E3",
+        "RMResourceMgmtReadCellEntryFnServiceRoleA8FACD48",
+      ],
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
+          },
+          "S3Key": "e0d990c9f5dc86fce0eca93eeadd2233bb43367687affe12b1f289f9a414e48f.zip",
+        },
+        "Environment": {
+          "Variables": {
+            "LOG_LEVEL": "INFO",
+            "TABLE_NAME": {
+              "Ref": "ControlplaneTableEAEAF271",
+            },
+          },
+        },
+        "FunctionName": {
+          "Fn::Join": [
+            "",
+            [
+              {
+                "Ref": "AWS::StackName",
+              },
+              "-ResourceMgmt-ReadCellEntry",
+            ],
+          ],
+        },
+        "Handler": "index.readCellEntry",
+        "LoggingConfig": {
+          "LogGroup": {
+            "Ref": "RMResourceMgmtLogGroupB63B1805",
+          },
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "RMResourceMgmtReadCellEntryFnServiceRoleA8FACD48",
+            "Arn",
+          ],
+        },
+        "Runtime": "nodejs20.x",
+        "Timeout": 30,
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "RMResourceMgmtReadCellEntryFnServiceRoleA8FACD48": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+              ],
+            ],
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "RMResourceMgmtReadCellEntryFnServiceRoleDefaultPolicyFFAD96E3": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "dynamodb:BatchGetItem",
+                "dynamodb:GetRecords",
+                "dynamodb:GetShardIterator",
+                "dynamodb:Query",
+                "dynamodb:GetItem",
+                "dynamodb:Scan",
+                "dynamodb:ConditionCheckItem",
+                "dynamodb:DescribeTable",
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "ControlplaneTableEAEAF271",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "ControlplaneTableEAEAF271",
+                          "Arn",
+                        ],
+                      },
+                      "/index/*",
+                    ],
+                  ],
+                },
+              ],
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "RMResourceMgmtReadCellEntryFnServiceRoleDefaultPolicyFFAD96E3",
+        "Roles": [
+          {
+            "Ref": "RMResourceMgmtReadCellEntryFnServiceRoleA8FACD48",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "RMResourceMgmtUpdateCellEntryFn6A5F159B": {
+      "DependsOn": [
+        "RMResourceMgmtUpdateCellEntryFnServiceRoleDefaultPolicy2AF8172A",
+        "RMResourceMgmtUpdateCellEntryFnServiceRole3BE7302E",
+      ],
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
+          },
+          "S3Key": "e0d990c9f5dc86fce0eca93eeadd2233bb43367687affe12b1f289f9a414e48f.zip",
+        },
+        "Environment": {
+          "Variables": {
+            "LOG_LEVEL": "INFO",
+            "TABLE_NAME": {
+              "Ref": "ControlplaneTableEAEAF271",
+            },
+          },
+        },
+        "FunctionName": {
+          "Fn::Join": [
+            "",
+            [
+              {
+                "Ref": "AWS::StackName",
+              },
+              "-ResourceMgmt-UpdateCellEntry",
+            ],
+          ],
+        },
+        "Handler": "index.updateCellEntry",
+        "LoggingConfig": {
+          "LogGroup": {
+            "Ref": "RMResourceMgmtLogGroupB63B1805",
+          },
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "RMResourceMgmtUpdateCellEntryFnServiceRole3BE7302E",
+            "Arn",
+          ],
+        },
+        "Runtime": "nodejs20.x",
+        "Timeout": 30,
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "RMResourceMgmtUpdateCellEntryFnServiceRole3BE7302E": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+              ],
+            ],
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "RMResourceMgmtUpdateCellEntryFnServiceRoleDefaultPolicy2AF8172A": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "dynamodb:BatchGetItem",
+                "dynamodb:GetRecords",
+                "dynamodb:GetShardIterator",
+                "dynamodb:Query",
+                "dynamodb:GetItem",
+                "dynamodb:Scan",
+                "dynamodb:ConditionCheckItem",
+                "dynamodb:BatchWriteItem",
+                "dynamodb:PutItem",
+                "dynamodb:UpdateItem",
+                "dynamodb:DeleteItem",
+                "dynamodb:DescribeTable",
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "ControlplaneTableEAEAF271",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "ControlplaneTableEAEAF271",
+                          "Arn",
+                        ],
+                      },
+                      "/index/*",
+                    ],
+                  ],
+                },
+              ],
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "RMResourceMgmtUpdateCellEntryFnServiceRoleDefaultPolicy2AF8172A",
+        "Roles": [
+          {
+            "Ref": "RMResourceMgmtUpdateCellEntryFnServiceRole3BE7302E",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "TMTenantMgmtAPIUsagePlanEntryCustomResource8C17FE10": {
+      "DeletionPolicy": "Delete",
+      "DependsOn": [
+        "TMTenantMgmtAPIUsagePlanEntryCustomResourceCustomResourcePolicyC4856C33",
+      ],
+      "Properties": {
+        "Create": {
+          "Fn::Join": [
+            "",
+            [
+              "{"service":"DynamoDB","action":"batchWriteItem","parameters":{"RequestItems":{"",
+              {
+                "Ref": "ControlplaneTableEAEAF271",
+              },
+              "":[{"PutRequest":{"Item":{"pk":{"S":"DESCRIPTION#"},"sk":{"S":"USAGEPLAN#BASIC"},"planId":{"S":"",
+              {
+                "Ref": "TMTenantMgmtAPIUsagePlansUsagePlanBASIC8804CEED",
+              },
+              ""}}}},{"PutRequest":{"Item":{"pk":{"S":"DESCRIPTION#"},"sk":{"S":"USAGEPLAN#PREMIUM"},"planId":{"S":"",
+              {
+                "Ref": "TMTenantMgmtAPIUsagePlansUsagePlanPREMIUM9B4FD995",
+              },
+              ""}}}}]}},"physicalResourceId":{"id":"APIUsagePlanEntryCustomResource"}}",
+            ],
+          ],
+        },
+        "Delete": {
+          "Fn::Join": [
+            "",
+            [
+              "{"service":"DynamoDB","action":"batchWriteItem","parameters":{"RequestItems":{"",
+              {
+                "Ref": "ControlplaneTableEAEAF271",
+              },
+              "":[{"DeleteRequest":{"Key":{"pk":{"S":"DESCRIPTION#"},"sk":{"S":"USAGEPLAN#BASIC"}}}},{"DeleteRequest":{"Key":{"pk":{"S":"DESCRIPTION#"},"sk":{"S":"USAGEPLAN#PREMIUM"}}}}]}}}",
+            ],
+          ],
+        },
+        "InstallLatestAwsSdk": true,
+        "ServiceToken": {
+          "Fn::GetAtt": [
+            "AWS679f53fac002430cb0da5b7982bd22872D164C4C",
+            "Arn",
+          ],
+        },
+      },
+      "Type": "Custom::AWS",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "TMTenantMgmtAPIUsagePlanEntryCustomResourceCustomResourcePolicyC4856C33": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": "dynamodb:BatchWriteItem",
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::GetAtt": [
+                  "ControlplaneTableEAEAF271",
+                  "Arn",
+                ],
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "TMTenantMgmtAPIUsagePlanEntryCustomResourceCustomResourcePolicyC4856C33",
+        "Roles": [
+          {
+            "Ref": "AWS679f53fac002430cb0da5b7982bd2287ServiceRoleC1EA0FF2",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "TMTenantMgmtAPIUsagePlansUsagePlanBASIC8804CEED": {
+      "Properties": {
+        "Quota": {
+          "Limit": 20000,
+          "Period": "DAY",
+        },
+        "Throttle": {
+          "BurstLimit": 2,
+          "RateLimit": 5,
+        },
+        "UsagePlanName": "UsagePlan-BASIC",
+      },
+      "Type": "AWS::ApiGateway::UsagePlan",
+    },
+    "TMTenantMgmtAPIUsagePlansUsagePlanPREMIUM9B4FD995": {
+      "Properties": {
+        "Throttle": {
+          "BurstLimit": 10,
+          "RateLimit": 20,
+        },
+        "UsagePlanName": "UsagePlan-PREMIUM",
+      },
+      "Type": "AWS::ApiGateway::UsagePlan",
+    },
+    "TMTenantMgmtDeleteStackTenantMappingFn0A180434": {
+      "DependsOn": [
+        "TMTenantMgmtDeleteStackTenantMappingFnServiceRoleDefaultPolicy9767D013",
+        "TMTenantMgmtDeleteStackTenantMappingFnServiceRoleA7887935",
+      ],
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
+          },
+          "S3Key": "ed0bc6035096f303daf9d70b73e8d180ac51fe0883d55733503ef65f232c276c.zip",
+        },
+        "Environment": {
+          "Variables": {
+            "LOG_LEVEL": "INFO",
+            "TABLE_NAME": {
+              "Ref": "ControlplaneTableEAEAF271",
+            },
+          },
+        },
+        "Handler": "index.deleteStackTenantMapping",
+        "LoggingConfig": {
+          "LogGroup": {
+            "Ref": "TMTenantMgmtLogGroupD4808443",
+          },
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "TMTenantMgmtDeleteStackTenantMappingFnServiceRoleA7887935",
+            "Arn",
+          ],
+        },
+        "Runtime": "nodejs20.x",
+        "Timeout": 30,
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "TMTenantMgmtDeleteStackTenantMappingFnServiceRoleA7887935": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+              ],
+            ],
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "TMTenantMgmtDeleteStackTenantMappingFnServiceRoleDefaultPolicy9767D013": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "dynamodb:BatchGetItem",
+                "dynamodb:GetRecords",
+                "dynamodb:GetShardIterator",
+                "dynamodb:Query",
+                "dynamodb:GetItem",
+                "dynamodb:Scan",
+                "dynamodb:ConditionCheckItem",
+                "dynamodb:BatchWriteItem",
+                "dynamodb:PutItem",
+                "dynamodb:UpdateItem",
+                "dynamodb:DeleteItem",
+                "dynamodb:DescribeTable",
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "ControlplaneTableEAEAF271",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "ControlplaneTableEAEAF271",
+                          "Arn",
+                        ],
+                      },
+                      "/index/*",
+                    ],
+                  ],
+                },
+              ],
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "TMTenantMgmtDeleteStackTenantMappingFnServiceRoleDefaultPolicy9767D013",
+        "Roles": [
+          {
+            "Ref": "TMTenantMgmtDeleteStackTenantMappingFnServiceRoleA7887935",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "TMTenantMgmtDeleteTenantEntryFn25EC5741": {
+      "DependsOn": [
+        "TMTenantMgmtDeleteTenantEntryFnServiceRoleDefaultPolicy87E79511",
+        "TMTenantMgmtDeleteTenantEntryFnServiceRoleC453FADA",
+      ],
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
+          },
+          "S3Key": "ed0bc6035096f303daf9d70b73e8d180ac51fe0883d55733503ef65f232c276c.zip",
+        },
+        "Environment": {
+          "Variables": {
+            "LOG_LEVEL": "INFO",
+            "TABLE_NAME": {
+              "Ref": "ControlplaneTableEAEAF271",
+            },
+          },
+        },
+        "Handler": "index.deleteTenantEntry",
+        "LoggingConfig": {
+          "LogGroup": {
+            "Ref": "TMTenantMgmtLogGroupD4808443",
+          },
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "TMTenantMgmtDeleteTenantEntryFnServiceRoleC453FADA",
+            "Arn",
+          ],
+        },
+        "Runtime": "nodejs20.x",
+        "Timeout": 30,
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "TMTenantMgmtDeleteTenantEntryFnServiceRoleC453FADA": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+              ],
+            ],
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "TMTenantMgmtDeleteTenantEntryFnServiceRoleDefaultPolicy87E79511": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "dynamodb:BatchGetItem",
+                "dynamodb:GetRecords",
+                "dynamodb:GetShardIterator",
+                "dynamodb:Query",
+                "dynamodb:GetItem",
+                "dynamodb:Scan",
+                "dynamodb:ConditionCheckItem",
+                "dynamodb:BatchWriteItem",
+                "dynamodb:PutItem",
+                "dynamodb:UpdateItem",
+                "dynamodb:DeleteItem",
+                "dynamodb:DescribeTable",
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "ControlplaneTableEAEAF271",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "ControlplaneTableEAEAF271",
+                          "Arn",
+                        ],
+                      },
+                      "/index/*",
+                    ],
+                  ],
+                },
+              ],
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "TMTenantMgmtDeleteTenantEntryFnServiceRoleDefaultPolicy87E79511",
+        "Roles": [
+          {
+            "Ref": "TMTenantMgmtDeleteTenantEntryFnServiceRoleC453FADA",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "TMTenantMgmtLogGroupD4808443": {
+      "DeletionPolicy": "Delete",
+      "Properties": {
+        "LogGroupName": {
+          "Fn::Join": [
+            "",
+            [
+              "/",
+              {
+                "Ref": "AWS::StackName",
+              },
+              "/TenantMgmt",
+            ],
+          ],
+        },
+        "RetentionInDays": 1,
+      },
+      "Type": "AWS::Logs::LogGroup",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "TMTenantMgmtOffboardingTenantOffboardingSfnA64B6083": {
+      "DeletionPolicy": "Delete",
+      "DependsOn": [
+        "TMTenantMgmtOffboardingTenantOffboardingSfnRoleDefaultPolicy1C6E8DA2",
+        "TMTenantMgmtOffboardingTenantOffboardingSfnRole5F94DB5E",
+      ],
+      "Properties": {
+        "DefinitionString": {
+          "Fn::Join": [
+            "",
+            [
+              "{"StartAt":"Get tenant details","States":{"Get tenant details":{"Next":"Get stack details","Retry":[{"ErrorEquals":["Lambda.ClientExecutionTimeoutException","Lambda.ServiceException","Lambda.AWSLambdaException","Lambda.SdkClientException"],"IntervalSeconds":2,"MaxAttempts":6,"BackoffRate":2}],"Type":"Task","ResultPath":"$.tenant","ResultSelector":{"stackName.$":"$.Payload.tenant.stackName","tenantId.$":"$.Payload.tenant.tenantId","tenantName.$":"$.Payload.tenant.tenantName","tier.$":"$.Payload.tenant.tier","apiKey.$":"$.Payload.tenant.apiKey"},"Resource":"arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":states:::lambda:invoke","Parameters":{"FunctionName":"",
+              {
+                "Fn::GetAtt": [
+                  "TMTenantMgmtReadTenantEntryFn933525F7",
+                  "Arn",
+                ],
+              },
+              "","Payload":{"tenantId.$":"$.detail.tenantId"}}},"Get stack details":{"Next":"Set tenant to INACTIVE","Retry":[{"ErrorEquals":["Lambda.ClientExecutionTimeoutException","Lambda.ServiceException","Lambda.AWSLambdaException","Lambda.SdkClientException"],"IntervalSeconds":2,"MaxAttempts":6,"BackoffRate":2}],"Type":"Task","ResultPath":"$.stack","ResultSelector":{"stackName.$":"$.Payload.cell.stackName"},"Resource":"arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":states:::lambda:invoke","Parameters":{"FunctionName":"",
+              {
+                "Fn::GetAtt": [
+                  "RMResourceMgmtReadCellEntryFn146DAA56",
+                  "Arn",
+                ],
+              },
+              "","Payload":{"stackName.$":"$.tenant.stackName"}}},"Set tenant to INACTIVE":{"Next":"Export tenant (Send TENANT_EXPORT_REQUEST to event bus)","Retry":[{"ErrorEquals":["Lambda.ClientExecutionTimeoutException","Lambda.ServiceException","Lambda.AWSLambdaException","Lambda.SdkClientException"],"IntervalSeconds":2,"MaxAttempts":6,"BackoffRate":2}],"Type":"Task","ResultPath":null,"Resource":"arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":states:::lambda:invoke","Parameters":{"FunctionName":"",
+              {
+                "Fn::GetAtt": [
+                  "TMTenantMgmtUpdateTenantEntryFn7157198F",
+                  "Arn",
+                ],
+              },
+              "","Payload":{"tenantId.$":"$.detail.tenantId","tenantName.$":"$.tenant.tenantName","tier.$":"$.tenant.tier","apiKey.$":"$.tenant.apiKey","stackName.$":"$.tenant.stackName","status":"INACTIVE"}}},"Export tenant (Send TENANT_EXPORT_REQUEST to event bus)":{"Next":"Basic tier?","Type":"Task","ResultPath":null,"Resource":"arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":states:::events:putEvents.waitForTaskToken","Parameters":{"Entries":[{"Detail":{"tenantId.$":"$.detail.tenantId","exportType":"ARCHIVE","taskToken.$":"$$.Task.Token"},"DetailType":"TENANT_EXPORT_REQUEST","EventBusName":"",
+              {
+                "Fn::GetAtt": [
+                  "ControlplaneEventBusEventBusEventBus294F3902",
+                  "Arn",
+                ],
+              },
+              "","Source":"SAAS_CONTROL_PLANE"}]}},"Basic tier?":{"Type":"Choice","Choices":[{"Variable":"$.tenant.tier","StringEquals":"BASIC","Next":"Basic tier"}],"Default":"Not basic tier"},"Not basic tier":{"Type":"Pass","Next":"Delete tenant stack (Send DEPROVISIONING_REQUEST to event bus)"},"Delete tenant stack (Send DEPROVISIONING_REQUEST to event bus)":{"Next":"Delete stack-tenant mapping in tenant catalogue","Type":"Task","ResultPath":null,"Resource":"arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":states:::events:putEvents.waitForTaskToken","Parameters":{"Entries":[{"Detail":{"stackName.$":"$.tenant.stackName","exportType":"ARCHIVE","taskToken.$":"$$.Task.Token"},"DetailType":"DEPROVISIONING_REQUEST","EventBusName":"",
+              {
+                "Fn::GetAtt": [
+                  "ControlplaneEventBusEventBusEventBus294F3902",
+                  "Arn",
+                ],
+              },
+              "","Source":"SAAS_CONTROL_PLANE"}]}},"Delete stack-tenant mapping in tenant catalogue":{"Next":"Delete tenant entry in tenant catalogue","Retry":[{"ErrorEquals":["Lambda.ClientExecutionTimeoutException","Lambda.ServiceException","Lambda.AWSLambdaException","Lambda.SdkClientException"],"IntervalSeconds":2,"MaxAttempts":6,"BackoffRate":2}],"Type":"Task","ResultPath":null,"Resource":"arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":states:::lambda:invoke","Parameters":{"FunctionName":"",
+              {
+                "Fn::GetAtt": [
+                  "TMTenantMgmtDeleteStackTenantMappingFn0A180434",
+                  "Arn",
+                ],
+              },
+              "","Payload":{"tenantId.$":"$.detail.tenantId","stackName.$":"$.tenant.stackName"}}},"Delete tenant data (Send TENANT_DELETE_REQUEST to event bus)":{"Next":"Delete stack-tenant mapping in tenant catalogue","Type":"Task","ResultPath":null,"Resource":"arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":states:::events:putEvents.waitForTaskToken","Parameters":{"Entries":[{"Detail":{"tenantId.$":"$.detail.tenantId","stackName.$":"$.tenant.stackName","exportType":"ARCHIVE","taskToken.$":"$$.Task.Token"},"DetailType":"TENANT_DELETE_REQUEST","EventBusName":"",
+              {
+                "Fn::GetAtt": [
+                  "ControlplaneEventBusEventBusEventBus294F3902",
+                  "Arn",
+                ],
+              },
+              "","Source":"SAAS_CONTROL_PLANE"}]}},"Basic tier":{"Type":"Pass","Next":"Delete tenant data (Send TENANT_DELETE_REQUEST to event bus)"},"Delete tenant entry in tenant catalogue":{"Next":"Send OFFBOARDING_SUCCESS to event bus","Retry":[{"ErrorEquals":["Lambda.ClientExecutionTimeoutException","Lambda.ServiceException","Lambda.AWSLambdaException","Lambda.SdkClientException"],"IntervalSeconds":2,"MaxAttempts":6,"BackoffRate":2}],"Type":"Task","ResultPath":null,"Resource":"arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":states:::lambda:invoke","Parameters":{"FunctionName":"",
+              {
+                "Fn::GetAtt": [
+                  "TMTenantMgmtDeleteTenantEntryFn25EC5741",
+                  "Arn",
+                ],
+              },
+              "","Payload":{"tenantId.$":"$.detail.tenantId","stackName.$":"$.tenant.stackName"}}},"Send OFFBOARDING_SUCCESS to event bus":{"Next":"Is another step function waiting on a callback?","Type":"Task","ResultPath":null,"Resource":"arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":states:::events:putEvents","Parameters":{"Entries":[{"Detail":{"tenantId.$":"$.tenant.tenantId"},"DetailType":"OFFBOARDING_SUCCESS","EventBusName":"",
+              {
+                "Fn::GetAtt": [
+                  "ControlplaneEventBusEventBusEventBus294F3902",
+                  "Arn",
+                ],
+              },
+              "","Source":"SAAS_CONTROL_PLANE"}]}},"Is another step function waiting on a callback?":{"Type":"Choice","Choices":[{"Variable":"$.detail.taskToken","IsPresent":true,"Next":"Task token present"}],"Default":"No task token present"},"No task token present":{"Type":"Pass","End":true},"Task token present":{"Type":"Pass","Next":"Send successful SFN_CALLBACK event"},"Send successful SFN_CALLBACK event":{"End":true,"Type":"Task","ResultPath":null,"Resource":"arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":states:::events:putEvents","Parameters":{"Entries":[{"Detail":{"status":"SUCCEEDED","taskToken.$":"$.detail.taskToken","output.$":"$.detail.tenantId"},"DetailType":"SFN_CALLBACK","EventBusName":"",
+              {
+                "Fn::GetAtt": [
+                  "ControlplaneEventBusEventBusEventBus294F3902",
+                  "Arn",
+                ],
+              },
+              "","Source":"SAAS_CONTROL_PLANE"}]}}},"TimeoutSeconds":900,"Comment":"Offboard a tenant"}",
+            ],
+          ],
+        },
+        "LoggingConfiguration": {
+          "Destinations": [
+            {
+              "CloudWatchLogsLogGroup": {
+                "LogGroupArn": {
+                  "Fn::GetAtt": [
+                    "TMTenantMgmtLogGroupD4808443",
+                    "Arn",
+                  ],
+                },
+              },
+            },
+          ],
+          "Level": "ERROR",
+        },
+        "RoleArn": {
+          "Fn::GetAtt": [
+            "TMTenantMgmtOffboardingTenantOffboardingSfnRole5F94DB5E",
+            "Arn",
+          ],
+        },
+        "StateMachineName": "SaaSOpsV2-TenantOffboarding",
+        "TracingConfiguration": {
+          "Enabled": true,
+        },
+      },
+      "Type": "AWS::StepFunctions::StateMachine",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "TMTenantMgmtOffboardingTenantOffboardingSfnEventsRole33AB7D6B": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "events.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "TMTenantMgmtOffboardingTenantOffboardingSfnEventsRoleDefaultPolicy5FF707E6": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": "states:StartExecution",
+              "Effect": "Allow",
+              "Resource": {
+                "Ref": "TMTenantMgmtOffboardingTenantOffboardingSfnA64B6083",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "TMTenantMgmtOffboardingTenantOffboardingSfnEventsRoleDefaultPolicy5FF707E6",
+        "Roles": [
+          {
+            "Ref": "TMTenantMgmtOffboardingTenantOffboardingSfnEventsRole33AB7D6B",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "TMTenantMgmtOffboardingTenantOffboardingSfnRole5F94DB5E": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "states.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "TMTenantMgmtOffboardingTenantOffboardingSfnRoleDefaultPolicy1C6E8DA2": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": "lambda:InvokeFunction",
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "TMTenantMgmtReadTenantEntryFn933525F7",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "TMTenantMgmtReadTenantEntryFn933525F7",
+                          "Arn",
+                        ],
+                      },
+                      ":*",
+                    ],
+                  ],
+                },
+              ],
+            },
+            {
+              "Action": "lambda:InvokeFunction",
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "RMResourceMgmtReadCellEntryFn146DAA56",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "RMResourceMgmtReadCellEntryFn146DAA56",
+                          "Arn",
+                        ],
+                      },
+                      ":*",
+                    ],
+                  ],
+                },
+              ],
+            },
+            {
+              "Action": "lambda:InvokeFunction",
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "TMTenantMgmtUpdateTenantEntryFn7157198F",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "TMTenantMgmtUpdateTenantEntryFn7157198F",
+                          "Arn",
+                        ],
+                      },
+                      ":*",
+                    ],
+                  ],
+                },
+              ],
+            },
+            {
+              "Action": "events:PutEvents",
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::GetAtt": [
+                  "ControlplaneEventBusEventBusEventBus294F3902",
+                  "Arn",
+                ],
+              },
+            },
+            {
+              "Action": "lambda:InvokeFunction",
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "TMTenantMgmtDeleteStackTenantMappingFn0A180434",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "TMTenantMgmtDeleteStackTenantMappingFn0A180434",
+                          "Arn",
+                        ],
+                      },
+                      ":*",
+                    ],
+                  ],
+                },
+              ],
+            },
+            {
+              "Action": "lambda:InvokeFunction",
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "TMTenantMgmtDeleteTenantEntryFn25EC5741",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "TMTenantMgmtDeleteTenantEntryFn25EC5741",
+                          "Arn",
+                        ],
+                      },
+                      ":*",
+                    ],
+                  ],
+                },
+              ],
+            },
+            {
+              "Action": [
+                "logs:CreateLogDelivery",
+                "logs:GetLogDelivery",
+                "logs:UpdateLogDelivery",
+                "logs:DeleteLogDelivery",
+                "logs:ListLogDeliveries",
+                "logs:PutResourcePolicy",
+                "logs:DescribeResourcePolicies",
+                "logs:DescribeLogGroups",
+              ],
+              "Effect": "Allow",
+              "Resource": "*",
+            },
+            {
+              "Action": [
+                "xray:PutTraceSegments",
+                "xray:PutTelemetryRecords",
+                "xray:GetSamplingRules",
+                "xray:GetSamplingTargets",
+              ],
+              "Effect": "Allow",
+              "Resource": "*",
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "TMTenantMgmtOffboardingTenantOffboardingSfnRoleDefaultPolicy1C6E8DA2",
+        "Roles": [
+          {
+            "Ref": "TMTenantMgmtOffboardingTenantOffboardingSfnRole5F94DB5E",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "TMTenantMgmtOnboardingTenantProvCreateStackNameFn0C567273": {
+      "DependsOn": [
+        "TMTenantMgmtOnboardingTenantProvCreateStackNameFnServiceRoleAB14E110",
+      ],
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
+          },
+          "S3Key": "ed0bc6035096f303daf9d70b73e8d180ac51fe0883d55733503ef65f232c276c.zip",
+        },
+        "Environment": {
+          "Variables": {
+            "LOG_LEVEL": "INFO",
+          },
+        },
+        "Handler": "index.createStackName",
+        "LoggingConfig": {
+          "LogGroup": {
+            "Ref": "TMTenantMgmtLogGroupD4808443",
+          },
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "TMTenantMgmtOnboardingTenantProvCreateStackNameFnServiceRoleAB14E110",
+            "Arn",
+          ],
+        },
+        "Runtime": "nodejs20.x",
+        "Timeout": 30,
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "TMTenantMgmtOnboardingTenantProvCreateStackNameFnServiceRoleAB14E110": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+              ],
+            ],
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "TMTenantMgmtOnboardingTenantProvCreateTenantAdminFn3792D756": {
+      "DependsOn": [
+        "TMTenantMgmtOnboardingTenantProvCreateTenantAdminFnServiceRoleDefaultPolicy827E5E3F",
+        "TMTenantMgmtOnboardingTenantProvCreateTenantAdminFnServiceRole996F7D34",
+      ],
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
+          },
+          "S3Key": "ed0bc6035096f303daf9d70b73e8d180ac51fe0883d55733503ef65f232c276c.zip",
+        },
+        "Environment": {
+          "Variables": {
+            "LOG_LEVEL": "INFO",
+            "TABLE_NAME": {
+              "Ref": "ControlplaneTableEAEAF271",
+            },
+          },
+        },
+        "Handler": "index.createTenantAdmin",
+        "LoggingConfig": {
+          "LogGroup": {
+            "Ref": "TMTenantMgmtLogGroupD4808443",
+          },
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "TMTenantMgmtOnboardingTenantProvCreateTenantAdminFnServiceRole996F7D34",
+            "Arn",
+          ],
+        },
+        "Runtime": "nodejs20.x",
+        "Timeout": 30,
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "TMTenantMgmtOnboardingTenantProvCreateTenantAdminFnServiceRole996F7D34": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+              ],
+            ],
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "TMTenantMgmtOnboardingTenantProvCreateTenantAdminFnServiceRoleDefaultPolicy827E5E3F": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "cognito-idp:AdminCreateUser",
+                "cognito-idp:AdminSetUserPassword",
+                "cloudformation:ListStacks",
+                "cloudformation:DescribeStacks",
+              ],
+              "Effect": "Allow",
+              "Resource": "*",
+            },
+            {
+              "Action": [
+                "dynamodb:BatchGetItem",
+                "dynamodb:GetRecords",
+                "dynamodb:GetShardIterator",
+                "dynamodb:Query",
+                "dynamodb:GetItem",
+                "dynamodb:Scan",
+                "dynamodb:ConditionCheckItem",
+                "dynamodb:DescribeTable",
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "ControlplaneTableEAEAF271",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "ControlplaneTableEAEAF271",
+                          "Arn",
+                        ],
+                      },
+                      "/index/*",
+                    ],
+                  ],
+                },
+              ],
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "TMTenantMgmtOnboardingTenantProvCreateTenantAdminFnServiceRoleDefaultPolicy827E5E3F",
+        "Roles": [
+          {
+            "Ref": "TMTenantMgmtOnboardingTenantProvCreateTenantAdminFnServiceRole996F7D34",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "TMTenantMgmtOnboardingTenantProvCreateTenantEntryFnDCB7E2D5": {
+      "DependsOn": [
+        "TMTenantMgmtOnboardingTenantProvCreateTenantEntryFnServiceRoleDefaultPolicy3E5A5866",
+        "TMTenantMgmtOnboardingTenantProvCreateTenantEntryFnServiceRole1D78624A",
+      ],
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
+          },
+          "S3Key": "ed0bc6035096f303daf9d70b73e8d180ac51fe0883d55733503ef65f232c276c.zip",
+        },
+        "Environment": {
+          "Variables": {
+            "LOG_LEVEL": "INFO",
+            "TABLE_NAME": {
+              "Ref": "ControlplaneTableEAEAF271",
+            },
+          },
+        },
+        "Handler": "index.createTenant",
+        "LoggingConfig": {
+          "LogGroup": {
+            "Ref": "TMTenantMgmtLogGroupD4808443",
+          },
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "TMTenantMgmtOnboardingTenantProvCreateTenantEntryFnServiceRole1D78624A",
+            "Arn",
+          ],
+        },
+        "Runtime": "nodejs20.x",
+        "Timeout": 30,
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "TMTenantMgmtOnboardingTenantProvCreateTenantEntryFnServiceRole1D78624A": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+              ],
+            ],
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "TMTenantMgmtOnboardingTenantProvCreateTenantEntryFnServiceRoleDefaultPolicy3E5A5866": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "dynamodb:BatchGetItem",
+                "dynamodb:GetRecords",
+                "dynamodb:GetShardIterator",
+                "dynamodb:Query",
+                "dynamodb:GetItem",
+                "dynamodb:Scan",
+                "dynamodb:ConditionCheckItem",
+                "dynamodb:BatchWriteItem",
+                "dynamodb:PutItem",
+                "dynamodb:UpdateItem",
+                "dynamodb:DeleteItem",
+                "dynamodb:DescribeTable",
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "ControlplaneTableEAEAF271",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "ControlplaneTableEAEAF271",
+                          "Arn",
+                        ],
+                      },
+                      "/index/*",
+                    ],
+                  ],
+                },
+              ],
+            },
+            {
+              "Action": "apigateway:*",
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":apigateway:",
+                      {
+                        "Ref": "AWS::Region",
+                      },
+                      "::/apikeys",
+                    ],
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":apigateway:",
+                      {
+                        "Ref": "AWS::Region",
+                      },
+                      "::/apikeys/*",
+                    ],
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":apigateway:",
+                      {
+                        "Ref": "AWS::Region",
+                      },
+                      "::/usageplans",
+                    ],
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":apigateway:",
+                      {
+                        "Ref": "AWS::Region",
+                      },
+                      "::/usageplans/*",
+                    ],
+                  ],
+                },
+              ],
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "TMTenantMgmtOnboardingTenantProvCreateTenantEntryFnServiceRoleDefaultPolicy3E5A5866",
+        "Roles": [
+          {
+            "Ref": "TMTenantMgmtOnboardingTenantProvCreateTenantEntryFnServiceRole1D78624A",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "TMTenantMgmtOnboardingTenantProvGetBasicStacksFn44733FCF": {
+      "DependsOn": [
+        "TMTenantMgmtOnboardingTenantProvGetBasicStacksFnServiceRoleDefaultPolicyEAB0F845",
+        "TMTenantMgmtOnboardingTenantProvGetBasicStacksFnServiceRole8202A943",
+      ],
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
+          },
+          "S3Key": "e0d990c9f5dc86fce0eca93eeadd2233bb43367687affe12b1f289f9a414e48f.zip",
+        },
+        "Environment": {
+          "Variables": {
+            "LOG_LEVEL": "INFO",
+            "TABLE_NAME": {
+              "Ref": "ControlplaneTableEAEAF271",
+            },
+          },
+        },
+        "Handler": "index.getStacks",
+        "LoggingConfig": {
+          "LogGroup": {
+            "Ref": "TMTenantMgmtLogGroupD4808443",
+          },
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "TMTenantMgmtOnboardingTenantProvGetBasicStacksFnServiceRole8202A943",
+            "Arn",
+          ],
+        },
+        "Runtime": "nodejs20.x",
+        "Timeout": 30,
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "TMTenantMgmtOnboardingTenantProvGetBasicStacksFnServiceRole8202A943": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+              ],
+            ],
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "TMTenantMgmtOnboardingTenantProvGetBasicStacksFnServiceRoleDefaultPolicyEAB0F845": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "dynamodb:BatchGetItem",
+                "dynamodb:GetRecords",
+                "dynamodb:GetShardIterator",
+                "dynamodb:Query",
+                "dynamodb:GetItem",
+                "dynamodb:Scan",
+                "dynamodb:ConditionCheckItem",
+                "dynamodb:DescribeTable",
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "ControlplaneTableEAEAF271",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "ControlplaneTableEAEAF271",
+                          "Arn",
+                        ],
+                      },
+                      "/index/*",
+                    ],
+                  ],
+                },
+              ],
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "TMTenantMgmtOnboardingTenantProvGetBasicStacksFnServiceRoleDefaultPolicyEAB0F845",
+        "Roles": [
+          {
+            "Ref": "TMTenantMgmtOnboardingTenantProvGetBasicStacksFnServiceRole8202A943",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "TMTenantMgmtOnboardingTenantProvRoleDefaultPolicy1F48BBE9": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "dynamodb:BatchGetItem",
+                "dynamodb:GetRecords",
+                "dynamodb:GetShardIterator",
+                "dynamodb:Query",
+                "dynamodb:GetItem",
+                "dynamodb:Scan",
+                "dynamodb:ConditionCheckItem",
+                "dynamodb:BatchWriteItem",
+                "dynamodb:PutItem",
+                "dynamodb:UpdateItem",
+                "dynamodb:DeleteItem",
+                "dynamodb:DescribeTable",
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "ControlplaneTableEAEAF271",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "ControlplaneTableEAEAF271",
+                          "Arn",
+                        ],
+                      },
+                      "/index/*",
+                    ],
+                  ],
+                },
+              ],
+            },
+            {
+              "Action": "lambda:InvokeFunction",
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "TMTenantMgmtOnboardingTenantProvCreateTenantEntryFnDCB7E2D5",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "TMTenantMgmtOnboardingTenantProvCreateTenantEntryFnDCB7E2D5",
+                          "Arn",
+                        ],
+                      },
+                      ":*",
+                    ],
+                  ],
+                },
+              ],
+            },
+            {
+              "Action": "lambda:InvokeFunction",
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "TMTenantMgmtOnboardingTenantProvCreateStackNameFn0C567273",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "TMTenantMgmtOnboardingTenantProvCreateStackNameFn0C567273",
+                          "Arn",
+                        ],
+                      },
+                      ":*",
+                    ],
+                  ],
+                },
+              ],
+            },
+            {
+              "Action": "events:PutEvents",
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::GetAtt": [
+                  "ControlplaneEventBusEventBusEventBus294F3902",
+                  "Arn",
+                ],
+              },
+            },
+            {
+              "Action": "lambda:InvokeFunction",
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "TMTenantMgmtOnboardingTenantProvUpdateTenantEntryFnD45D9BF8",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "TMTenantMgmtOnboardingTenantProvUpdateTenantEntryFnD45D9BF8",
+                          "Arn",
+                        ],
+                      },
+                      ":*",
+                    ],
+                  ],
+                },
+              ],
+            },
+            {
+              "Action": "lambda:InvokeFunction",
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "TMTenantMgmtOnboardingTenantProvGetBasicStacksFn44733FCF",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "TMTenantMgmtOnboardingTenantProvGetBasicStacksFn44733FCF",
+                          "Arn",
+                        ],
+                      },
+                      ":*",
+                    ],
+                  ],
+                },
+              ],
+            },
+            {
+              "Action": "lambda:InvokeFunction",
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "TMTenantMgmtUpdateStackTenantMappingFnA1F3AB4E",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "TMTenantMgmtUpdateStackTenantMappingFnA1F3AB4E",
+                          "Arn",
+                        ],
+                      },
+                      ":*",
+                    ],
+                  ],
+                },
+              ],
+            },
+            {
+              "Action": "lambda:InvokeFunction",
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "TMTenantMgmtOnboardingTenantProvCreateTenantAdminFn3792D756",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "TMTenantMgmtOnboardingTenantProvCreateTenantAdminFn3792D756",
+                          "Arn",
+                        ],
+                      },
+                      ":*",
+                    ],
+                  ],
+                },
+              ],
+            },
+            {
+              "Action": [
+                "logs:CreateLogDelivery",
+                "logs:GetLogDelivery",
+                "logs:UpdateLogDelivery",
+                "logs:DeleteLogDelivery",
+                "logs:ListLogDeliveries",
+                "logs:PutResourcePolicy",
+                "logs:DescribeResourcePolicies",
+                "logs:DescribeLogGroups",
+              ],
+              "Effect": "Allow",
+              "Resource": "*",
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "TMTenantMgmtOnboardingTenantProvRoleDefaultPolicy1F48BBE9",
+        "Roles": [
+          {
+            "Ref": "TMTenantMgmtOnboardingTenantProvRoleFE0C33B2",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "TMTenantMgmtOnboardingTenantProvRoleFE0C33B2": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "states.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+              ],
+            ],
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "TMTenantMgmtOnboardingTenantProvSfnCE5315EB": {
+      "DeletionPolicy": "Delete",
+      "DependsOn": [
+        "TMTenantMgmtOnboardingTenantProvRoleDefaultPolicy1F48BBE9",
+        "TMTenantMgmtOnboardingTenantProvRoleFE0C33B2",
+      ],
+      "Properties": {
+        "DefinitionString": {
+          "Fn::Join": [
+            "",
+            [
+              "{"StartAt":"Create tenant entry in tenant catalogue","States":{"Create tenant entry in tenant catalogue":{"Next":"Is the tenant in the basic tier?","Retry":[{"ErrorEquals":["Lambda.ClientExecutionTimeoutException","Lambda.ServiceException","Lambda.AWSLambdaException","Lambda.SdkClientException"],"IntervalSeconds":2,"MaxAttempts":6,"BackoffRate":2}],"Type":"Task","ResultPath":"$.tenant","ResultSelector":{"tenantId.$":"$.Payload.tenantId","tenantName.$":"$.Payload.tenantName","tier.$":"$.Payload.tier","apiKey.$":"$.Payload.apiKey"},"Resource":"arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":states:::lambda:invoke","Parameters":{"FunctionName":"",
+              {
+                "Fn::GetAtt": [
+                  "TMTenantMgmtOnboardingTenantProvCreateTenantEntryFnDCB7E2D5",
+                  "Arn",
+                ],
+              },
+              "","Payload":{"tenantName.$":"$.detail.tenantName","tier.$":"$.detail.tier"}}},"Is the tenant in the basic tier?":{"Type":"Choice","Choices":[{"Variable":"$.tenant.tier","StringEquals":"BASIC","Next":"Basic tier"}],"Default":"Not basic tier"},"Not basic tier":{"Type":"Pass","Next":"Create stack name"},"Create stack name":{"Next":"Provision tenant resources (Send PROVISIONING_REQUEST to event bus)","Retry":[{"ErrorEquals":["Lambda.ClientExecutionTimeoutException","Lambda.ServiceException","Lambda.AWSLambdaException","Lambda.SdkClientException"],"IntervalSeconds":2,"MaxAttempts":6,"BackoffRate":2}],"Type":"Task","ResultPath":"$.stack","ResultSelector":{"stackName.$":"$.Payload.body.stackName"},"Resource":"arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":states:::lambda:invoke","Parameters":{"FunctionName":"",
+              {
+                "Fn::GetAtt": [
+                  "TMTenantMgmtOnboardingTenantProvCreateStackNameFn0C567273",
+                  "Arn",
+                ],
+              },
+              "","Payload":{"tenantId.$":"$.tenant.tenantId","tier.$":"$.tenant.tier"}}},"Basic stack does not exist":{"Type":"Pass","Next":"Create stack name"},"Provision tenant resources (Send PROVISIONING_REQUEST to event bus)":{"Next":"Update tenant entry in tenant catalogue","Type":"Task","ResultPath":null,"Resource":"arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":states:::events:putEvents.waitForTaskToken","Parameters":{"Entries":[{"Detail":{"tier.$":"$.detail.tier","stackName.$":"$.stack.stackName","taskToken.$":"$$.Task.Token"},"DetailType":"PROVISIONING_REQUEST","EventBusName":"",
+              {
+                "Fn::GetAtt": [
+                  "ControlplaneEventBusEventBusEventBus294F3902",
+                  "Arn",
+                ],
+              },
+              "","Source":"SAAS_CONTROL_PLANE"}]}},"Update tenant entry in tenant catalogue":{"Next":"Create stack-tenant mapping in tenant catalogue","Retry":[{"ErrorEquals":["Lambda.ClientExecutionTimeoutException","Lambda.ServiceException","Lambda.AWSLambdaException","Lambda.SdkClientException"],"IntervalSeconds":2,"MaxAttempts":6,"BackoffRate":2}],"Type":"Task","ResultPath":null,"Resource":"arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":states:::lambda:invoke","Parameters":{"FunctionName":"",
+              {
+                "Fn::GetAtt": [
+                  "TMTenantMgmtOnboardingTenantProvUpdateTenantEntryFnD45D9BF8",
+                  "Arn",
+                ],
+              },
+              "","Payload":{"tenantId.$":"$.tenant.tenantId","tenantName.$":"$.tenant.tenantName","tier.$":"$.tenant.tier","apiKey.$":"$.tenant.apiKey","stackName.$":"$.stack.stackName","status":"ACTIVE"}}},"Basic stack exists":{"Type":"Pass","Parameters":{"detail.$":"$.detail","stack.$":"$.stacks.stacks[0]","tenant.$":"$.tenant"},"Next":"Update tenant entry in tenant catalogue"},"Does a basic stack exist?":{"Type":"Choice","Choices":[{"Variable":"$.stacks.stacks[0].stackName","IsPresent":true,"Next":"Basic stack exists"}],"Default":"Basic stack does not exist"},"Get all basic stacks from tenant catalogue":{"Next":"Does a basic stack exist?","Retry":[{"ErrorEquals":["Lambda.ClientExecutionTimeoutException","Lambda.ServiceException","Lambda.AWSLambdaException","Lambda.SdkClientException"],"IntervalSeconds":2,"MaxAttempts":6,"BackoffRate":2}],"Type":"Task","ResultPath":"$.stacks","ResultSelector":{"stacks.$":"$.Payload.body"},"Resource":"arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":states:::lambda:invoke","Parameters":{"FunctionName":"",
+              {
+                "Fn::GetAtt": [
+                  "TMTenantMgmtOnboardingTenantProvGetBasicStacksFn44733FCF",
+                  "Arn",
+                ],
+              },
+              "","Payload":{"tier.$":"$.tenant.tier"}}},"Basic tier":{"Type":"Pass","Next":"Get all basic stacks from tenant catalogue"},"Create stack-tenant mapping in tenant catalogue":{"Next":"Create tenant admin user","Retry":[{"ErrorEquals":["Lambda.ClientExecutionTimeoutException","Lambda.ServiceException","Lambda.AWSLambdaException","Lambda.SdkClientException"],"IntervalSeconds":2,"MaxAttempts":6,"BackoffRate":2}],"Type":"Task","ResultPath":null,"Resource":"arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":states:::lambda:invoke","Parameters":{"FunctionName":"",
+              {
+                "Fn::GetAtt": [
+                  "TMTenantMgmtUpdateStackTenantMappingFnA1F3AB4E",
+                  "Arn",
+                ],
+              },
+              "","Payload":{"tenantId.$":"$.tenant.tenantId","stackName.$":"$.stack.stackName"}}},"Create tenant admin user":{"Next":"Send ONBOARDING_SUCCESS to event bus","Retry":[{"ErrorEquals":["Lambda.ClientExecutionTimeoutException","Lambda.ServiceException","Lambda.AWSLambdaException","Lambda.SdkClientException"],"IntervalSeconds":2,"MaxAttempts":6,"BackoffRate":2}],"Type":"Task","ResultPath":null,"Resource":"arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":states:::lambda:invoke","Parameters":{"FunctionName":"",
+              {
+                "Fn::GetAtt": [
+                  "TMTenantMgmtOnboardingTenantProvCreateTenantAdminFn3792D756",
+                  "Arn",
+                ],
+              },
+              "","Payload.$":"$.tenant"}},"Send ONBOARDING_SUCCESS to event bus":{"Next":"Is another step function waiting on a callback?","Type":"Task","ResultPath":null,"Resource":"arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":states:::events:putEvents","Parameters":{"Entries":[{"Detail":{"tenant.$":"$.tenant"},"DetailType":"ONBOARDING_SUCCESS","EventBusName":"",
+              {
+                "Fn::GetAtt": [
+                  "ControlplaneEventBusEventBusEventBus294F3902",
+                  "Arn",
+                ],
+              },
+              "","Source":"SAAS_CONTROL_PLANE"}]}},"Is another step function waiting on a callback?":{"Type":"Choice","Choices":[{"Variable":"$.detail.taskToken","IsPresent":true,"Next":"Task token present"}],"Default":"No task token present"},"No task token present":{"Type":"Pass","End":true},"Task token present":{"Type":"Pass","Next":"Send successful SFN_CALLBACK event"},"Send successful SFN_CALLBACK event":{"End":true,"Type":"Task","ResultPath":null,"Resource":"arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":states:::events:putEvents","Parameters":{"Entries":[{"Detail":{"status":"SUCCEEDED","taskToken.$":"$.detail.taskToken","output.$":"$.tenant"},"DetailType":"SFN_CALLBACK","EventBusName":"",
+              {
+                "Fn::GetAtt": [
+                  "ControlplaneEventBusEventBusEventBus294F3902",
+                  "Arn",
+                ],
+              },
+              "","Source":"SAAS_CONTROL_PLANE"}]}}},"TimeoutSeconds":900,"Comment":"Provision an application cell"}",
+            ],
+          ],
+        },
+        "LoggingConfiguration": {
+          "Destinations": [
+            {
+              "CloudWatchLogsLogGroup": {
+                "LogGroupArn": {
+                  "Fn::GetAtt": [
+                    "TMTenantMgmtLogGroupD4808443",
+                    "Arn",
+                  ],
+                },
+              },
+            },
+          ],
+          "Level": "ERROR",
+        },
+        "RoleArn": {
+          "Fn::GetAtt": [
+            "TMTenantMgmtOnboardingTenantProvRoleFE0C33B2",
+            "Arn",
+          ],
+        },
+        "StateMachineName": "SaaSOpsV2-TenantOnboarding",
+      },
+      "Type": "AWS::StepFunctions::StateMachine",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "TMTenantMgmtOnboardingTenantProvSfnEventsRoleCDD13ACF": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "events.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "TMTenantMgmtOnboardingTenantProvSfnEventsRoleDefaultPolicy6660749B": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": "states:StartExecution",
+              "Effect": "Allow",
+              "Resource": {
+                "Ref": "TMTenantMgmtOnboardingTenantProvSfnCE5315EB",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "TMTenantMgmtOnboardingTenantProvSfnEventsRoleDefaultPolicy6660749B",
+        "Roles": [
+          {
+            "Ref": "TMTenantMgmtOnboardingTenantProvSfnEventsRoleCDD13ACF",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "TMTenantMgmtOnboardingTenantProvUpdateTenantEntryFnD45D9BF8": {
+      "DependsOn": [
+        "TMTenantMgmtOnboardingTenantProvUpdateTenantEntryFnServiceRoleDefaultPolicyF0859E62",
+        "TMTenantMgmtOnboardingTenantProvUpdateTenantEntryFnServiceRole56CF4A76",
+      ],
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
+          },
+          "S3Key": "ed0bc6035096f303daf9d70b73e8d180ac51fe0883d55733503ef65f232c276c.zip",
+        },
+        "Environment": {
+          "Variables": {
+            "LOG_LEVEL": "INFO",
+            "TABLE_NAME": {
+              "Ref": "ControlplaneTableEAEAF271",
+            },
+          },
+        },
+        "Handler": "index.updateTenantEntry",
+        "LoggingConfig": {
+          "LogGroup": {
+            "Ref": "TMTenantMgmtLogGroupD4808443",
+          },
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "TMTenantMgmtOnboardingTenantProvUpdateTenantEntryFnServiceRole56CF4A76",
+            "Arn",
+          ],
+        },
+        "Runtime": "nodejs20.x",
+        "Timeout": 30,
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "TMTenantMgmtOnboardingTenantProvUpdateTenantEntryFnServiceRole56CF4A76": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+              ],
+            ],
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "TMTenantMgmtOnboardingTenantProvUpdateTenantEntryFnServiceRoleDefaultPolicyF0859E62": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "dynamodb:BatchGetItem",
+                "dynamodb:GetRecords",
+                "dynamodb:GetShardIterator",
+                "dynamodb:Query",
+                "dynamodb:GetItem",
+                "dynamodb:Scan",
+                "dynamodb:ConditionCheckItem",
+                "dynamodb:BatchWriteItem",
+                "dynamodb:PutItem",
+                "dynamodb:UpdateItem",
+                "dynamodb:DeleteItem",
+                "dynamodb:DescribeTable",
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "ControlplaneTableEAEAF271",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "ControlplaneTableEAEAF271",
+                          "Arn",
+                        ],
+                      },
+                      "/index/*",
+                    ],
+                  ],
+                },
+              ],
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "TMTenantMgmtOnboardingTenantProvUpdateTenantEntryFnServiceRoleDefaultPolicyF0859E62",
+        "Roles": [
+          {
+            "Ref": "TMTenantMgmtOnboardingTenantProvUpdateTenantEntryFnServiceRole56CF4A76",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "TMTenantMgmtReadTenantEntryFn933525F7": {
+      "DependsOn": [
+        "TMTenantMgmtReadTenantEntryFnServiceRoleDefaultPolicy81D01DC9",
+        "TMTenantMgmtReadTenantEntryFnServiceRoleA8377D78",
+      ],
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
+          },
+          "S3Key": "ed0bc6035096f303daf9d70b73e8d180ac51fe0883d55733503ef65f232c276c.zip",
+        },
+        "Environment": {
+          "Variables": {
+            "LOG_LEVEL": "INFO",
+            "TABLE_NAME": {
+              "Ref": "ControlplaneTableEAEAF271",
+            },
+          },
+        },
+        "Handler": "index.getTenant",
+        "LoggingConfig": {
+          "LogGroup": {
+            "Ref": "TMTenantMgmtLogGroupD4808443",
+          },
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "TMTenantMgmtReadTenantEntryFnServiceRoleA8377D78",
+            "Arn",
+          ],
+        },
+        "Runtime": "nodejs20.x",
+        "Timeout": 30,
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "TMTenantMgmtReadTenantEntryFnServiceRoleA8377D78": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+              ],
+            ],
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "TMTenantMgmtReadTenantEntryFnServiceRoleDefaultPolicy81D01DC9": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "dynamodb:BatchGetItem",
+                "dynamodb:GetRecords",
+                "dynamodb:GetShardIterator",
+                "dynamodb:Query",
+                "dynamodb:GetItem",
+                "dynamodb:Scan",
+                "dynamodb:ConditionCheckItem",
+                "dynamodb:DescribeTable",
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "ControlplaneTableEAEAF271",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "ControlplaneTableEAEAF271",
+                          "Arn",
+                        ],
+                      },
+                      "/index/*",
+                    ],
+                  ],
+                },
+              ],
+            },
+            {
+              "Action": [
+                "cloudformation:ListStacks",
+                "cloudformation:DescribeStacks",
+              ],
+              "Effect": "Allow",
+              "Resource": "*",
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "TMTenantMgmtReadTenantEntryFnServiceRoleDefaultPolicy81D01DC9",
+        "Roles": [
+          {
+            "Ref": "TMTenantMgmtReadTenantEntryFnServiceRoleA8377D78",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "TMTenantMgmtUpdateStackTenantMappingFnA1F3AB4E": {
+      "DependsOn": [
+        "TMTenantMgmtUpdateStackTenantMappingFnServiceRoleDefaultPolicy8D1C053E",
+        "TMTenantMgmtUpdateStackTenantMappingFnServiceRole300D0401",
+      ],
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
+          },
+          "S3Key": "ed0bc6035096f303daf9d70b73e8d180ac51fe0883d55733503ef65f232c276c.zip",
+        },
+        "Environment": {
+          "Variables": {
+            "LOG_LEVEL": "INFO",
+            "TABLE_NAME": {
+              "Ref": "ControlplaneTableEAEAF271",
+            },
+          },
+        },
+        "Handler": "index.createStackTenantMapping",
+        "LoggingConfig": {
+          "LogGroup": {
+            "Ref": "TMTenantMgmtLogGroupD4808443",
+          },
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "TMTenantMgmtUpdateStackTenantMappingFnServiceRole300D0401",
+            "Arn",
+          ],
+        },
+        "Runtime": "nodejs20.x",
+        "Timeout": 30,
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "TMTenantMgmtUpdateStackTenantMappingFnServiceRole300D0401": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+              ],
+            ],
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "TMTenantMgmtUpdateStackTenantMappingFnServiceRoleDefaultPolicy8D1C053E": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "dynamodb:BatchGetItem",
+                "dynamodb:GetRecords",
+                "dynamodb:GetShardIterator",
+                "dynamodb:Query",
+                "dynamodb:GetItem",
+                "dynamodb:Scan",
+                "dynamodb:ConditionCheckItem",
+                "dynamodb:BatchWriteItem",
+                "dynamodb:PutItem",
+                "dynamodb:UpdateItem",
+                "dynamodb:DeleteItem",
+                "dynamodb:DescribeTable",
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "ControlplaneTableEAEAF271",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "ControlplaneTableEAEAF271",
+                          "Arn",
+                        ],
+                      },
+                      "/index/*",
+                    ],
+                  ],
+                },
+              ],
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "TMTenantMgmtUpdateStackTenantMappingFnServiceRoleDefaultPolicy8D1C053E",
+        "Roles": [
+          {
+            "Ref": "TMTenantMgmtUpdateStackTenantMappingFnServiceRole300D0401",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "TMTenantMgmtUpdateTenantEntryFn7157198F": {
+      "DependsOn": [
+        "TMTenantMgmtUpdateTenantEntryFnServiceRoleDefaultPolicyDDD833BC",
+        "TMTenantMgmtUpdateTenantEntryFnServiceRole5EA6F7AE",
+      ],
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
+          },
+          "S3Key": "ed0bc6035096f303daf9d70b73e8d180ac51fe0883d55733503ef65f232c276c.zip",
+        },
+        "Environment": {
+          "Variables": {
+            "LOG_LEVEL": "INFO",
+            "TABLE_NAME": {
+              "Ref": "ControlplaneTableEAEAF271",
+            },
+          },
+        },
+        "Handler": "index.updateTenantEntry",
+        "LoggingConfig": {
+          "LogGroup": {
+            "Ref": "TMTenantMgmtLogGroupD4808443",
+          },
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "TMTenantMgmtUpdateTenantEntryFnServiceRole5EA6F7AE",
+            "Arn",
+          ],
+        },
+        "Runtime": "nodejs20.x",
+        "Timeout": 30,
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "TMTenantMgmtUpdateTenantEntryFnServiceRole5EA6F7AE": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+              ],
+            ],
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "TMTenantMgmtUpdateTenantEntryFnServiceRoleDefaultPolicyDDD833BC": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "dynamodb:BatchGetItem",
+                "dynamodb:GetRecords",
+                "dynamodb:GetShardIterator",
+                "dynamodb:Query",
+                "dynamodb:GetItem",
+                "dynamodb:Scan",
+                "dynamodb:ConditionCheckItem",
+                "dynamodb:BatchWriteItem",
+                "dynamodb:PutItem",
+                "dynamodb:UpdateItem",
+                "dynamodb:DeleteItem",
+                "dynamodb:DescribeTable",
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "ControlplaneTableEAEAF271",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "ControlplaneTableEAEAF271",
+                          "Arn",
+                        ],
+                      },
+                      "/index/*",
+                    ],
+                  ],
+                },
+              ],
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "TMTenantMgmtUpdateTenantEntryFnServiceRoleDefaultPolicyDDD833BC",
+        "Roles": [
+          {
+            "Ref": "TMTenantMgmtUpdateTenantEntryFnServiceRole5EA6F7AE",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+  },
+  "Rules": {
+    "CheckBootstrapVersion": {
+      "Assertions": [
+        {
+          "Assert": {
+            "Fn::Not": [
+              {
+                "Fn::Contains": [
+                  [
+                    "1",
+                    "2",
+                    "3",
+                    "4",
+                    "5",
+                  ],
+                  {
+                    "Ref": "BootstrapVersion",
+                  },
+                ],
+              },
+            ],
+          },
+          "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI.",
+        },
+      ],
+    },
+  },
+}
+`;

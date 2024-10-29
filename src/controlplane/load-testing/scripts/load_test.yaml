@@ -1,0 +1,161 @@
+config:
+  target: "http://127.0.0.1"
+  phases:
+    - duration: "{{$processEnvironment.LT_DURATION}}"
+      arrivalRate: 1
+      maxVusers: "{{$processEnvironment.LT_COUNT}}"
+      name: Normal
+    - duration: "{{$processEnvironment.LT_DURATION}}"
+      arrivalRate: 2
+      maxVusers: "{{$processEnvironment.LT_COUNT}}"
+      name: High
+    - duration: "{{$processEnvironment.LT_DURATION}}"
+      arrivalRate: 4
+      maxVusers: "{{$processEnvironment.LT_COUNT}}"
+      name: Extreme
+    - duration: "{{$processEnvironment.LT_DURATION}}"
+      arrivalRate: 1
+      maxVusers: "{{$processEnvironment.LT_COUNT}}"
+      name: Normal
+    - duration: "{{$processEnvironment.LT_DURATION}}"
+      arrivalRate: 2
+      maxVusers: "{{$processEnvironment.LT_COUNT}}"
+      name: Normal
+  payload:
+    path: "users.csv"
+    fields:
+      - "username"
+      - "password"
+  processor: "./processor.mjs"
+  plugins:
+    fake-data: {}
+    expect: {}
+
+scenarios:
+  - name: "Product creator"
+    weight: 1
+    beforeScenario: getToken
+    flow:
+      - get:
+          url: "{{$processEnvironment.URL}}products"
+          headers:
+            Authorization: "Bearer {{ token }}"
+      - post:
+          url: "{{$processEnvironment.URL}}products"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          json:
+            name: "{{ $randAccessory() }}"
+            price: "{{ $randNumber() }}"
+            sku: "{{ $randNumber() }}"
+            category: "{{ $randDepartment() }}"
+      - post:
+          url: "{{$processEnvironment.URL}}products"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          json:
+            name: "{{ $randAccessory() }}"
+            price: "{{ $randNumber() }}"
+            sku: "{{ $randNumber() }}"
+            category: "{{ $randDepartment() }}"
+      - post:
+          url: "{{$processEnvironment.URL}}products"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          json:
+            name: "{{ $randAccessory() }}"
+            price: "{{ $randNumber() }}"
+            sku: "{{ $randNumber() }}"
+            category: "{{ $randDepartment() }}"
+  - name: "Order creator"
+    weight: 10
+    beforeScenario: getToken
+    flow:
+      - post:
+          url: "{{$processEnvironment.URL}}orders"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          json:
+            lines:
+              - productId: "{{ $randNumber() }}"
+                quantity: "{{ $randNumber() }}"
+              - productId: "{{ $randNumber() }}"
+                quantity: "{{ $randNumber() }}"
+              - productId: "{{ $randNumber() }}"
+                quantity: "{{ $randNumber() }}"
+      - put:
+          url: "{{$processEnvironment.URL}}orders/{{ $randNumber() }}"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          json:
+            lines:
+              - productId: "{{ $randNumber() }}"
+                quantity: "{{ $randNumber() }}"
+              - productId: "{{ $randNumber() }}"
+                quantity: "{{ $randNumber() }}"
+              - productId: "{{ $randNumber() }}"
+                quantity: "{{ $randNumber() }}"
+      - put:
+          url: "{{$processEnvironment.URL}}orders/{{ $randNumber() }}"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          json:
+            lines:
+              - productId: "{{ $randNumber() }}"
+                quantity: "{{ $randNumber() }}"
+              - productId: "{{ $randNumber() }}"
+                quantity: "{{ $randNumber() }}"
+              - productId: "{{ $randNumber() }}"
+                quantity: "{{ $randNumber() }}"
+  - name: "Order viewer"
+    weight: 20
+    beforeScenario: getToken
+    flow:
+      - get:
+          url: "{{$processEnvironment.URL}}orders"
+          headers:
+            Authorization: "Bearer {{ token }}"
+      - get:
+          url: "{{$processEnvironment.URL}}orders"
+          headers:
+            Authorization: "Bearer {{ token }}"
+      - get:
+          url: "{{$processEnvironment.URL}}orders"
+          headers:
+            Authorization: "Bearer {{ token }}"
+  - name: "Product viewer"
+    weight: 50
+    beforeScenario: getToken
+    flow:
+      - get:
+          url: "{{$processEnvironment.URL}}products"
+          headers:
+            Authorization: "Bearer {{ token }}"
+      - get:
+          url: "{{$processEnvironment.URL}}products"
+          headers:
+            Authorization: "Bearer {{ token }}"
+      - get:
+          url: "{{$processEnvironment.URL}}products"
+          headers:
+            Authorization: "Bearer {{ token }}"
+      - get:
+          url: "{{$processEnvironment.URL}}products"
+          headers:
+            Authorization: "Bearer {{ token }}"
+      - get:
+          url: "{{$processEnvironment.URL}}products"
+          headers:
+            Authorization: "Bearer {{ token }}"
+      - get:
+          url: "{{$processEnvironment.URL}}products"
+          headers:
+            Authorization: "Bearer {{ token }}"
+      - get:
+          url: "{{$processEnvironment.URL}}products"
+          headers:
+            Authorization: "Bearer {{ token }}"
+      - get:
+          url: "{{$processEnvironment.URL}}products"
+          headers:
+            Authorization: "Bearer {{ token }}"

@@ -1,13 +1,25 @@
-# AWS SaaS Operations workshop
+# README
 
-This is the source code for the [AWS SaaS Operations workshop](https://catalog.workshops.aws/saas-operations/en-US).
+To deploy workshop (SaaS control plane + basic cell):
 
-If you would like to deploy this, then follow the instructions [in the workshop.](https://catalog.workshops.aws/saas-operations/en-US/0005-getting-started/020-own-account).
+`./deploy_workshop.sh`
 
-## Security
+To run a simulation load. Onboards various tenants, and runs a load test for each.
 
-See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more information.
+`./init_initialize.sh`
 
-## License
+To onboard a tenant:
 
-This library is licensed under the MIT-0 License. See the LICENSE file.
+`./test_onboarding.sh` for random basic tenant or `./test_onboarding.sh -n 'TENANT_NAME' -t 'TIER'` where TIER=BASIC|PREMIUM. Optional `-l 'Yes'` to also run a load test for the tenant.
+
+To offboard a tenant:
+
+`./test_offboarding.sh TENANT_ID`
+
+To test a tenant:
+
+`./test_tenant.sh -i 'TENANT_ID'` or run it without arguments to get a tenant list.
+
+To delete the entire workshop:
+
+`./delete_workshop.sh`
