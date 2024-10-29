@@ -371,7 +371,7 @@ get_stack_userpool_id() {
 
 get_stacks() {
     echo -e "\nStacks in tenantCatalog:"
-    aws ddb select $TENANT_CATALOG --key-condition 'pk = "DESCRIPTION#" AND begins_with(sk, "STACK#")' --projection "sk,status,url"|sed 's/sk: STACK#/stackName: /'
+    aws ddb select $TENANT_CATALOG --key-condition 'pk = "DESCRIPTION#" AND begins_with(sk, "STACK#")' --projection "sk,status,tier,url"|sed 's/sk: STACK#/stackName: /'|sed 's/TIER#//'
 }
 
 get_tenants() {
