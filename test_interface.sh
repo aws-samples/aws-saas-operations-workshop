@@ -518,9 +518,8 @@ test_tenant() {
         TENANT_ID=$1
         COUNT=${2:-30}
         USER_NAME='User'$(($RANDOM % 1000))
-        create_user $TENANT_ID $USER_NAME &
-        create_products $TENANT_ID $COUNT &
-        sleep 1
+        create_user $TENANT_ID $USER_NAME
+        create_products $TENANT_ID $COUNT
         create_orders $TENANT_ID $COUNT
         echo ""
     fi
