@@ -51,6 +51,12 @@ for LOG_GROUP in $LOG_GROUPS; do
     aws logs delete-log-group --log-group-name $LOG_GROUP
 done
 
+LOG_GROUPS=$(aws logs describe-log-groups --query 'logGroups[?starts_with(logGroupName, `SaaSOpsV2`) == `true`].logGroupName' --output text)
+for LOG_GROUP in $LOG_GROUPS; do
+    echo "Deleting log group "$LOG_GROUP
+    aws logs delete-log-group --log-group-name $LOG_GROUP
+done
+
 LOG_GROUPS=$(aws logs describe-log-groups --query 'logGroups[?starts_with(logGroupName, `/SaaSOpsV2`) == `true`].logGroupName' --output text)
 for LOG_GROUP in $LOG_GROUPS; do
     echo "Deleting log group "$LOG_GROUP
