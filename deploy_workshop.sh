@@ -16,6 +16,10 @@ then
     echo "Installing yarn"
     sudo npm install -g yarn
 fi
+
+[[ -f yarn.lock ]] && rm yarn.lock
+[[ -f package-lock.json]] && rm package-lock.json
+
 yarn install
 npx cdk bootstrap
 npx projen deploy
