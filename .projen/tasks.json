@@ -209,7 +209,7 @@
       },
       "steps": [
         {
-          "exec": "npx npm-check-updates@16 --upgrade --target=minor --peer --dep=dev,peer,prod,optional --filter=@types/jest,@types/node,esbuild,eslint-import-resolver-typescript,eslint-plugin-import,jest,projen,ts-jest,ts-node,typescript,@aws-lambda-powertools/jmespath,@aws-sdk/client-api-gateway,@aws-sdk/client-cloudformation,@aws-sdk/client-codebuild,@aws-sdk/client-cognito-identity-provider,@aws-sdk/client-dynamodb,@aws-sdk/client-s3,@aws-sdk/client-sfn,@aws-sdk/client-sts,@aws-sdk/lib-dynamodb,@types/artillery,@types/aws-lambda,aws-jwt-verify,aws-lambda,cdk-nag,http-status-codes,source-map-support"
+          "exec": "npx npm-check-updates@16 --upgrade --target=minor --peer --no-deprecated --dep=dev,peer,prod,optional --filter=@types/jest,@types/node,esbuild,eslint-import-resolver-typescript,eslint-plugin-import,jest,projen,ts-jest,ts-node,typescript,@aws-lambda-powertools/jmespath,@aws-sdk/client-api-gateway,@aws-sdk/client-cloudformation,@aws-sdk/client-codebuild,@aws-sdk/client-cognito-identity-provider,@aws-sdk/client-dynamodb,@aws-sdk/client-s3,@aws-sdk/client-sfn,@aws-sdk/client-sts,@aws-sdk/lib-dynamodb,@types/artillery,@types/aws-lambda,aws-jwt-verify,aws-lambda,cdk-nag,http-status-codes,source-map-support"
         },
         {
           "exec": "yarn install --check-files"
@@ -241,10 +241,7 @@
       "name": "zip",
       "steps": [
         {
-          "exec": "rm workshop.zip"
-        },
-        {
-          "exec": "/usr/bin/zip -r workshop.zip . -x '.git/*' 'cdk.out/*' 'coverage/*' 'node_modules/*' 'own-account/*'"
+          "exec": "./zipparooney.sh"
         }
       ]
     }

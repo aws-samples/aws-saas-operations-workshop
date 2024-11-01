@@ -41,7 +41,7 @@ NagSuppressions.addStackSuppressions(applicationStack, [
   { id: 'AwsSolutions-COG4', reason: 'Uses a Lambda authorizer.' },
   { id: 'AwsSolutions-IAM4', reason: 'Managed policies are not bad all the time. Just something to be aware of.' },
   { id: 'AwsSolutions-IAM5', reason: 'Wildcards are used throughout SaaS. We need to make sure theyre locked down with IAM.' },
-  { id: 'AwsSolutions-L1', reason: 'Uses the NODEJS_LATEST runtime.' },
+  { id: 'AwsSolutions-L1', reason: 'Uses the NODEJS_20X runtime.' },
   { id: 'AwsSolutions-SF1', reason: 'Logs disabled for the workshop to reduce wastage.' },
   { id: 'AwsSolutions-SF2', reason: 'Logs disabled for the workshop to reduce wastage.' },
 ]);

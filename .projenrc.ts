@@ -28,11 +28,13 @@ const project = new awscdk.AwsCdkTypeScriptApp({
   context: {
     '@aws-cdk/customresources:installLatestAwsSdkDefault': false,
   },
+  gitignore: [
+    'ash',
+  ],
 });
 project.tasks.tryFind('deploy')?.reset('cdk deploy --require-approval=never SaaSOpsV2-controlplane');
 project.tasks.tryFind('destroy')?.reset('cdk destroy --force SaaSOpsV2-controlplane');
-const zip = project.addTask('zip', {
-  exec: "rm workshop.zip"
-})
-zip.exec("/usr/bin/zip -r workshop.zip . -x '.git/*' 'cdk.out/*' 'coverage/*' 'node_modules/*' 'own-account/*'")
+project.addTask('zip', {
+  exec: './zipparooney.sh',
+});
 project.synth();
