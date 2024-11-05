@@ -26,7 +26,7 @@ cheat() {
         lab=$1
     fi
 
-    SRC_DIR='/home/ec2-user/environment/aws-saas-operations-workshop-2/src'
+    SRC_DIR='/home/ec2-user/environment/src'
     TENANT_MGMT=$SRC_DIR'/controlplane/tenant-mgmt/tenant-mgmt.ts'
     CONTROLPLANE=$SRC_DIR'/controlplane/controlplane.ts'
 
