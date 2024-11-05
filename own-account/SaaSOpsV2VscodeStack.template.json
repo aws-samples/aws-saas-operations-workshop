@@ -764,7 +764,7 @@
             "waitConditionHandleUrl": {
              "Ref": "IdeIdeBootstrapWaitConditionHandleEA0A1D15"
             },
-            "customBootstrapScript": "\nsudo -u ec2-user bash -c 'mv $HOME/environment/aws-saas-operations-workshop-2/* $HOME/environment'\nsudo -u ec2-user bash -c 'mv $HOME/environment/aws-saas-operations-workshop-2/.[!.]* $HOME/environment'\nsudo -u ec2-user bash -c 'rmdir $HOME/environment/aws-saas-operations-workshop-2'\nsudo -u ec2-user bash -c 'echo \"source ~/environment/test_interface.sh\" >> ~/.bashrc'\nsudo -u ec2-user bash -c 'cd $HOME/environment && ./deploy_workshop.sh'\n",
+            "customBootstrapScript": "\nsudo -u ec2-user bash -c 'mv $HOME/environment/aws-saas-operations-workshop-2/* $HOME/environment'\nsudo -u ec2-user bash -c 'mv $HOME/environment/aws-saas-operations-workshop-2/.[!.]* $HOME/environment'\nsudo -u ec2-user bash -c 'rmdir $HOME/environment/aws-saas-operations-workshop-2'\nsudo -u ec2-user bash -c 'rm -rf $HOME/environment/own-account'\nsudo -u ec2-user bash -c 'echo \"source ~/environment/test_interface.sh\" >> ~/.bashrc'\nsudo -u ec2-user bash -c 'cd $HOME/environment && ./deploy_workshop.sh'\n",
             "installGitea": "",
             "splashUrl": "",
             "readmeUrl": "",
