@@ -768,7 +768,7 @@
             "installGitea": "",
             "splashUrl": "",
             "readmeUrl": "",
-            "environmentContentsZip": "https://github.com/aws-samples/aws-saas-operations-workshop/raw/refs/heads/v2/workshop.zip",
+            "environmentContentsZip": "https://github.com/aws-samples/aws-saas-operations-workshop/archive/refs/heads/v2.zip",
             "extensions": "",
             "terminalOnStartup": "true"
            }
