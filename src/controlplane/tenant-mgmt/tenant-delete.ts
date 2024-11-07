@@ -94,7 +94,7 @@ export class TenantDelete extends Construct {
       .otherwise(taskTokenPresentNo)
       .afterwards();
 
-    const sendExportSuccessEvent = new EventBridgePutEvents(this, description + 'SendDeleteSuccessEvent', {
+    const sendDeleteSuccessEvent = new EventBridgePutEvents(this, description + 'SendDeleteSuccessEvent', {
       stateName: 'Send TENANT_DELETE_SUCCESS to event bus',
       entries: [{
         eventBus: props.eventBus.eventBus,
@@ -109,7 +109,7 @@ export class TenantDelete extends Construct {
     });
 
     const sfnDefinition = tenantDelete
-      .next(sendExportSuccessEvent)
+      .next(sendDeleteSuccessEvent)
       .next(callback);
 
 

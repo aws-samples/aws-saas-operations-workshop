@@ -73,6 +73,16 @@ export class LoadTesting extends Construct {
         },
       }),
     });
+    project.role?.addToPrincipalPolicy(
+      new PolicyStatement({
+        effect: Effect.ALLOW,
+        actions: [
+          'cloudwatch:*',
+          'logs:*',
+        ],
+        resources: ['*'],
+      }),
+    );
 
     const onboardTestTenant = new EventBridgePutEvents(this, description + 'PutOnboardingEvent', {
       stateName: 'Onboard a test tenant',
@@ -114,6 +124,7 @@ export class LoadTesting extends Construct {
       resultSelector: {
         tenantId: JsonPath.stringAt('$.Payload.tenant.tenantId'),
         stackName: JsonPath.numberAt('$.Payload.tenant.stackName'),
+        tier: JsonPath.stringAt('$.Payload.tenant.tier'),
       },
       resultPath: '$.tenant',
     });
@@ -208,6 +219,10 @@ export class LoadTesting extends Construct {
           type: BuildEnvironmentVariableType.PLAINTEXT,
           value: JsonPath.stringAt('$.tenant.tenantId'),
         },
+        TENANT_TIER: {
+          type: BuildEnvironmentVariableType.PLAINTEXT,
+          value: JsonPath.stringAt('$.tenant.tier'),
+        },
         URL: {
           type: BuildEnvironmentVariableType.PLAINTEXT,
           value: JsonPath.stringAt('$.stack.url'),
@@ -220,6 +235,10 @@ export class LoadTesting extends Construct {
           type: BuildEnvironmentVariableType.PLAINTEXT,
           value: JsonPath.stringAt('$.loadTest.duration'),
         },
+        REGION: {
+          type: BuildEnvironmentVariableType.PLAINTEXT,
+          value: Aws.REGION,
+        }
       },
       resultPath: JsonPath.DISCARD,
     });

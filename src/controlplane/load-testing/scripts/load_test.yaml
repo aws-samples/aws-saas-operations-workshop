@@ -30,6 +30,24 @@ config:
   plugins:
     fake-data: {}
     expect: {}
+    publish-metrics:
+      - type: cloudwatch
+        namespace: "SaaSOpsV2-LoadTest"
+        region: "{{$processEnvironment.REGION}}"
+        includeOnly:
+          - http.request_rate
+          - http.response_time.2xx.min
+          - http.response_time.2xx.max
+          - http.response_time.2xx.median
+          - http.response_time.2xx.p99
+          - http.response_time.2xx.count
+          - http.codes.200
+          - http.requests
+          - http.responses
+
+        dimensions:
+          - name: "Tier"
+            value: "{{$processEnvironment.TENANT_TIER}}"
 
 scenarios:
   - name: "Product creator"

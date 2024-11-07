@@ -51,6 +51,73 @@ export class ApplicationApi extends Construct {
         ),
       },
     });
+
+    new MetricFilter(this, 'ApiSuccessCount', {
+      logGroup: this.logGroup,
+      metricNamespace: applicationName,
+      metricName: 'ApiSuccessCount',
+      filterPattern: FilterPattern.any(
+        FilterPattern.stringValue('$.status', '=', '200'),
+        FilterPattern.stringValue('$.status', '=', '201'),
+        FilterPattern.stringValue('$.status', '=', '202'),
+        FilterPattern.stringValue('$.status', '=', '204'),
+      ),
+      metricValue: '1',
+      unit: Unit.COUNT,
+      dimensions: {
+        tenantId: '$.tenantId',
+        tier: '$.tier',
+        stackName: '$.stackName',
+      },
+    });
+
+    new MetricFilter(this, 'ApiThrottleCount', {
+      logGroup: this.logGroup,
+      metricNamespace: applicationName,
+      metricName: 'ApiThrottleCount',
+      filterPattern: FilterPattern.any(
+        FilterPattern.stringValue('$.status', '=', '429'),
+      ),
+      metricValue: '1',
+      unit: Unit.COUNT,
+      dimensions: {
+        tenantId: '$.tenantId',
+        tier: '$.tier',
+        stackName: '$.stackName',
+      },
+    });
+
+    new MetricFilter(this, 'ApiErrorCount', {
+      logGroup: this.logGroup,
+      metricNamespace: applicationName,
+      metricName: 'ApiErrorCount',
+      filterPattern: FilterPattern.any(
+        FilterPattern.stringValue('$.status', '=', '500'),
+      ),
+      metricValue: '1',
+      unit: Unit.COUNT,
+      dimensions: {
+        tenantId: '$.tenantId',
+        tier: '$.tier',
+        stackName: '$.stackName',
+      },
+    });
+
+    new MetricFilter(this, 'ApiLatency', {
+      logGroup: this.logGroup,
+      metricNamespace: applicationName,
+      metricName: 'ApiLatency',
+      filterPattern: FilterPattern.any(
+        FilterPattern.stringValue('$.httpMethod', '=', '*'),
+      ),
+      metricValue: '$.responseLatency',
+      unit: Unit.MILLISECONDS,
+      dimensions: {
+        tenantId: '$.tenantId',
+        tier: '$.tier',
+        stackName: '$.stackName',
+      },
+    });
   }
   addService(
     entry: string,

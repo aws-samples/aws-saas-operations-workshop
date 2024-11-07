@@ -22,6 +22,7 @@ export interface TenantOnboardingProps {
 //  tenantName: string;
 //  tier: TenantTier;
 export class TenantOnboarding extends Construct {
+  public readonly tenantOnboardingStateMachineArn: string;
   constructor(scope: Construct, id: string, props: TenantOnboardingProps) {
     super(scope, id);
     const role = new Role(this, description + 'Role', {
@@ -300,13 +301,14 @@ export class TenantOnboarding extends Construct {
     const sfn = new StateMachine(this, description + 'Sfn', {
       definitionBody: DefinitionBody.fromChainable(sfnDefinition),
       timeout: Duration.minutes(15),
-      comment: 'Provision an application cell',
+      comment: 'Onboard a new tenant',
       logs: {
         destination: props.logGroup,
       },
       stateMachineName: applicationName + '-TenantOnboarding',
       role: role,
     });
+    this.tenantOnboardingStateMachineArn = sfn.stateMachineArn;
     props.eventBus.addStepFunctionTarget(ControlPlaneEventBusDetailType.OnboardingRequest, sfn);
   }
 }

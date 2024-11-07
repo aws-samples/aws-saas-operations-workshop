@@ -64,6 +64,7 @@ export class TenantMgmt extends Construct {
   public readonly deleteTenantEntry: NodejsFunction;
   public readonly readTenantEntry: NodejsFunction;
   public readonly updateTenantEntry: NodejsFunction;
+  public readonly tenantOnboardingStateMachineArn: string;
   constructor(scope: Construct, id: string, props: TenantMgmtProps) {
     super(scope, id);
 
@@ -148,12 +149,13 @@ export class TenantMgmt extends Construct {
     });
     props.tenantCatalog.grantReadWriteData(this.updateTenantEntry.role as Role);
 
-    new TenantOnboarding(this, description + 'Onboarding', {
+    const onboarding = new TenantOnboarding(this, description + 'Onboarding', {
       eventBus: props.eventBus,
       tenantCatalog: props.tenantCatalog,
       logGroup: logGroup,
       updateStackTenantMappingEntry: this.updateStackTenantMappingEntry,
     });
+    this.tenantOnboardingStateMachineArn = onboarding.tenantOnboardingStateMachineArn;
 
     new TenantOffboarding(this, description + 'Offboarding', {
       eventBus: props.eventBus,

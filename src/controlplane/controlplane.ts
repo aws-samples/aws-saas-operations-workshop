@@ -3,12 +3,15 @@ import { AttributeType, TableV2 } from 'aws-cdk-lib/aws-dynamodb';
 import { BlockPublicAccess, Bucket, BucketEncryption, StorageClass } from 'aws-cdk-lib/aws-s3';
 import { Construct } from 'constructs';
 import { applicationName } from '../config';
-import { Dashboards } from './dashboards/dashboards';
 import { ControlPlaneEventBus } from './event-bus/event-bus';
 //@ts-ignore
 import { LoadTesting } from './load-testing/load-testing'; // eslint-disable-line
 import { ResourceMgmt } from './resource-mgmt/resource-mgmt';
 import { TenantMgmt } from './tenant-mgmt/tenant-mgmt';
+import { AppPlaneDashboards } from './dashboards/app-plane-dashboards';
+import { AppPlaneByCellDashboards } from './dashboards/app-plane-by-cell-dashboards';
+import { CtrlPlaneDashboards } from './dashboards/ctrl-plane-dashboard';
+import { LoadTestingDashboards } from './dashboards/load-testing-dashboard';
 
 export enum TenantActivationStatus {
   Active = 'ACTIVE',
@@ -85,7 +88,7 @@ export class ControlPlaneStack extends Stack {
       tenantCatalog: this.tenantCatalog,
     });
 
-    new TenantMgmt(this, 'TM', {
+    const tm = new TenantMgmt(this, 'TM', {
       eventBus: eventBus,
       tenantCatalog: this.tenantCatalog,
       archiveBucket: archiveBucket,
@@ -100,6 +103,9 @@ export class ControlPlaneStack extends Stack {
     //});
     //LAB5-END
 
-    new Dashboards(this, 'DB');
+    new AppPlaneDashboards(this, 'ADB');
+    new AppPlaneByCellDashboards(this, 'ACDB');
+    new CtrlPlaneDashboards(this, 'CDB', { tenantOnboardingStateMachineArn: tm.tenantOnboardingStateMachineArn });
+    new LoadTestingDashboards(this, 'LB');
   }
 }

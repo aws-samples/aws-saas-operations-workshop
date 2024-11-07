@@ -40,6 +40,7 @@ then
     echo "Installing Artillery"
     echo ""
     npm install -g --quiet artillery@latest
+    npm install -g --quiet artillery-plugin-publish-metrics@latest
 fi
 
 artillery run load_test.yaml
