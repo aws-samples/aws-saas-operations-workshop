@@ -238,7 +238,7 @@ export class LoadTesting extends Construct {
         REGION: {
           type: BuildEnvironmentVariableType.PLAINTEXT,
           value: Aws.REGION,
-        }
+        },
       },
       resultPath: JsonPath.DISCARD,
     });

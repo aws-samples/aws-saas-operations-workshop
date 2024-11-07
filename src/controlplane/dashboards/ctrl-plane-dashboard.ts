@@ -35,48 +35,48 @@ export class CtrlPlaneDashboards extends Construct {
     this.dashboard.addWidgets(
       new Row(
         new GraphWidget({
-            title: 'Tenant on/off-boarding',
-            left: [
-              new Metric({
-                metricName: 'Invocations',
-                namespace: 'AWS/Events',
-                statistic: 'Sum',
-                color: Color.GREEN,
-                label: 'Onboarding',
-                unit: Unit.COUNT,
-                dimensionsMap: {
-                  EventBusName: 'SaaSOpsV2-EventBus',
-                  RuleName: 'ONBOARDING_REQUEST'
-                }
-              })
-            ],
-            right: [
-              new Metric({
-                metricName: 'Invocations',
-                namespace: 'AWS/Events',
-                statistic: 'Sum',
-                color: Color.RED,
-                label: 'Offboarding',
-                unit: Unit.COUNT,
-                dimensionsMap: {
-                  EventBusName: 'SaaSOpsV2-EventBus',
-                  RuleName: 'OFFBOARDING_REQUEST'
-                }
-              })
-            ],
-            height: 6,
-            width: 8,
-            liveData: true,
-            leftYAxis: {
-                min: 0,
-                showUnits: false,
-            },
-            rightYAxis: {
-                min: 0,
-                showUnits: false,
-            },
+          title: 'Tenant on/off-boarding',
+          left: [
+            new Metric({
+              metricName: 'Invocations',
+              namespace: 'AWS/Events',
+              statistic: 'Sum',
+              color: Color.GREEN,
+              label: 'Onboarding',
+              unit: Unit.COUNT,
+              dimensionsMap: {
+                EventBusName: 'SaaSOpsV2-EventBus',
+                RuleName: 'ONBOARDING_REQUEST',
+              },
+            }),
+          ],
+          right: [
+            new Metric({
+              metricName: 'Invocations',
+              namespace: 'AWS/Events',
+              statistic: 'Sum',
+              color: Color.RED,
+              label: 'Offboarding',
+              unit: Unit.COUNT,
+              dimensionsMap: {
+                EventBusName: 'SaaSOpsV2-EventBus',
+                RuleName: 'OFFBOARDING_REQUEST',
+              },
+            }),
+          ],
+          height: 6,
+          width: 8,
+          liveData: true,
+          leftYAxis: {
+            min: 0,
+            showUnits: false,
+          },
+          rightYAxis: {
+            min: 0,
+            showUnits: false,
+          },
         }),
-      
+
         new GraphWidget({
           title: 'Onboarding time',
           left: [
@@ -84,27 +84,27 @@ export class CtrlPlaneDashboards extends Construct {
               namespace: 'AWS/States',
               metricName: 'ExecutionTime',
               dimensionsMap: {
-                StateMachineArn: this.props.tenantOnboardingStateMachineArn
+                StateMachineArn: this.props.tenantOnboardingStateMachineArn,
               },
               period: Duration.minutes(5),
-              statistic: "Average",
+              statistic: 'Average',
               unit: Unit.MILLISECONDS,
-              label: "Time taken (ms)"
-            })
+              label: 'Time taken (ms)',
+            }),
           ],
           height: 6,
           width: 8,
           liveData: true,
           view: GraphWidgetView.TIME_SERIES,
-          statistic: "Average",
+          statistic: 'Average',
           period: Duration.minutes(5),
           leftYAxis: {
             min: 0,
             showUnits: false,
           },
           rightYAxis: {
-              min: 0,
-              showUnits: false,
+            min: 0,
+            showUnits: false,
           },
         }),
 
@@ -116,13 +116,13 @@ export class CtrlPlaneDashboards extends Construct {
               metricName: 'ExecutionsFailed',
               label: 'Failed',
               dimensionsMap: {
-                StateMachineArn: this.props.tenantOnboardingStateMachineArn
+                StateMachineArn: this.props.tenantOnboardingStateMachineArn,
               },
               period: Duration.minutes(5),
-              statistic: "Sum",
+              statistic: 'Sum',
               unit: Unit.COUNT,
-              color: Color.RED
-            })
+              color: Color.RED,
+            }),
           ],
           right: [
             new Metric({
@@ -130,18 +130,18 @@ export class CtrlPlaneDashboards extends Construct {
               metricName: 'ExecutionsTimedOut',
               label: 'Timed out',
               dimensionsMap: {
-                StateMachineArn: this.props.tenantOnboardingStateMachineArn
+                StateMachineArn: this.props.tenantOnboardingStateMachineArn,
               },
               period: Duration.minutes(5),
-              statistic: "Sum",
+              statistic: 'Sum',
               unit: Unit.COUNT,
               color: Color.ORANGE,
-            })
+            }),
           ],
           height: 6,
           width: 8,
           view: GraphWidgetView.TIME_SERIES,
-          statistic: "Sum",
+          statistic: 'Sum',
           period: Duration.minutes(5),
           liveData: true,
           leftYAxis: {
@@ -149,11 +149,11 @@ export class CtrlPlaneDashboards extends Construct {
             showUnits: false,
           },
           rightYAxis: {
-              min: 0,
-              showUnits: false,
+            min: 0,
+            showUnits: false,
           },
-        })
-      )
+        }),
+      ),
     );
   }
 }

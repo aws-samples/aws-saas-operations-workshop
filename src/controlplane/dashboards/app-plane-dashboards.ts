@@ -71,7 +71,7 @@ export class AppPlaneDashboards extends Construct {
         width: 24,
         sparkline: true,
       }),
-    )
+    );
   }
 
   addTop5ConsumersGraphs(services: string[]) {
@@ -86,7 +86,7 @@ export class AppPlaneDashboards extends Construct {
                 usingMetrics: {},
                 label: service === 'auth' ? "${PROP('Dim.stackName')}" : "${PROP('Dim.tenantId')}",
                 period: Duration.days(1),
-              })
+              }),
             ],
             height: 4,
             width: 6,
@@ -94,9 +94,9 @@ export class AppPlaneDashboards extends Construct {
             liveData: true,
             stacked: true,
             view: GraphWidgetView.PIE,
-          })
-        })
-      )
+          });
+        }),
+      ),
 
     );
   }

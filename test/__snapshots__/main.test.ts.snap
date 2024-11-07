@@ -146,6 +146,78 @@ exports[`Snapshot 1`] = `
     },
   },
   "Resources": {
+    "ACDBAppPlaneByCellDashboard476F2D67": {
+      "Properties": {
+        "DashboardBody": {
+          "Fn::Join": [
+            "",
+            [
+              "{"start":"-PT1H","widgets":[{"type":"metric","width":24,"height":4,"x":0,"y":0,"properties":{"view":"singleValue","title":"Service usages","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","sparkline":true,"metrics":[[{"label":"orders","expression":"SUM(SEARCH('{\\"SaaSOpsV2\\", \\"status\\", \\"tenantId\\", \\"stackName\\"} MetricName=\\"orders\\" stackName=\\"SaaSOpsV2-cell-basic\\"', 'SampleCount'))"}],[{"label":"products","expression":"SUM(SEARCH('{\\"SaaSOpsV2\\", \\"status\\", \\"tenantId\\", \\"stackName\\"} MetricName=\\"products\\" stackName=\\"SaaSOpsV2-cell-basic\\"', 'SampleCount'))"}],[{"label":"users","expression":"SUM(SEARCH('{\\"SaaSOpsV2\\", \\"status\\", \\"tenantId\\", \\"stackName\\"} MetricName=\\"users\\" stackName=\\"SaaSOpsV2-cell-basic\\"', 'SampleCount'))"}],[{"label":"auth","expression":"SUM(SEARCH('{\\"SaaSOpsV2\\", \\"status\\", \\"tenantId\\", \\"stackName\\"} MetricName=\\"auth\\" stackName=\\"SaaSOpsV2-cell-basic\\"', 'SampleCount'))"}]]}},{"type":"metric","width":24,"height":4,"x":0,"y":4,"properties":{"view":"singleValue","title":"Service latency (ms)","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","sparkline":true,"metrics":[[{"label":"orders","expression":"AVG(SEARCH('{\\"SaaSOpsV2\\", \\"status\\", \\"tenantId\\", \\"stackName\\"} MetricName=\\"orders\\" stackName=\\"SaaSOpsV2-cell-basic\\"', 'Average'))"}],[{"label":"products","expression":"AVG(SEARCH('{\\"SaaSOpsV2\\", \\"status\\", \\"tenantId\\", \\"stackName\\"} MetricName=\\"products\\" stackName=\\"SaaSOpsV2-cell-basic\\"', 'Average'))"}],[{"label":"users","expression":"AVG(SEARCH('{\\"SaaSOpsV2\\", \\"status\\", \\"tenantId\\", \\"stackName\\"} MetricName=\\"users\\" stackName=\\"SaaSOpsV2-cell-basic\\"', 'Average'))"}],[{"label":"auth","expression":"AVG(SEARCH('{\\"SaaSOpsV2\\", \\"status\\", \\"tenantId\\", \\"stackName\\"} MetricName=\\"auth\\" stackName=\\"SaaSOpsV2-cell-basic\\"', 'Average'))"}]]}},{"type":"metric","width":24,"height":4,"x":0,"y":8,"properties":{"view":"singleValue","title":"Service error count","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","sparkline":true,"metrics":[[{"label":"orders","expression":"SUM(SEARCH('{\\"SaaSOpsV2\\", \\"status\\", \\"tenantId\\", \\"stackName\\"} MetricName=\\"orders\\" status=\\"500\\" stackName=\\"SaaSOpsV2-cell-basic\\"', 'SampleCount'))"}],[{"label":"products","expression":"SUM(SEARCH('{\\"SaaSOpsV2\\", \\"status\\", \\"tenantId\\", \\"stackName\\"} MetricName=\\"products\\" status=\\"500\\" stackName=\\"SaaSOpsV2-cell-basic\\"', 'SampleCount'))"}],[{"label":"users","expression":"SUM(SEARCH('{\\"SaaSOpsV2\\", \\"status\\", \\"tenantId\\", \\"stackName\\"} MetricName=\\"users\\" status=\\"500\\" stackName=\\"SaaSOpsV2-cell-basic\\"', 'SampleCount'))"}],[{"label":"auth","expression":"SUM(SEARCH('{\\"SaaSOpsV2\\", \\"status\\", \\"tenantId\\", \\"stackName\\"} MetricName=\\"auth\\" status=\\"500\\" stackName=\\"SaaSOpsV2-cell-basic\\"', 'SampleCount'))"}]]}},{"type":"metric","width":24,"height":4,"x":0,"y":12,"properties":{"view":"singleValue","title":"API stats","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","sparkline":true,"metrics":[["SaaSOpsV2","ApiLatency","stackName","SaaSOpsV2-cell-basic",{"color":"#1f77b4","label":"Api latency (ms)"}],["SaaSOpsV2","ApiThrottleCount","stackName","SaaSOpsV2-cell-basic",{"color":"#ff7f0e","label":"Throttle count","stat":"SampleCount"}],["SaaSOpsV2","ApiErrorCount","stackName","SaaSOpsV2-cell-basic",{"color":"#d62728","label":"Error count","stat":"SampleCount"}]],"period":300}}],"variables":[{"property":"stackName","type":"property","inputType":"select","id":"cell","defaultValue":"SaaSOpsV2-cell-basic","label":"Cell","search":"SaaSOpsV2","populateFrom":"stackName"}]}",
+            ],
+          ],
+        },
+        "DashboardName": "Application-plane-by-cell",
+      },
+      "Type": "AWS::CloudWatch::Dashboard",
+    },
+    "ADBAppPlaneDashboardD532037F": {
+      "Properties": {
+        "DashboardBody": {
+          "Fn::Join": [
+            "",
+            [
+              "{"start":"-PT1H","widgets":[{"type":"text","width":24,"height":1,"x":0,"y":0,"properties":{"markdown":"# Application plane overview"}},{"type":"metric","width":24,"height":4,"x":0,"y":1,"properties":{"view":"singleValue","title":"Service usages","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","sparkline":true,"metrics":[[{"label":"orders","expression":"SUM(SEARCH('{\\"SaaSOpsV2\\", \\"status\\", \\"tenantId\\", \\"stackName\\"} MetricName=\\"orders\\"', 'SampleCount'))"}],[{"label":"products","expression":"SUM(SEARCH('{\\"SaaSOpsV2\\", \\"status\\", \\"tenantId\\", \\"stackName\\"} MetricName=\\"products\\"', 'SampleCount'))"}],[{"label":"users","expression":"SUM(SEARCH('{\\"SaaSOpsV2\\", \\"status\\", \\"tenantId\\", \\"stackName\\"} MetricName=\\"users\\"', 'SampleCount'))"}],[{"label":"auth","expression":"SUM(SEARCH('{\\"SaaSOpsV2\\", \\"status\\", \\"tenantId\\", \\"stackName\\"} MetricName=\\"auth\\"', 'SampleCount'))"}]]}},{"type":"metric","width":24,"height":4,"x":0,"y":5,"properties":{"view":"singleValue","title":"Service latency (ms)","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","sparkline":true,"metrics":[[{"label":"orders","expression":"AVG(SEARCH('{\\"SaaSOpsV2\\", \\"status\\", \\"tenantId\\", \\"stackName\\"} MetricName=\\"orders\\"', 'Average'))"}],[{"label":"products","expression":"AVG(SEARCH('{\\"SaaSOpsV2\\", \\"status\\", \\"tenantId\\", \\"stackName\\"} MetricName=\\"products\\"', 'Average'))"}],[{"label":"users","expression":"AVG(SEARCH('{\\"SaaSOpsV2\\", \\"status\\", \\"tenantId\\", \\"stackName\\"} MetricName=\\"users\\"', 'Average'))"}],[{"label":"auth","expression":"AVG(SEARCH('{\\"SaaSOpsV2\\", \\"status\\", \\"tenantId\\", \\"stackName\\"} MetricName=\\"auth\\"', 'Average'))"}]]}},{"type":"metric","width":24,"height":4,"x":0,"y":9,"properties":{"view":"singleValue","title":"Service error count","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","sparkline":true,"metrics":[[{"label":"orders","expression":"SUM(SEARCH('{\\"SaaSOpsV2\\", \\"status\\", \\"tenantId\\", \\"stackName\\"} MetricName=\\"orders\\" status=\\"500\\"', 'SampleCount'))"}],[{"label":"products","expression":"SUM(SEARCH('{\\"SaaSOpsV2\\", \\"status\\", \\"tenantId\\", \\"stackName\\"} MetricName=\\"products\\" status=\\"500\\"', 'SampleCount'))"}],[{"label":"users","expression":"SUM(SEARCH('{\\"SaaSOpsV2\\", \\"status\\", \\"tenantId\\", \\"stackName\\"} MetricName=\\"users\\" status=\\"500\\"', 'SampleCount'))"}],[{"label":"auth","expression":"SUM(SEARCH('{\\"SaaSOpsV2\\", \\"status\\", \\"tenantId\\", \\"stackName\\"} MetricName=\\"auth\\" status=\\"500\\"', 'SampleCount'))"}]]}},{"type":"metric","width":6,"height":4,"x":0,"y":13,"properties":{"view":"pie","title":"\\"/orders\\" usages - top 5 tenants","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","stacked":true,"metrics":[[{"label":"\${PROP('Dim.tenantId')}","expression":"SORT(SEARCH('Namespace=\\"SaaSOpsV2\\" \\"tenantId\\" \\"status\\" \\"stackName\\" MetricName=\\"orders\\"', 'SampleCount'), MAX, DESC, 5)","period":86400}]],"yAxis":{},"liveData":true,"period":86400}},{"type":"metric","width":6,"height":4,"x":6,"y":13,"properties":{"view":"pie","title":"\\"/products\\" usages - top 5 tenants","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","stacked":true,"metrics":[[{"label":"\${PROP('Dim.tenantId')}","expression":"SORT(SEARCH('Namespace=\\"SaaSOpsV2\\" \\"tenantId\\" \\"status\\" \\"stackName\\" MetricName=\\"products\\"', 'SampleCount'), MAX, DESC, 5)","period":86400}]],"yAxis":{},"liveData":true,"period":86400}},{"type":"metric","width":6,"height":4,"x":12,"y":13,"properties":{"view":"pie","title":"\\"/users\\" usages - top 5 tenants","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","stacked":true,"metrics":[[{"label":"\${PROP('Dim.tenantId')}","expression":"SORT(SEARCH('Namespace=\\"SaaSOpsV2\\" \\"tenantId\\" \\"status\\" \\"stackName\\" MetricName=\\"users\\"', 'SampleCount'), MAX, DESC, 5)","period":86400}]],"yAxis":{},"liveData":true,"period":86400}},{"type":"metric","width":6,"height":4,"x":18,"y":13,"properties":{"view":"pie","title":"\\"/auth\\" usages - Top 5 cells","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","stacked":true,"metrics":[[{"label":"\${PROP('Dim.stackName')}","expression":"SORT(SEARCH('Namespace=\\"SaaSOpsV2\\" \\"tenantId\\" \\"status\\" \\"stackName\\" MetricName=\\"auth\\"', 'SampleCount'), MAX, DESC, 5)","period":86400}]],"yAxis":{},"liveData":true,"period":86400}}]}",
+            ],
+          ],
+        },
+        "DashboardName": "Application-plane",
+      },
+      "Type": "AWS::CloudWatch::Dashboard",
+    },
     "AWS679f53fac002430cb0da5b7982bd22872D164C4C": {
       "DependsOn": [
         "AWS679f53fac002430cb0da5b7982bd2287ServiceRoleC1EA0FF2",
@@ -207,6 +279,44 @@ exports[`Snapshot 1`] = `
         ],
       },
       "Type": "AWS::IAM::Role",
+    },
+    "CDBCtrlPlaneDashboard6BF70BED": {
+      "Properties": {
+        "DashboardBody": {
+          "Fn::Join": [
+            "",
+            [
+              "{"start":"-PT1H","widgets":[{"type":"text","width":24,"height":1,"x":0,"y":0,"properties":{"markdown":"# Control plane"}},{"type":"metric","width":8,"height":6,"x":0,"y":1,"properties":{"view":"timeSeries","title":"Tenant on/off-boarding","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["AWS/Events","Invocations","EventBusName","SaaSOpsV2-EventBus","RuleName","ONBOARDING_REQUEST",{"color":"#2ca02c","label":"Onboarding","stat":"Sum"}],["AWS/Events","Invocations","EventBusName","SaaSOpsV2-EventBus","RuleName","OFFBOARDING_REQUEST",{"color":"#d62728","label":"Offboarding","stat":"Sum","yAxis":"right"}]],"yAxis":{"left":{"min":0,"showUnits":false},"right":{"min":0,"showUnits":false}},"liveData":true}},{"type":"metric","width":8,"height":6,"x":8,"y":1,"properties":{"view":"timeSeries","title":"Onboarding time","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["AWS/States","ExecutionTime","StateMachineArn","",
+              {
+                "Ref": "TMTenantMgmtOnboardingTenantProvSfnCE5315EB",
+              },
+              "",{"label":"Time taken (ms)"}]],"yAxis":{"left":{"min":0,"showUnits":false},"right":{"min":0,"showUnits":false}},"liveData":true,"period":300,"stat":"Average"}},{"type":"metric","width":8,"height":6,"x":16,"y":1,"properties":{"view":"timeSeries","title":"Onboarding failures","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["AWS/States","ExecutionsFailed","StateMachineArn","",
+              {
+                "Ref": "TMTenantMgmtOnboardingTenantProvSfnCE5315EB",
+              },
+              "",{"color":"#d62728","label":"Failed","stat":"Sum"}],["AWS/States","ExecutionsTimedOut","StateMachineArn","",
+              {
+                "Ref": "TMTenantMgmtOnboardingTenantProvSfnCE5315EB",
+              },
+              "",{"color":"#ff7f0e","label":"Timed out","stat":"Sum","yAxis":"right"}]],"yAxis":{"left":{"min":0,"showUnits":false},"right":{"min":0,"showUnits":false}},"liveData":true,"period":300,"stat":"Sum"}}]}",
+            ],
+          ],
+        },
+        "DashboardName": "Control-plane",
+      },
+      "Type": "AWS::CloudWatch::Dashboard",
     },
     "ControlplaneArchiveBucket1CDB1B9F": {
       "DeletionPolicy": "Delete",
@@ -568,7 +678,7 @@ exports[`Snapshot 1`] = `
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "184c54fdb595fa32ebad07cb9b3b13b4d9d4c9b03b14ae60b882bd4b5401f445.zip",
+          "S3Key": "b721eecd6d1a433a3a2e154afe39ec778bf9bbfd24f197dfdde6bfa7c8e8b235.zip",
         },
         "Environment": {
           "Variables": {
@@ -1141,84 +1251,6 @@ exports[`Snapshot 1`] = `
       },
       "Type": "AWS::IAM::Role",
     },
-    "DBDashboardsDashboard437444AF": {
-      "Properties": {
-        "DashboardBody": {
-          "Fn::Join": [
-            "",
-            [
-              "{"start":"-PT1H","widgets":[{"type":"text","width":24,"height":1,"x":0,"y":0,"properties":{"markdown":"# Application plane"}},{"type":"text","width":24,"height":1,"x":0,"y":1,"properties":{"markdown":"# /orders"}},{"type":"metric","width":8,"height":4,"x":0,"y":2,"properties":{"view":"timeSeries","title":"Usage per cell","region":"",
-              {
-                "Ref": "AWS::Region",
-              },
-              "","metrics":[[{"label":"/orders","expression":"SELECT COUNT(orders) FROM SCHEMA(SaaSOpsV2, status, tenantId, stackName) GROUP BY stackName","period":60}]],"yAxis":{},"liveData":true}},{"type":"metric","width":8,"height":4,"x":8,"y":2,"properties":{"view":"timeSeries","title":"Latency per cell","region":"",
-              {
-                "Ref": "AWS::Region",
-              },
-              "","metrics":[[{"label":"/orders","expression":"SELECT AVG(orders) FROM SCHEMA(SaaSOpsV2, status, tenantId, stackName) WHERE status = '200' GROUP BY stackName","period":60}]],"yAxis":{},"liveData":true}},{"type":"metric","width":4,"height":4,"x":16,"y":2,"properties":{"view":"singleValue","title":"Average Latency","region":"",
-              {
-                "Ref": "AWS::Region",
-              },
-              "","sparkline":true,"metrics":[[{"label":"/orders","expression":"SELECT AVG(orders) FROM SCHEMA(SaaSOpsV2, status, tenantId, stackName) WHERE status = '200'","period":60}]]}},{"type":"metric","width":4,"height":4,"x":20,"y":2,"properties":{"view":"singleValue","title":"Error rate","region":"",
-              {
-                "Ref": "AWS::Region",
-              },
-              "","sparkline":true,"metrics":[[{"label":"/orders","expression":"SELECT COUNT(orders) FROM SCHEMA(SaaSOpsV2, status, tenantId, stackName) WHERE status != '200'","period":60}]]}},{"type":"text","width":24,"height":1,"x":0,"y":6,"properties":{"markdown":"# /products"}},{"type":"metric","width":8,"height":4,"x":0,"y":7,"properties":{"view":"timeSeries","title":"Usage per cell","region":"",
-              {
-                "Ref": "AWS::Region",
-              },
-              "","metrics":[[{"label":"/products","expression":"SELECT COUNT(products) FROM SCHEMA(SaaSOpsV2, status, tenantId, stackName) GROUP BY stackName","period":60}]],"yAxis":{},"liveData":true}},{"type":"metric","width":8,"height":4,"x":8,"y":7,"properties":{"view":"timeSeries","title":"Latency per cell","region":"",
-              {
-                "Ref": "AWS::Region",
-              },
-              "","metrics":[[{"label":"/products","expression":"SELECT AVG(products) FROM SCHEMA(SaaSOpsV2, status, tenantId, stackName) WHERE status = '200' GROUP BY stackName","period":60}]],"yAxis":{},"liveData":true}},{"type":"metric","width":4,"height":4,"x":16,"y":7,"properties":{"view":"singleValue","title":"Average Latency","region":"",
-              {
-                "Ref": "AWS::Region",
-              },
-              "","sparkline":true,"metrics":[[{"label":"/products","expression":"SELECT AVG(products) FROM SCHEMA(SaaSOpsV2, status, tenantId, stackName) WHERE status = '200'","period":60}]]}},{"type":"metric","width":4,"height":4,"x":20,"y":7,"properties":{"view":"singleValue","title":"Error rate","region":"",
-              {
-                "Ref": "AWS::Region",
-              },
-              "","sparkline":true,"metrics":[[{"label":"/products","expression":"SELECT COUNT(products) FROM SCHEMA(SaaSOpsV2, status, tenantId, stackName) WHERE status != '200'","period":60}]]}},{"type":"text","width":24,"height":1,"x":0,"y":11,"properties":{"markdown":"# /users"}},{"type":"metric","width":8,"height":4,"x":0,"y":12,"properties":{"view":"timeSeries","title":"Usage per cell","region":"",
-              {
-                "Ref": "AWS::Region",
-              },
-              "","metrics":[[{"label":"/users","expression":"SELECT COUNT(users) FROM SCHEMA(SaaSOpsV2, status, tenantId, stackName) GROUP BY stackName","period":60}]],"yAxis":{},"liveData":true}},{"type":"metric","width":8,"height":4,"x":8,"y":12,"properties":{"view":"timeSeries","title":"Latency per cell","region":"",
-              {
-                "Ref": "AWS::Region",
-              },
-              "","metrics":[[{"label":"/users","expression":"SELECT AVG(users) FROM SCHEMA(SaaSOpsV2, status, tenantId, stackName) WHERE status = '200' GROUP BY stackName","period":60}]],"yAxis":{},"liveData":true}},{"type":"metric","width":4,"height":4,"x":16,"y":12,"properties":{"view":"singleValue","title":"Average Latency","region":"",
-              {
-                "Ref": "AWS::Region",
-              },
-              "","sparkline":true,"metrics":[[{"label":"/users","expression":"SELECT AVG(users) FROM SCHEMA(SaaSOpsV2, status, tenantId, stackName) WHERE status = '200'","period":60}]]}},{"type":"metric","width":4,"height":4,"x":20,"y":12,"properties":{"view":"singleValue","title":"Error rate","region":"",
-              {
-                "Ref": "AWS::Region",
-              },
-              "","sparkline":true,"metrics":[[{"label":"/users","expression":"SELECT COUNT(users) FROM SCHEMA(SaaSOpsV2, status, tenantId, stackName) WHERE status != '200'","period":60}]]}},{"type":"text","width":24,"height":1,"x":0,"y":16,"properties":{"markdown":"# /auth"}},{"type":"metric","width":8,"height":4,"x":0,"y":17,"properties":{"view":"timeSeries","title":"Usage per cell","region":"",
-              {
-                "Ref": "AWS::Region",
-              },
-              "","metrics":[[{"label":"/auth","expression":"SELECT COUNT(auth) FROM SCHEMA(SaaSOpsV2, status, tenantId, stackName) GROUP BY stackName","period":60}]],"yAxis":{},"liveData":true}},{"type":"metric","width":8,"height":4,"x":8,"y":17,"properties":{"view":"timeSeries","title":"Latency per cell","region":"",
-              {
-                "Ref": "AWS::Region",
-              },
-              "","metrics":[[{"label":"/auth","expression":"SELECT AVG(auth) FROM SCHEMA(SaaSOpsV2, status, tenantId, stackName) WHERE status = '200' GROUP BY stackName","period":60}]],"yAxis":{},"liveData":true}},{"type":"metric","width":4,"height":4,"x":16,"y":17,"properties":{"view":"singleValue","title":"Average Latency","region":"",
-              {
-                "Ref": "AWS::Region",
-              },
-              "","sparkline":true,"metrics":[[{"label":"/auth","expression":"SELECT AVG(auth) FROM SCHEMA(SaaSOpsV2, status, tenantId, stackName) WHERE status = '200'","period":60}]]}},{"type":"metric","width":4,"height":4,"x":20,"y":17,"properties":{"view":"singleValue","title":"Error rate","region":"",
-              {
-                "Ref": "AWS::Region",
-              },
-              "","sparkline":true,"metrics":[[{"label":"/auth","expression":"SELECT COUNT(auth) FROM SCHEMA(SaaSOpsV2, status, tenantId, stackName) WHERE status != '200'","period":60}]]}}]}",
-            ],
-          ],
-        },
-        "DashboardName": "SaaSOpsV2-Overview",
-      },
-      "Type": "AWS::CloudWatch::Dashboard",
-    },
     "EventsLogGroupPolicytestControlplaneEventBusEventBusLogRuleC6C0AA503EB49C7F": {
       "DeletionPolicy": "Delete",
       "DependsOn": [
@@ -1293,6 +1325,24 @@ exports[`Snapshot 1`] = `
       },
       "Type": "AWS::IAM::Policy",
     },
+    "LBLoadTestingDashboard3DA4685E": {
+      "Properties": {
+        "DashboardBody": {
+          "Fn::Join": [
+            "",
+            [
+              "{"start":"-PT1H","widgets":[{"type":"metric","width":24,"height":4,"x":0,"y":0,"properties":{"view":"singleValue","title":"API response stats","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","sparkline":true,"metrics":[["SaaSOpsV2-LoadTest","http.response_time.2xx.median","Name","loadtest","Tier","BASIC"],["SaaSOpsV2-LoadTest","http.response_time.2xx.min","Name","loadtest","Tier","BASIC",{"stat":"Minimum"}],["SaaSOpsV2-LoadTest","http.response_time.2xx.max","Name","loadtest","Tier","BASIC",{"stat":"Maximum"}],["SaaSOpsV2-LoadTest","http.response_time.2xx.p99","Name","loadtest","Tier","BASIC",{"stat":"p99"}]],"period":300}}],"variables":[{"property":"Tier","type":"property","inputType":"select","id":"tiervar","defaultValue":"BASIC","label":"Tenant tier","values":[{"label":"Basic Tier","value":"BASIC"},{"label":"Premium Tier","value":"PREMIUM"}]}]}",
+            ],
+          ],
+        },
+        "DashboardName": "Load-testing",
+      },
+      "Type": "AWS::CloudWatch::Dashboard",
+    },
     "RMResourceMgmtBucket97F20757": {
       "DeletionPolicy": "Delete",
       "Properties": {
@@ -1335,7 +1385,7 @@ exports[`Snapshot 1`] = `
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "a8803356d66dc4f7473f836fc7e3391429b67f4c1423406f678cf6b5f5e14081.zip",
+          "S3Key": "0457d333165d06eb6c6f378cdab18fc4e0714ab2e47bcdedd45059f77e7f37da.zip",
         },
         "Description": "/opt/awscli/aws",
       },
@@ -1363,7 +1413,7 @@ exports[`Snapshot 1`] = `
           },
         ],
         "SourceObjectKeys": [
-          "4a34808f6ee4ac977e6edeef9c8970560b97ffde647bebca83f0f432ed4e0063.zip",
+          "7a1e6a75304778037c4b2c9e83f1f966c5db3be5f955fabc29e3d58708180a4c.zip",
         ],
       },
       "Type": "Custom::CDKBucketDeployment",
@@ -1431,7 +1481,7 @@ exports[`Snapshot 1`] = `
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "7031e2c0fe6cfc6a62f28c7328de62deb44bbc5f879e32836cc52d7b13f5889e.zip",
+          "S3Key": "8e0fa0de7d47e1a05232b01859b82c21652eb6989642614b240a413ffa47c0b5.zip",
         },
         "Environment": {
           "Variables": {
@@ -2124,7 +2174,7 @@ exports[`Snapshot 1`] = `
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "7031e2c0fe6cfc6a62f28c7328de62deb44bbc5f879e32836cc52d7b13f5889e.zip",
+          "S3Key": "8e0fa0de7d47e1a05232b01859b82c21652eb6989642614b240a413ffa47c0b5.zip",
         },
         "Environment": {
           "Variables": {
@@ -2704,7 +2754,7 @@ exports[`Snapshot 1`] = `
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "7031e2c0fe6cfc6a62f28c7328de62deb44bbc5f879e32836cc52d7b13f5889e.zip",
+          "S3Key": "8e0fa0de7d47e1a05232b01859b82c21652eb6989642614b240a413ffa47c0b5.zip",
         },
         "Environment": {
           "Variables": {
@@ -2948,7 +2998,7 @@ exports[`Snapshot 1`] = `
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "7031e2c0fe6cfc6a62f28c7328de62deb44bbc5f879e32836cc52d7b13f5889e.zip",
+          "S3Key": "8e0fa0de7d47e1a05232b01859b82c21652eb6989642614b240a413ffa47c0b5.zip",
         },
         "Environment": {
           "Variables": {
@@ -3078,7 +3128,7 @@ exports[`Snapshot 1`] = `
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "7031e2c0fe6cfc6a62f28c7328de62deb44bbc5f879e32836cc52d7b13f5889e.zip",
+          "S3Key": "8e0fa0de7d47e1a05232b01859b82c21652eb6989642614b240a413ffa47c0b5.zip",
         },
         "Environment": {
           "Variables": {
@@ -3311,7 +3361,7 @@ exports[`Snapshot 1`] = `
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "c3974c5fcec90d1cff5f0c391a5ca0f086e3a85db14cf4cd34442b7556a9701c.zip",
+          "S3Key": "69374e7363ee8e88c8f0c14c3565fd35fb376c3eaa22d757c4050345034deb76.zip",
         },
         "Environment": {
           "Variables": {
@@ -3434,7 +3484,7 @@ exports[`Snapshot 1`] = `
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "c3974c5fcec90d1cff5f0c391a5ca0f086e3a85db14cf4cd34442b7556a9701c.zip",
+          "S3Key": "69374e7363ee8e88c8f0c14c3565fd35fb376c3eaa22d757c4050345034deb76.zip",
         },
         "Environment": {
           "Variables": {
@@ -3967,7 +4017,7 @@ exports[`Snapshot 1`] = `
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "c3974c5fcec90d1cff5f0c391a5ca0f086e3a85db14cf4cd34442b7556a9701c.zip",
+          "S3Key": "69374e7363ee8e88c8f0c14c3565fd35fb376c3eaa22d757c4050345034deb76.zip",
         },
         "Environment": {
           "Variables": {
@@ -4032,7 +4082,7 @@ exports[`Snapshot 1`] = `
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "c3974c5fcec90d1cff5f0c391a5ca0f086e3a85db14cf4cd34442b7556a9701c.zip",
+          "S3Key": "69374e7363ee8e88c8f0c14c3565fd35fb376c3eaa22d757c4050345034deb76.zip",
         },
         "Environment": {
           "Variables": {
@@ -4161,7 +4211,7 @@ exports[`Snapshot 1`] = `
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "c3974c5fcec90d1cff5f0c391a5ca0f086e3a85db14cf4cd34442b7556a9701c.zip",
+          "S3Key": "69374e7363ee8e88c8f0c14c3565fd35fb376c3eaa22d757c4050345034deb76.zip",
         },
         "Environment": {
           "Variables": {
@@ -4354,7 +4404,7 @@ exports[`Snapshot 1`] = `
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "7031e2c0fe6cfc6a62f28c7328de62deb44bbc5f879e32836cc52d7b13f5889e.zip",
+          "S3Key": "8e0fa0de7d47e1a05232b01859b82c21652eb6989642614b240a413ffa47c0b5.zip",
         },
         "Environment": {
           "Variables": {
@@ -4839,7 +4889,7 @@ exports[`Snapshot 1`] = `
                   "Arn",
                 ],
               },
-              "","Source":"SAAS_CONTROL_PLANE"}]}}},"TimeoutSeconds":900,"Comment":"Provision an application cell"}",
+              "","Source":"SAAS_CONTROL_PLANE"}]}}},"TimeoutSeconds":900,"Comment":"Onboard a new tenant"}",
             ],
           ],
         },
@@ -4919,7 +4969,7 @@ exports[`Snapshot 1`] = `
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "c3974c5fcec90d1cff5f0c391a5ca0f086e3a85db14cf4cd34442b7556a9701c.zip",
+          "S3Key": "69374e7363ee8e88c8f0c14c3565fd35fb376c3eaa22d757c4050345034deb76.zip",
         },
         "Environment": {
           "Variables": {
@@ -5042,7 +5092,7 @@ exports[`Snapshot 1`] = `
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "c3974c5fcec90d1cff5f0c391a5ca0f086e3a85db14cf4cd34442b7556a9701c.zip",
+          "S3Key": "69374e7363ee8e88c8f0c14c3565fd35fb376c3eaa22d757c4050345034deb76.zip",
         },
         "Environment": {
           "Variables": {
@@ -5169,7 +5219,7 @@ exports[`Snapshot 1`] = `
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "c3974c5fcec90d1cff5f0c391a5ca0f086e3a85db14cf4cd34442b7556a9701c.zip",
+          "S3Key": "69374e7363ee8e88c8f0c14c3565fd35fb376c3eaa22d757c4050345034deb76.zip",
         },
         "Environment": {
           "Variables": {
@@ -5292,7 +5342,7 @@ exports[`Snapshot 1`] = `
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "c3974c5fcec90d1cff5f0c391a5ca0f086e3a85db14cf4cd34442b7556a9701c.zip",
+          "S3Key": "69374e7363ee8e88c8f0c14c3565fd35fb376c3eaa22d757c4050345034deb76.zip",
         },
         "Environment": {
           "Variables": {

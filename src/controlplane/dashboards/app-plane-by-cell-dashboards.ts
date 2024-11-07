@@ -23,9 +23,9 @@ export class AppPlaneByCellDashboards extends Construct {
       type: VariableType.PROPERTY,
       inputType: VariableInputType.SELECT,
       id: 'cell',
-      values: Values.fromSearch("SaaSOpsV2", "stackName"),
-      value: "stackName",
-      defaultValue: DefaultValue.value(basicTierStackName)
+      values: Values.fromSearch('SaaSOpsV2', 'stackName'),
+      value: 'stackName',
+      defaultValue: DefaultValue.value(basicTierStackName),
     }));
 
     this.addServicesDashboard(services);
@@ -130,7 +130,7 @@ export class AppPlaneByCellDashboards extends Construct {
       //   width: 24,
       //   sparkline: true,
       // }),
-    )
+    );
   }
 
   addApiDashboard() {
@@ -139,35 +139,35 @@ export class AppPlaneByCellDashboards extends Construct {
         title: 'API stats',
         metrics: [
           new Metric({
-            namespace: "SaaSOpsV2",
-            metricName: "ApiLatency",
+            namespace: 'SaaSOpsV2',
+            metricName: 'ApiLatency',
             unit: Unit.MILLISECONDS,
             dimensionsMap: {
               stackName: basicTierStackName,
             },
-            statistic: "avg",
+            statistic: 'avg',
             label: 'Api latency (ms)',
             color: Color.BLUE,
           }),
           new Metric({
-            namespace: "SaaSOpsV2",
-            metricName: "ApiThrottleCount",
+            namespace: 'SaaSOpsV2',
+            metricName: 'ApiThrottleCount',
             unit: Unit.COUNT,
             dimensionsMap: {
               stackName: basicTierStackName,
             },
-            statistic: "n",
+            statistic: 'n',
             label: 'Throttle count',
             color: Color.ORANGE,
           }),
           new Metric({
-            namespace: "SaaSOpsV2",
-            metricName: "ApiErrorCount",
+            namespace: 'SaaSOpsV2',
+            metricName: 'ApiErrorCount',
             unit: Unit.COUNT,
             dimensionsMap: {
               stackName: basicTierStackName,
             },
-            statistic: "n",
+            statistic: 'n',
             label: 'Error count',
             color: Color.RED,
           }),
@@ -176,8 +176,8 @@ export class AppPlaneByCellDashboards extends Construct {
         height: 4,
         period: Duration.minutes(5),
         sparkline: true,
-      })
-    )
+      }),
+    );
   }
 }
 

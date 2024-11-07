@@ -18,9 +18,9 @@ export class LoadTestingDashboards extends Construct {
       type: VariableType.PROPERTY,
       inputType: VariableInputType.SELECT,
       id: 'tiervar',
-      values: Values.fromValues({value: "BASIC", label: "Basic Tier"}, {value: "PREMIUM", label: "Premium Tier"}),
+      values: Values.fromValues({ value: 'BASIC', label: 'Basic Tier' }, { value: 'PREMIUM', label: 'Premium Tier' }),
       value: 'Tier',
-      defaultValue: DefaultValue.value("BASIC")
+      defaultValue: DefaultValue.value('BASIC'),
     }));
 
     this.addLoadTestingGraphs();
@@ -32,52 +32,52 @@ export class LoadTestingDashboards extends Construct {
         title: 'API response stats',
         metrics: [
           new Metric({
-            namespace: "SaaSOpsV2-LoadTest",
-            metricName: "http.response_time.2xx.median",
+            namespace: 'SaaSOpsV2-LoadTest',
+            metricName: 'http.response_time.2xx.median',
             unit: Unit.MILLISECONDS,
             dimensionsMap: {
-              Tier: "BASIC",
-              Name: "loadtest"
+              Tier: 'BASIC',
+              Name: 'loadtest',
             },
-            statistic: "avg"
+            statistic: 'avg',
           }),
           new Metric({
-            namespace: "SaaSOpsV2-LoadTest",
-            metricName: "http.response_time.2xx.min",
+            namespace: 'SaaSOpsV2-LoadTest',
+            metricName: 'http.response_time.2xx.min',
             unit: Unit.MILLISECONDS,
             dimensionsMap: {
-              Tier: "BASIC",
-              Name: "loadtest"
+              Tier: 'BASIC',
+              Name: 'loadtest',
             },
-            statistic: "min"
+            statistic: 'min',
           }),
           new Metric({
-            namespace: "SaaSOpsV2-LoadTest",
-            metricName: "http.response_time.2xx.max",
+            namespace: 'SaaSOpsV2-LoadTest',
+            metricName: 'http.response_time.2xx.max',
             unit: Unit.MILLISECONDS,
             dimensionsMap: {
-              Tier: "BASIC",
-              Name: "loadtest"
+              Tier: 'BASIC',
+              Name: 'loadtest',
             },
-            statistic: "max"
+            statistic: 'max',
           }),
           new Metric({
-            namespace: "SaaSOpsV2-LoadTest",
-            metricName: "http.response_time.2xx.p99",
+            namespace: 'SaaSOpsV2-LoadTest',
+            metricName: 'http.response_time.2xx.p99',
             unit: Unit.MILLISECONDS,
             dimensionsMap: {
-              Tier: "BASIC",
-              Name: "loadtest"
+              Tier: 'BASIC',
+              Name: 'loadtest',
             },
-            statistic: "p99",
-          })
+            statistic: 'p99',
+          }),
         ],
         width: 24,
         height: 4,
         period: Duration.minutes(5),
         sparkline: true,
-      })
-    )
+      }),
+    );
   }
 }
 
