@@ -115,6 +115,9 @@
     "eslint": {
       "name": "eslint",
       "description": "Runs eslint against the codebase",
+      "env": {
+        "ESLINT_USE_FLAT_CONFIG": "false"
+      },
       "steps": [
         {
           "exec": "eslint --ext .ts,.tsx --fix --no-error-on-unmatched-pattern $@ src test build-tools projenrc .projenrc.ts",
@@ -215,7 +218,7 @@
           "exec": "yarn install --check-files"
         },
         {
-          "exec": "yarn upgrade @types/jest @types/node @typescript-eslint/eslint-plugin @typescript-eslint/parser aws-cdk esbuild eslint-import-resolver-typescript eslint-plugin-import eslint jest jest-junit projen ts-jest ts-node typescript @aws-lambda-powertools/jmespath @aws-sdk/client-api-gateway @aws-sdk/client-cloudformation @aws-sdk/client-codebuild @aws-sdk/client-cognito-identity-provider @aws-sdk/client-dynamodb @aws-sdk/client-s3 @aws-sdk/client-sfn @aws-sdk/client-sts @aws-sdk/lib-dynamodb @types/artillery @types/aws-lambda aws-cdk-lib aws-jwt-verify aws-lambda cdk-nag constructs http-status-codes source-map-support"
+          "exec": "yarn upgrade @stylistic/eslint-plugin @types/jest @types/node @typescript-eslint/eslint-plugin @typescript-eslint/parser aws-cdk esbuild eslint-import-resolver-typescript eslint-plugin-import eslint jest jest-junit projen ts-jest ts-node typescript @aws-lambda-powertools/jmespath @aws-sdk/client-api-gateway @aws-sdk/client-cloudformation @aws-sdk/client-codebuild @aws-sdk/client-cognito-identity-provider @aws-sdk/client-dynamodb @aws-sdk/client-s3 @aws-sdk/client-sfn @aws-sdk/client-sts @aws-sdk/lib-dynamodb @types/artillery @types/aws-lambda aws-cdk-lib aws-jwt-verify aws-lambda cdk-nag constructs http-status-codes source-map-support"
         },
         {
           "exec": "npx projen"

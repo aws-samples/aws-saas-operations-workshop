@@ -1,5 +1,5 @@
 import { awscdk } from 'projen';
-const cdkVersion = '2.164.1';
+const cdkVersion = '2.166.0';
 const project = new awscdk.AwsCdkTypeScriptApp({
   cdkVersion: cdkVersion,
   defaultReleaseBranch: 'main',
@@ -31,6 +31,8 @@ const project = new awscdk.AwsCdkTypeScriptApp({
   gitignore: [
     'ash',
   ],
+  license: 'MIT-0',
+  copyrightOwner: 'Amazon Web Services'
 });
 project.tasks.tryFind('deploy')?.reset('cdk deploy --require-approval=never SaaSOpsV2-controlplane');
 project.tasks.tryFind('destroy')?.reset('cdk destroy --force SaaSOpsV2-controlplane');

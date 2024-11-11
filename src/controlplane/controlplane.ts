@@ -12,6 +12,7 @@ import { ControlPlaneEventBus } from './event-bus/event-bus';
 import { LoadTesting } from './load-testing/load-testing'; // eslint-disable-line
 import { ResourceMgmt } from './resource-mgmt/resource-mgmt';
 import { TenantMgmt } from './tenant-mgmt/tenant-mgmt';
+import { Dashboards } from './dashboards/dashboards';
 
 export enum TenantActivationStatus {
   Active = 'ACTIVE',
@@ -107,5 +108,6 @@ export class ControlPlaneStack extends Stack {
     new AppPlaneByCellDashboards(this, 'ACDB');
     new CtrlPlaneDashboards(this, 'CDB', { tenantOnboardingStateMachineArn: tm.tenantOnboardingStateMachineArn });
     new LoadTestingDashboards(this, 'LB');
+    new Dashboards(this, 'Dashboard');
   }
 }
