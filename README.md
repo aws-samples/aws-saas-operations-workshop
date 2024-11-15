@@ -1,11 +1,15 @@
-# README
+# AWS SaaS Operations workshop v2
 
-To deploy workshop:
+This is the source code for the [AWS SaaS Operations workshop v2](https://catalog.workshops.aws/saas-operations-2).
 
-`cd own-account && ./deploy.sh && cd ..`
+If you would like to deploy this, then follow the instructions [in the workshop.](https://catalog.workshops.aws/saas-operations-2/en-US/02-getting-started/02-own-account).
 
-IDE details are in the output of the `SaaSOpsV2-Vscode` CloudFormation stack.
+Clean up is available. Follow the instructions [in the workshop](https://catalog.workshops.aws/saas-operations-2/en-US/99-cleaning-up/20-own-account)
 
-To delete the workshop:
+## Security
 
-`./delete_workshop.sh`
+See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more information.
+
+## License
+
+This library is licensed under the MIT-0 License. See the LICENSE file.
