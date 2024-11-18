@@ -1,5 +1,4 @@
 {
- "Description": "Creates the lab environment for the workshop",
  "Resources": {
   "IdeIdeVPC9D98B345": {
    "Type": "AWS::EC2::VPC",
@@ -425,9 +424,7 @@
     "IamInstanceProfile": {
      "Ref": "IdeInstanceProfile5175B2C4"
     },
-    "ImageId": {
-     "Ref": "SsmParameterValueawsserviceamiamazonlinuxlatestal2023amikernel61x8664C96584B6F00A464EAD1953AFF4B05118Parameter"
-    },
+    "ImageId": "ami-0eddb4a4e7d846d6f",
     "InstanceType": "t3.medium",
     "NetworkInterfaces": [
      {
@@ -690,7 +687,7 @@
         "runCommand": [
          {
           "Fn::Sub": [
-           "bash << 'HEREDOC'\nset -e\n\necho \"Retrieving IDE password...\"\n\nPASSWORD_SECRET_VALUE=$(aws secretsmanager get-secret-value --secret-id \"${passwordName}\" --query 'SecretString' --output text)\n\nexport IDE_PASSWORD=$(echo \"$PASSWORD_SECRET_VALUE\" | jq -r '.password')\n\necho \"Setting profile variables...\"\n\n# Set some useful variables\nexport TOKEN=$(curl -X PUT \"http://169.254.169.254/latest/api/token\" -H \"X-aws-ec2-metadata-token-ttl-seconds: 21600\")\nexport AWS_REGION=$(curl -H \"X-aws-ec2-metadata-token: $TOKEN\" -s http://169.254.169.254/latest/dynamic/instance-identity/document | grep region | awk -F\\\" '{print $4}')\nexport EC2_PRIVATE_IP=$(curl -H \"X-aws-ec2-metadata-token: $TOKEN\" -s http://169.254.169.254/latest/meta-data/local-ipv4)\n\ntee /etc/profile.d/workshop.sh <<EOF\nexport INSTANCE_IAM_ROLE_NAME=\"${instanceIamRoleName}\"\nexport INSTANCE_IAM_ROLE_ARN=\"${instanceIamRoleArn}\"\n\nexport AWS_REGION=\"$AWS_REGION\"\nexport EC2_PRIVATE_IP=\"$EC2_PRIVATE_IP\"\n\nexport IDE_DOMAIN=\"${domain}\"\nexport IDE_URL=\"https://${domain}\"\nexport IDE_PASSWORD=\"$IDE_PASSWORD\"\n\nalias code=\"code-server\"\nEOF\n\nsource /etc/profile.d/workshop.sh\n\necho \"Setting PS1...\"\n\n# Set PS1\ntee /etc/profile.d/custom_prompt.sh <<EOF\n#!/bin/sh\n\nexport PROMPT_COMMAND='export PS1=\"\\u:\\w:$ \"'\nEOF\n\necho \"Generating SSH key...\"\n\n# Generate an SSH key for ec2-user\nsudo -u ec2-user bash -c \"ssh-keygen -t rsa -N '' -f ~/.ssh/id_rsa -m pem <<< y\"\n\necho \"Installing AWS CLI...\"\n\n# Install AWS CLI\ncurl -LSsf -o /tmp/aws-cli.zip https://awscli.amazonaws.com/awscli-exe-linux-$(uname -m).zip\nunzip -q -d /tmp /tmp/aws-cli.zip\n/tmp/aws/install --update\nrm -rf /tmp/aws\n\necho \"Installing Docker...\"\n\n# Install docker and base package\ndnf install -y -q docker git\nservice docker start\nusermod -aG docker ec2-user\n\necho \"Installing code-server...\"\n\n# Install code-server\ncodeServer=$(dnf list installed code-server | wc -l)\nif [ \"$codeServer\" -eq \"0\" ]; then\n  sudo -u ec2-user \"codeServerVersion=${codeServerVersion}\" bash -c 'curl -fsSL https://code-server.dev/install.sh | sh -s -- --version ${codeServerVersion}'\n  systemctl enable --now code-server@ec2-user\nfi\n\nsudo -u ec2-user bash -c 'mkdir -p ~/.config/code-server'\nsudo -u ec2-user bash -c 'touch ~/.config/code-server/config.yaml'\ntee /home/ec2-user/.config/code-server/config.yaml <<EOF\ncert: false\nauth: password\npassword: \"$IDE_PASSWORD\"\nbind-addr: 127.0.0.1:8889\nEOF\n\n# Create default directory for workspace\nsudo -u ec2-user bash -c 'mkdir -p ~/environment'\n\nENVIRONMENT_CONTENTS_ZIP=${environmentContentsZip}\n\nif [ ! -z \"$ENVIRONMENT_CONTENTS_ZIP\" ]; then\n  echo \"Adding environments archive...\"\n\n  if [[ $ENVIRONMENT_CONTENTS_ZIP == s3:* ]]; then\n    aws s3 cp $ENVIRONMENT_CONTENTS_ZIP /tmp/environment.zip\n  else\n    curl -LSsf -o /tmp/environment.zip $ENVIRONMENT_CONTENTS_ZIP\n  fi\n\n  sudo -u ec2-user bash -c 'unzip -q /tmp/environment.zip -d ~/environment'\n\n  rm -rf /tmp/environment.zip\nfi\n\nSTARTUP_EDITOR='none'\n\nTERMINAL_ON_STARTUP=\"${terminalOnStartup}\"\nREADME_URL=\"${readmeUrl}\"\n\nif [ ! -z \"$README_URL\" ]; then\n  echo \"Adding README...\"\n  if [[ $README_URL == s3:* ]]; then\n    aws s3 cp $README_URL /home/ec2-user/environment/README.md\n  else\n    curl -LSsf -o /home/ec2-user/environment/README.md $README_URL\n  fi\nfi\n\nif [ \"$TERMINAL_ON_STARTUP\" = \"true\" ]; then\n  STARTUP_EDITOR='terminal'\nelif [ -f /home/ec2-user/environment/README.md ]; then\n  STARTUP_EDITOR='readme'\nfi\n\necho \"Configuring code-server...\"\n\nsudo -u ec2-user bash -c 'mkdir -p ~/.local/share/code-server/User'\nsudo -u ec2-user bash -c 'touch ~/.local/share/code-server/User/settings.json'\ntee /home/ec2-user/.local/share/code-server/User/settings.json <<EOF\n{\n  \"extensions.autoUpdate\": false,\n  \"extensions.autoCheckUpdates\": false,\n  \"security.workspace.trust.enabled\": false,\n  \"workbench.startupEditor\": \"$STARTUP_EDITOR\",\n  \"task.allowAutomaticTasks\": \"on\",\n  \"telemetry.telemetryLevel\": \"off\"\n}\nEOF\n\nsudo -u ec2-user bash -c 'touch ~/.local/share/code-server/User/keybindings.json'\ntee /home/ec2-user/.local/share/code-server/User/keybindings.json << 'EOF'\n[\n  {\n    \"key\": \"shift+cmd+/\",\n    \"command\": \"remote.tunnel.forwardCommandPalette\"\n  }\n]\nEOF\n\nif [ ! -z \"${splashUrl}\" ]; then\necho \"Configuring splash URL...\"\n\nsudo -u ec2-user bash -c 'touch ~/.local/share/code-server/User/tasks.json'\ntee /home/ec2-user/.local/share/code-server/User/tasks.json << 'EOF'\n{\n  \"version\": \"2.0.0\",\n  \"tasks\": [\n    {\n      \"label\": \"Open Splash\",\n      \"command\": \"${!input:openSimpleBrowser}\",\n      \"presentation\": {\n        \"reveal\": \"always\",\n        \"panel\": \"new\"\n      },\n      \"runOptions\": {\n        \"runOn\": \"folderOpen\"\n      }\n    }\n  ],\n  \"inputs\": [\n    {\n      \"id\": \"openSimpleBrowser\",\n      \"type\": \"command\",\n      \"command\": \"simpleBrowser.show\",\n      \"args\": [\n        \"${splashUrl}\"\n      ]\n    }\n  ]\n}\nEOF\nfi\n\necho \"Installing code-server extensions...\"\n\nEXTENSIONS=\"${extensions}\"\n\nIFS=',' read -ra array <<< \"$EXTENSIONS\"\n\n# Iterate over each entry in the array\nfor extension in \"${!array[@]}\"; do\n  # Use retries as extension installation seems unreliable\n  sudo -u ec2-user bash -c \"set -e; (r=5;while ! code-server --install-extension $extension --force ; do ((--r))||exit;sleep 5;done)\"\ndone\n\nif [ ! -f \"/home/ec2-user/.local/share/code-server/coder.json\" ]; then\n  sudo -u ec2-user bash -c 'touch ~/.local/share/code-server/coder.json'\n  echo '{ \"query\": { \"folder\": \"/home/ec2-user/environment\" } }' > /home/ec2-user/.local/share/code-server/coder.json\nfi\n\necho \"Restarting code-server...\"\n\nsystemctl restart code-server@ec2-user\n\necho \"Installing Caddy...\"\n\n# Install caddy\ndnf copr enable -y -q @caddy/caddy epel-9-x86_64\ndnf install -y -q caddy\nsystemctl enable --now caddy\n\ntee /etc/caddy/Caddyfile <<EOF\nhttp://${domain} {\n  handle /* {\n    reverse_proxy 127.0.0.1:8889\n  }\n  #GITEA\n}\nEOF\n\necho \"Restarting caddy...\"\n\nsystemctl restart caddy\n\nif [ ! -f \"/home/ec2-user/.local/share/code-server/coder.json\" ]; then\n  sudo -u ec2-user bash -c 'touch ~/.local/share/code-server/coder.json'\n  echo '{ \"query\": { \"folder\": \"/home/ec2-user/environment\" } }' > /home/ec2-user/.local/share/code-server/coder.json\nfi\n\n${installGitea}\n\necho \"Running custom bootstrap script...\"\n\n${customBootstrapScript}\nHEREDOC\n\nexit_code=$?\n\n/opt/aws/bin/cfn-signal -e $exit_code '${waitConditionHandleUrl}'\n\nexit $exit_code",
+           "bash << 'HEREDOC'\nset -e\n\necho \"Retrieving IDE password...\"\n\nPASSWORD_SECRET_VALUE=$(aws secretsmanager get-secret-value --secret-id \"${passwordName}\" --query 'SecretString' --output text)\n\nexport IDE_PASSWORD=$(echo \"$PASSWORD_SECRET_VALUE\" | jq -r '.password')\n\necho \"Setting profile variables...\"\n\n# Set some useful variables\nexport TOKEN=$(curl -X PUT \"http://169.254.169.254/latest/api/token\" -H \"X-aws-ec2-metadata-token-ttl-seconds: 21600\")\nexport AWS_REGION=$(curl -H \"X-aws-ec2-metadata-token: $TOKEN\" -s http://169.254.169.254/latest/dynamic/instance-identity/document | grep region | awk -F\\\" '{print $4}')\nexport EC2_PRIVATE_IP=$(curl -H \"X-aws-ec2-metadata-token: $TOKEN\" -s http://169.254.169.254/latest/meta-data/local-ipv4)\n\ntee /etc/profile.d/workshop.sh <<EOF\nexport INSTANCE_IAM_ROLE_NAME=\"${instanceIamRoleName}\"\nexport INSTANCE_IAM_ROLE_ARN=\"${instanceIamRoleArn}\"\n\nexport AWS_REGION=\"$AWS_REGION\"\nexport EC2_PRIVATE_IP=\"$EC2_PRIVATE_IP\"\n\nexport IDE_DOMAIN=\"${domain}\"\nexport IDE_URL=\"https://${domain}\"\nexport IDE_PASSWORD=\"$IDE_PASSWORD\"\n\nalias code=\"code-server\"\nEOF\n\nsource /etc/profile.d/workshop.sh\n\necho \"Setting PS1...\"\n\n# Set PS1\ntee /etc/profile.d/custom_prompt.sh <<EOF\n#!/bin/sh\n\nexport PROMPT_COMMAND='export PS1=\"\\u:\\w:$ \"'\nEOF\n\necho \"Generating SSH key...\"\n\n# Generate an SSH key for ec2-user\nsudo -u ec2-user bash -c \"ssh-keygen -t rsa -N '' -f ~/.ssh/id_rsa -m pem <<< y\"\n\necho \"Installing AWS CLI...\"\n\n# Install AWS CLI\ncurl -LSsf -o /tmp/aws-cli.zip https://awscli.amazonaws.com/awscli-exe-linux-$(uname -m).zip\nunzip -q -d /tmp /tmp/aws-cli.zip\n/tmp/aws/install --update\nrm -rf /tmp/aws\n\necho \"Installing Docker...\"\n\n# Install docker and base package\ndnf install -y -q docker git\nservice docker start\nusermod -aG docker ec2-user\n\necho \"Installing code-server...\"\n\n# Install code-server\ncodeServer=$(dnf list installed code-server | wc -l)\nif [ \"$codeServer\" -eq \"0\" ]; then\n  sudo -u ec2-user \"codeServerVersion=${codeServerVersion}\" bash -c 'curl -fsSL https://code-server.dev/install.sh | sh -s -- --version ${codeServerVersion}'\n  systemctl enable --now code-server@ec2-user\nfi\n\nsudo -u ec2-user bash -c 'mkdir -p ~/.config/code-server'\nsudo -u ec2-user bash -c 'touch ~/.config/code-server/config.yaml'\ntee /home/ec2-user/.config/code-server/config.yaml <<EOF\ncert: false\nauth: password\npassword: \"$IDE_PASSWORD\"\nbind-addr: 127.0.0.1:8889\nEOF\n\n# Create default directory for workspace\nsudo -u ec2-user bash -c 'mkdir -p ~/environment'\n\nENVIRONMENT_CONTENTS_ZIP=${environmentContentsZip}\n\nif [ ! -z \"$ENVIRONMENT_CONTENTS_ZIP\" ]; then\n  echo \"Adding environments archive...\"\n\n  if [[ $ENVIRONMENT_CONTENTS_ZIP == s3:* ]]; then\n    aws s3 cp $ENVIRONMENT_CONTENTS_ZIP /tmp/environment.zip\n  else\n    curl -LSsf -o /tmp/environment.zip $ENVIRONMENT_CONTENTS_ZIP\n  fi\n\n  sudo -u ec2-user bash -c 'unzip -q /tmp/environment.zip -d ~/environment'\n\n  rm -rf /tmp/environment.zip\nfi\n\nSTARTUP_EDITOR='none'\n\nTERMINAL_ON_STARTUP=\"${terminalOnStartup}\"\nREADME_URL=\"${readmeUrl}\"\n\nif [ ! -z \"$README_URL\" ]; then\n  echo \"Adding README...\"\n  if [[ $README_URL == s3:* ]]; then\n    aws s3 cp $README_URL /home/ec2-user/environment/README.md\n  else\n    curl -LSsf -o /home/ec2-user/environment/README.md $README_URL\n  fi\nfi\n\nif [ \"$TERMINAL_ON_STARTUP\" = \"true\" ]; then\n  STARTUP_EDITOR='terminal'\nelif [ -f /home/ec2-user/environment/README.md ]; then\n  STARTUP_EDITOR='readme'\nfi\n\necho \"Configuring code-server...\"\n\nsudo -u ec2-user bash -c 'mkdir -p ~/.local/share/code-server/User'\nsudo -u ec2-user bash -c 'touch ~/.local/share/code-server/User/settings.json'\ntee /home/ec2-user/.local/share/code-server/User/settings.json <<EOF\n{\n  \"extensions.autoUpdate\": false,\n  \"extensions.autoCheckUpdates\": false,\n  \"security.workspace.trust.enabled\": false,\n  \"workbench.startupEditor\": \"$STARTUP_EDITOR\",\n  \"task.allowAutomaticTasks\": \"on\",\n  \"telemetry.telemetryLevel\": \"off\",\n  \"update.mode\": \"none\"\n}\nEOF\n\nsudo -u ec2-user bash -c 'touch ~/.local/share/code-server/User/keybindings.json'\ntee /home/ec2-user/.local/share/code-server/User/keybindings.json << 'EOF'\n[\n  {\n    \"key\": \"shift+cmd+/\",\n    \"command\": \"remote.tunnel.forwardCommandPalette\"\n  }\n]\nEOF\n\nif [ ! -z \"${splashUrl}\" ]; then\necho \"Configuring splash URL...\"\n\nsudo -u ec2-user bash -c 'touch ~/.local/share/code-server/User/tasks.json'\ntee /home/ec2-user/.local/share/code-server/User/tasks.json << 'EOF'\n{\n  \"version\": \"2.0.0\",\n  \"tasks\": [\n    {\n      \"label\": \"Open Splash\",\n      \"command\": \"${!input:openSimpleBrowser}\",\n      \"presentation\": {\n        \"reveal\": \"always\",\n        \"panel\": \"new\"\n      },\n      \"runOptions\": {\n        \"runOn\": \"folderOpen\"\n      }\n    }\n  ],\n  \"inputs\": [\n    {\n      \"id\": \"openSimpleBrowser\",\n      \"type\": \"command\",\n      \"command\": \"simpleBrowser.show\",\n      \"args\": [\n        \"${splashUrl}\"\n      ]\n    }\n  ]\n}\nEOF\nfi\n\necho \"Installing code-server extensions...\"\n\nEXTENSIONS=\"${extensions}\"\n\nIFS=',' read -ra array <<< \"$EXTENSIONS\"\n\n# Iterate over each entry in the array\nfor extension in \"${!array[@]}\"; do\n  # Use retries as extension installation seems unreliable\n  sudo -u ec2-user bash -c \"set -e; (r=5;while ! code-server --install-extension $extension --force ; do ((--r))||exit;sleep 5;done)\"\ndone\n\nif [ ! -f \"/home/ec2-user/.local/share/code-server/coder.json\" ]; then\n  sudo -u ec2-user bash -c 'touch ~/.local/share/code-server/coder.json'\n  echo '{ \"query\": { \"folder\": \"/home/ec2-user/environment\" } }' > /home/ec2-user/.local/share/code-server/coder.json\nfi\n\necho \"Restarting code-server...\"\n\nsystemctl restart code-server@ec2-user\n\necho \"Installing Caddy...\"\n\n# Install caddy\ndnf copr enable -y -q @caddy/caddy epel-9-x86_64\ndnf install -y -q caddy\nsystemctl enable --now caddy\n\ntee /etc/caddy/Caddyfile <<EOF\nhttp://${domain} {\n  handle /* {\n    reverse_proxy 127.0.0.1:8889\n  }\n  #GITEA\n}\nEOF\n\necho \"Restarting caddy...\"\n\nsystemctl restart caddy\n\nif [ ! -f \"/home/ec2-user/.local/share/code-server/coder.json\" ]; then\n  sudo -u ec2-user bash -c 'touch ~/.local/share/code-server/coder.json'\n  echo '{ \"query\": { \"folder\": \"/home/ec2-user/environment\" } }' > /home/ec2-user/.local/share/code-server/coder.json\nfi\n\n${installGitea}\n\necho \"Running custom bootstrap script...\"\n\n${customBootstrapScript}\nHEREDOC\n\nexit_code=$?\n\n/opt/aws/bin/cfn-signal -e $exit_code '${waitConditionHandleUrl}'\n\nexit $exit_code",
            {
             "instanceIamRoleName": {
              "Ref": "IdeIdeRoleD654ADD4"
@@ -967,12 +964,15 @@
    "Metadata": {
     "aws:cdk:path": "SaaSOpsV2VscodeStack/Ide/IdePasswordExporter/Default"
    }
-  }
- },
- "Parameters": {
-  "SsmParameterValueawsserviceamiamazonlinuxlatestal2023amikernel61x8664C96584B6F00A464EAD1953AFF4B05118Parameter": {
-   "Type": "AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>",
-   "Default": "/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-6.1-x86_64"
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/32QwWrDMBBEv6V3RU1CKb2GlKaBQo1d0mOR5bWrRF4F7aohCP97kWPHgUJPO/MQs7NaysXjXM7v1IlmujrMrCllLFjpg1An+oqglzLujlqsa9xla5GF0hpdhBKBE5tU7gLDhyotTHxiKyKnjWLj8Po4iS0yeATeKIaTOg9rBrdiVvq7BWRRgA7e8HnjXTj2C/4FW2w8EIktEivUw6qL7oRVbVkpGV8C6rHRqDthVCtj7i539DNz1ui+26TGtMy72tgU6hqS8c0110aj7gSB9sDUKlQNeBmL3g+tPXAntHWhqr1DlvHZEHtThrHare8EUSsTdDqkn+lEDuSCTzcGYtdOtsZb/akMrx1WJsW8KqzsX5zAe+Bj4E6gq0Du6f5n8SSXc/lwtydjZj4gmxZkfpm/1ahMpD8CAAA="
+   },
+   "Metadata": {
+    "aws:cdk:path": "SaaSOpsV2VscodeStack/CDKMetadata/Default"
+   }
   }
  },
  "Outputs": {
@@ -999,6 +999,40 @@
      "password"
     ]
    }
+  }
+ },
+ "Parameters": {
+  "BootstrapVersion": {
+   "Type": "AWS::SSM::Parameter::Value<String>",
+   "Default": "/cdk-bootstrap/hnb659fds/version",
+   "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]"
+  }
+ },
+ "Rules": {
+  "CheckBootstrapVersion": {
+   "Assertions": [
+    {
+     "Assert": {
+      "Fn::Not": [
+       {
+        "Fn::Contains": [
+         [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+         ],
+         {
+          "Ref": "BootstrapVersion"
+         }
+        ]
+       }
+      ]
+     },
+     "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI."
+    }
+   ]
   }
  }
 }
