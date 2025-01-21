@@ -31,7 +31,7 @@ Parameters:
     Description: "Name of the bootstrap stack"
   LambdaReserveConcurrencyPlatinum:
     Type: Number
-    Default: 30
+    Default: 20
     Description: "Reserve concurrency for lambda function. You can customize this on per tenant basis, if needed, by storing in the tenant table"
   LambdaReserveConcurrencyBasic:
     Type: Number
