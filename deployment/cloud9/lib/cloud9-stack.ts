@@ -27,7 +27,7 @@ export class Cloud9Stack extends cdk.Stack {
     // Create the Cloud9 environment
     this.c9 = new CfnEnvironmentEC2(this, props.workshop+'-C9Instance', {
       imageId: props?.imageId ?? 'amazonlinux-2023-x86_64',
-      instanceType: props?.instanceType ?? 'm6i.large',
+      instanceType: props?.instanceType ?? 'm5.xlarge',
       description: props.workshop+" Cloud9",
       ownerArn: props.ownerArn,
       subnetId: vpc.publicSubnets[0].subnetId,
