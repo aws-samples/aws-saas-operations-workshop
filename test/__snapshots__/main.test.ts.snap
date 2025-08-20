@@ -678,7 +678,7 @@ exports[`Snapshot 1`] = `
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "b721eecd6d1a433a3a2e154afe39ec778bf9bbfd24f197dfdde6bfa7c8e8b235.zip",
+          "S3Key": "c7de9e01b8be3a51aa56ae0a322ec5baf94530b6aab21c08a79c882ae1dd576f.zip",
         },
         "Environment": {
           "Variables": {
@@ -1251,6 +1251,84 @@ exports[`Snapshot 1`] = `
       },
       "Type": "AWS::IAM::Role",
     },
+    "DashboardDashboardsDashboardAABBE2AA": {
+      "Properties": {
+        "DashboardBody": {
+          "Fn::Join": [
+            "",
+            [
+              "{"start":"-PT1H","widgets":[{"type":"text","width":24,"height":1,"x":0,"y":0,"properties":{"markdown":"# Application plane"}},{"type":"text","width":24,"height":1,"x":0,"y":1,"properties":{"markdown":"# /orders"}},{"type":"metric","width":8,"height":4,"x":0,"y":2,"properties":{"view":"timeSeries","title":"Usage per cell","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[[{"label":"/orders","expression":"SELECT COUNT(orders) FROM SCHEMA(SaaSOpsV2, status, tenantId, stackName) GROUP BY stackName","period":60}]],"yAxis":{},"liveData":true}},{"type":"metric","width":8,"height":4,"x":8,"y":2,"properties":{"view":"timeSeries","title":"Latency per cell","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[[{"label":"/orders","expression":"SELECT AVG(orders) FROM SCHEMA(SaaSOpsV2, status, tenantId, stackName) WHERE status = '200' GROUP BY stackName","period":60}]],"yAxis":{},"liveData":true}},{"type":"metric","width":4,"height":4,"x":16,"y":2,"properties":{"view":"singleValue","title":"Average Latency","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","sparkline":true,"metrics":[[{"label":"/orders","expression":"SELECT AVG(orders) FROM SCHEMA(SaaSOpsV2, status, tenantId, stackName) WHERE status = '200'","period":60}]]}},{"type":"metric","width":4,"height":4,"x":20,"y":2,"properties":{"view":"singleValue","title":"Error rate","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","sparkline":true,"metrics":[[{"label":"/orders","expression":"SELECT COUNT(orders) FROM SCHEMA(SaaSOpsV2, status, tenantId, stackName) WHERE status != '200'","period":60}]]}},{"type":"text","width":24,"height":1,"x":0,"y":6,"properties":{"markdown":"# /products"}},{"type":"metric","width":8,"height":4,"x":0,"y":7,"properties":{"view":"timeSeries","title":"Usage per cell","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[[{"label":"/products","expression":"SELECT COUNT(products) FROM SCHEMA(SaaSOpsV2, status, tenantId, stackName) GROUP BY stackName","period":60}]],"yAxis":{},"liveData":true}},{"type":"metric","width":8,"height":4,"x":8,"y":7,"properties":{"view":"timeSeries","title":"Latency per cell","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[[{"label":"/products","expression":"SELECT AVG(products) FROM SCHEMA(SaaSOpsV2, status, tenantId, stackName) WHERE status = '200' GROUP BY stackName","period":60}]],"yAxis":{},"liveData":true}},{"type":"metric","width":4,"height":4,"x":16,"y":7,"properties":{"view":"singleValue","title":"Average Latency","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","sparkline":true,"metrics":[[{"label":"/products","expression":"SELECT AVG(products) FROM SCHEMA(SaaSOpsV2, status, tenantId, stackName) WHERE status = '200'","period":60}]]}},{"type":"metric","width":4,"height":4,"x":20,"y":7,"properties":{"view":"singleValue","title":"Error rate","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","sparkline":true,"metrics":[[{"label":"/products","expression":"SELECT COUNT(products) FROM SCHEMA(SaaSOpsV2, status, tenantId, stackName) WHERE status != '200'","period":60}]]}},{"type":"text","width":24,"height":1,"x":0,"y":11,"properties":{"markdown":"# /users"}},{"type":"metric","width":8,"height":4,"x":0,"y":12,"properties":{"view":"timeSeries","title":"Usage per cell","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[[{"label":"/users","expression":"SELECT COUNT(users) FROM SCHEMA(SaaSOpsV2, status, tenantId, stackName) GROUP BY stackName","period":60}]],"yAxis":{},"liveData":true}},{"type":"metric","width":8,"height":4,"x":8,"y":12,"properties":{"view":"timeSeries","title":"Latency per cell","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[[{"label":"/users","expression":"SELECT AVG(users) FROM SCHEMA(SaaSOpsV2, status, tenantId, stackName) WHERE status = '200' GROUP BY stackName","period":60}]],"yAxis":{},"liveData":true}},{"type":"metric","width":4,"height":4,"x":16,"y":12,"properties":{"view":"singleValue","title":"Average Latency","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","sparkline":true,"metrics":[[{"label":"/users","expression":"SELECT AVG(users) FROM SCHEMA(SaaSOpsV2, status, tenantId, stackName) WHERE status = '200'","period":60}]]}},{"type":"metric","width":4,"height":4,"x":20,"y":12,"properties":{"view":"singleValue","title":"Error rate","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","sparkline":true,"metrics":[[{"label":"/users","expression":"SELECT COUNT(users) FROM SCHEMA(SaaSOpsV2, status, tenantId, stackName) WHERE status != '200'","period":60}]]}},{"type":"text","width":24,"height":1,"x":0,"y":16,"properties":{"markdown":"# /auth"}},{"type":"metric","width":8,"height":4,"x":0,"y":17,"properties":{"view":"timeSeries","title":"Usage per cell","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[[{"label":"/auth","expression":"SELECT COUNT(auth) FROM SCHEMA(SaaSOpsV2, status, tenantId, stackName) GROUP BY stackName","period":60}]],"yAxis":{},"liveData":true}},{"type":"metric","width":8,"height":4,"x":8,"y":17,"properties":{"view":"timeSeries","title":"Latency per cell","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[[{"label":"/auth","expression":"SELECT AVG(auth) FROM SCHEMA(SaaSOpsV2, status, tenantId, stackName) WHERE status = '200' GROUP BY stackName","period":60}]],"yAxis":{},"liveData":true}},{"type":"metric","width":4,"height":4,"x":16,"y":17,"properties":{"view":"singleValue","title":"Average Latency","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","sparkline":true,"metrics":[[{"label":"/auth","expression":"SELECT AVG(auth) FROM SCHEMA(SaaSOpsV2, status, tenantId, stackName) WHERE status = '200'","period":60}]]}},{"type":"metric","width":4,"height":4,"x":20,"y":17,"properties":{"view":"singleValue","title":"Error rate","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","sparkline":true,"metrics":[[{"label":"/auth","expression":"SELECT COUNT(auth) FROM SCHEMA(SaaSOpsV2, status, tenantId, stackName) WHERE status != '200'","period":60}]]}}]}",
+            ],
+          ],
+        },
+        "DashboardName": "SaaSOpsV2-Overview",
+      },
+      "Type": "AWS::CloudWatch::Dashboard",
+    },
     "EventsLogGroupPolicytestControlplaneEventBusEventBusLogRuleC6C0AA503EB49C7F": {
       "DeletionPolicy": "Delete",
       "DependsOn": [
@@ -1385,7 +1463,7 @@ exports[`Snapshot 1`] = `
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "0457d333165d06eb6c6f378cdab18fc4e0714ab2e47bcdedd45059f77e7f37da.zip",
+          "S3Key": "2e978c20dab148afad7b0a7cbe53b42a2bcd72c40e670a644721752fae05c2ca.zip",
         },
         "Description": "/opt/awscli/aws",
       },
@@ -1413,7 +1491,7 @@ exports[`Snapshot 1`] = `
           },
         ],
         "SourceObjectKeys": [
-          "7a1e6a75304778037c4b2c9e83f1f966c5db3be5f955fabc29e3d58708180a4c.zip",
+          "7026bff84b39325121f23b959f6d81f35b3715ce6eed84533579affb2a245a0e.zip",
         ],
       },
       "Type": "Custom::CDKBucketDeployment",

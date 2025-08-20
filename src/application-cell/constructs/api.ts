@@ -3,12 +3,11 @@ import { AccessLogField, AccessLogFormat, ApiKeySourceType, LambdaIntegration, L
 import { HttpMethod } from 'aws-cdk-lib/aws-apigatewayv2';
 import { Unit } from 'aws-cdk-lib/aws-cloudwatch';
 import { Role } from 'aws-cdk-lib/aws-iam';
-import { Runtime } from 'aws-cdk-lib/aws-lambda';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { FilterPattern, LogGroup, MetricFilter } from 'aws-cdk-lib/aws-logs';
 import { Construct } from 'constructs';
 import { CommonLogGroup } from './log-group';
-import { applicationName } from '../../config';
+import { applicationName, memorySize, runtime } from '../../config';
 
 export interface ApplicationApiProps {
   cellId: string;
@@ -141,7 +140,8 @@ export class ApplicationApi extends Construct {
       let capitalisedMethod = lowerCaseMethod[0].toUpperCase() + lowerCaseMethod.slice(1);
       let fn = new NodejsFunction(this, capitalisedServiceName+capitalisedMethod+'Fn', {
         entry: entry,
-        runtime: Runtime.NODEJS_LATEST,
+        runtime: runtime,
+        memorySize: memorySize,
         handler: lowerCaseMethod+capitalisedServiceName,
         environment: {
           POWERTOOLS_SERVICE_NAME: lowerCaseServiceName,

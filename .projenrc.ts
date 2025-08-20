@@ -32,7 +32,7 @@ const project = new awscdk.AwsCdkTypeScriptApp({
     'ash',
   ],
   license: 'MIT-0',
-  copyrightOwner: 'Amazon Web Services'
+  copyrightOwner: 'Amazon Web Services',
 });
 project.tasks.tryFind('deploy')?.reset('cdk deploy --require-approval=never SaaSOpsV2-controlplane');
 project.tasks.tryFind('destroy')?.reset('cdk destroy --force SaaSOpsV2-controlplane');

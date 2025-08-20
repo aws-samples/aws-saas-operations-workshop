@@ -5,6 +5,7 @@ export const applicationName = 'SaaSOpsV2';
 export const codeBuildBuildImage: IBuildImage = LinuxArmLambdaBuildImage.AMAZON_LINUX_2023_NODE_20;
 export const codeBuildComputeType: ComputeType = ComputeType.LAMBDA_2GB;
 export const runtime: Runtime = Runtime.NODEJS_20_X;
+export const memorySize = 512;
 export const sharedUserPassword = 'Stopthatthats51llY!';
 
 export enum TenantRole {

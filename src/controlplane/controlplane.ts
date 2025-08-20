@@ -6,13 +6,13 @@ import { applicationName } from '../config';
 import { AppPlaneByCellDashboards } from './dashboards/app-plane-by-cell-dashboards';
 import { AppPlaneDashboards } from './dashboards/app-plane-dashboards';
 import { CtrlPlaneDashboards } from './dashboards/ctrl-plane-dashboard';
+import { Dashboards } from './dashboards/dashboards';
 import { LoadTestingDashboards } from './dashboards/load-testing-dashboard';
 import { ControlPlaneEventBus } from './event-bus/event-bus';
 //@ts-ignore
 import { LoadTesting } from './load-testing/load-testing'; // eslint-disable-line
 import { ResourceMgmt } from './resource-mgmt/resource-mgmt';
 import { TenantMgmt } from './tenant-mgmt/tenant-mgmt';
-import { Dashboards } from './dashboards/dashboards';
 
 export enum TenantActivationStatus {
   Active = 'ACTIVE',
