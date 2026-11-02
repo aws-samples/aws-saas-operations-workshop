@@ -2,23 +2,10 @@
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: MIT-0
 
-# Break when all background jobs are done
-wait_for_background_jobs() {
-    echo "Waiting for background jobs to finish"
-    while true; do
-        jobs_running=($(jobs -l | grep Running | awk '{print $2}'))
-        if [ ${#jobs_running[@]} -eq 0 ]; then
-            break
-        fi
-        echo "Jobs running: ${jobs_running[@]}"
-        sleep $DELAY
-    done
-}
-
 # Wait for named background jobs and fail if any of them failed.
 # Usage: wait_for_jobs "name1:pid1" "name2:pid2" ...
-# Unlike wait_for_background_jobs this propagates the exit status, so a failed
-# parallel step (an Angular build, a stack deploy) fails the whole build.
+# Propagates the exit status, so a failed parallel step (an Angular build, a stack
+# deploy) fails the whole build instead of being ignored.
 wait_for_jobs() {
     local failed=0
     local job name pid status
