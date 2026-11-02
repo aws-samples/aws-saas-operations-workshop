@@ -1,4 +1,7 @@
 {
+	"agent": {
+		"run_as_user": "root"
+	},
 	"logs": {
 		"logs_collected": {
 			"files": {
