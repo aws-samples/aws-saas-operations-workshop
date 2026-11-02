@@ -8,8 +8,9 @@ phases:
       python: 3.9
     commands:
       # Install packages or any pre-reqs in this phase.
-      # Upgrading SAM CLI to latest version
-      - python -m pip install --upgrade aws-sam-cli
+      # SAM CLI: use the image's copy when present, otherwise install it (pip resolves the
+      # newest release that supports the selected Python; --upgrade only added time).
+      - command -v sam > /dev/null || python -m pip install --quiet aws-sam-cli
       - sam --version
       # Installing project dependencies
       - cd App/server/ProductService
