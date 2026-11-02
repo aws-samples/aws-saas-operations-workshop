@@ -11,12 +11,24 @@ if [[ "$(id -u)" -ne 0 ]]; then
 fi
 
 # Tooling the build itself needs. Runs in CodeBuild (Amazon Linux 2023 standard:5.0 with
-# nodejs 22 and python 3.9 selected in the buildspec; the image has no nodejs 20), or on any
-# admin shell with node, python3 and the AWS CLI.
+# nodejs 22 selected in the buildspec; the image has no nodejs 20), or on any admin shell
+# with node, python3.9 and the AWS CLI.
 install_build_tools() {
     echo "Installing build tools"
     node --version
-    python3 --version
+    # sam build needs a python3.9 interpreter for the python3.9 functions. Amazon Linux 2023
+    # ships one as the system Python; selecting python 3.9 in the buildspec instead costs a
+    # 60 s pyenv build. Fall back to pyenv only when the system has none.
+    if ! command -v python3.9 > /dev/null; then
+        echo "python3.9 not found, installing with pyenv"
+        if command -v pyenv > /dev/null; then
+            pyenv install -s 3.9 && pyenv global 3.9
+        else
+            echo "Error! python3.9 is required and pyenv is not available"
+            exit 1
+        fi
+    fi
+    python3.9 --version
     if ! command -v cdk > /dev/null; then
         retry ${SUDO} npm install --global aws-cdk
     fi

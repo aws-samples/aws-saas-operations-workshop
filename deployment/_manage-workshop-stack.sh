@@ -74,10 +74,10 @@ create_workshop() {
     # The IDE (CloudFront, SSM bootstrap, lab tooling) and the SaaS application are
     # independent, so they are built side by side: the IDE in the background, the
     # application here in CodeBuild with the CodeBuild service role.
-    prepare_ide > >(sed 's/^/[ide] /') 2>&1 &
+    prepare_ide > >(sed -u 's/^/[ide] /') 2>&1 &
     local ide_pid=$!
 
-    ./create-workshop.sh "${1}" > >(sed 's/^/[app] /') 2>&1 &
+    ./create-workshop.sh "${1}" > >(sed -u 's/^/[app] /') 2>&1 &
     local app_pid=$!
 
     wait_for_jobs "ide:${ide_pid}" "app:${app_pid}"

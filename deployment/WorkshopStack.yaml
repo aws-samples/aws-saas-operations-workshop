@@ -256,8 +256,7 @@ Resources:
             "phases": {
               "install": {
                 "runtime-versions": {
-                  "nodejs": 22,
-                  "python": 3.9
+                  "nodejs": 22
                 }
               },
               "build": {
