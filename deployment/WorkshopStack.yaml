@@ -297,7 +297,7 @@ Resources:
                   "if [ \"$CODEBUILD_BUILD_SUCCEEDING\" == \"1\" ]; then export STATUS=\"SUCCESS\"; else export STATUS=\"FAILED\"; fi",
                   "DATA=$(cat /tmp/saasops-outputs.json 2>/dev/null || echo '{}')",
                   "JSON_DATA=$(jq -n --arg s \"$STATUS\" --arg r \"See the details in CloudWatch Log Stream: $CONTEXT_LOG_STREAM_NAME\" --arg sid \"$EVENT_STACK_ID\" --arg rid \"$EVENT_REQUEST_ID\" --arg lid \"$EVENT_LOGICAL_RESOURCE_ID\" --argjson d \"$DATA\" '{Status: $s, Reason: $r, StackId: $sid, PhysicalResourceId: \"saasops-workshop\", RequestId: $rid, LogicalResourceId: $lid, Data: $d}')",
-                  "echo \"$JSON_DATA\"",
+                  "echo \"$JSON_DATA\" | jq 'del(.Data)'",
                   "curl -X PUT --data-binary \"$JSON_DATA\" \"$EVENT_RESPONSE_URL\""
                 ]
               }

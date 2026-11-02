@@ -8,5 +8,5 @@
 # configuration, which runs the agent as the cwagent user. That user cannot read the
 # IDE user's home directory, so the config is replaced with one that runs as root.
 
-sed "s#__HOME__#${HOME}#g" config.json > /tmp/saasops-cw-config.json
+sed -e "s#__HOME__#${HOME}#g" -e "s#__REPO_NAME__#${REPO_NAME}#g" config.json > /tmp/saasops-cw-config.json
 sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c file:/tmp/saasops-cw-config.json

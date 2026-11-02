@@ -22,6 +22,15 @@ create_ide() {
             --server-side-encryption-configuration '{"Rules": [{"ApplyServerSideEncryptionByDefault": {"SSEAlgorithm": "AES256"}}]}'
     fi
 
+    # A stack left in ROLLBACK_COMPLETE by an earlier attempt cannot be updated, so remove it first.
+    IDE_STACK_STATUS=$(aws cloudformation describe-stacks --stack-name "${IDE_STACK_NAME}" \
+        --query 'Stacks[0].StackStatus' --output text 2>/dev/null || true)
+    if [[ "${IDE_STACK_STATUS}" == ROLLBACK_* ]]; then
+        echo "IDE stack ${IDE_STACK_NAME} is in ${IDE_STACK_STATUS}, deleting it before redeploying"
+        aws cloudformation delete-stack --stack-name "${IDE_STACK_NAME}"
+        aws cloudformation wait stack-delete-complete --stack-name "${IDE_STACK_NAME}" || exit 1
+    fi
+
     echo "Deploying IDE stack ${IDE_STACK_NAME}..."
     aws cloudformation deploy \
         --stack-name "${IDE_STACK_NAME}" \
@@ -35,7 +44,7 @@ create_ide() {
             InstanceName="${IDE_INSTANCE_NAME}" \
             InstanceType="${IDE_INSTANCE_TYPE}" \
             InstanceVolumeSize="${IDE_VOLUME_SIZE}" \
-            HomeFolder="${IDE_HOME_FOLDER}"
+            HomeFolder="${IDE_HOME_FOLDER}" || { echo "IDE stack ${IDE_STACK_NAME} failed to deploy"; exit 1; }
     echo "IDE stack deployed"
 
     get_ide_instance_id

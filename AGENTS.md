@@ -11,7 +11,7 @@ Source for the [AWS SaaS Operations workshop](https://catalog.workshops.aws/saas
 - Run `deployment/deploy-workshop.sh` with credentials for a **non-production** test account. It creates the `SaaSOps` stack and waits for it.
 - **AWS internal (Isengard) accounts must pass `-x`**: `./deploy-workshop.sh -x`. Isengard accounts do not allow CloudTrail data events for DynamoDB, which Lab 5 needs. Without `-x` the `saas-operations-controlplane` stack fails with `The AWS::DynamoDB::Table data resource type is not supported` and rolls back. Workshop Studio accounts and most customer accounts do not need `-x`.
 - To deploy from a branch or fork: `REPO_URL=... REPO_BRANCH_NAME=... ./deploy-workshop.sh -x`. CodeBuild clones that ref, so push first.
-- A full deployment takes about 50 minutes: ~6 min for the IDE stack, the rest for the SaaS application.
+- A full deployment takes about 36 minutes (measured 2026-11-02 in eu-central-1): ~6 min for the IDE stack, the rest for the SaaS application. The CodeBuild project times out at 60 minutes, which is also the CloudFormation custom-resource maximum.
 - Tear down by deleting the `SaaSOps` stack. That triggers `deployment/delete-workshop.sh` through CodeBuild, which empties buckets and removes tenant stacks, the control plane, the pipeline, the IDE stack and the template bucket.
 
 ## Where to look when a deployment fails
