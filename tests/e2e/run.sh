@@ -11,7 +11,10 @@
 # Environment:
 #   E2E_DEPLOY_FLAGS   flags for deploy-workshop.sh (default "-x", required in Isengard accounts)
 #   E2E_KEEP           set to 1 to skip teardown (debugging)
-#   E2E_SKIP_DEPLOY    set to 1 to verify an existing deployment instead of creating one
+#   E2E_SKIP_DEPLOY    set to 1 to verify an existing deployment instead of creating one.
+#                      Implies E2E_KEEP=1: the test never deletes a deployment it did not create.
+#                      The tenant admin passwords of PooledTenant1 and SiloedTenant1 are reset
+#                      to TENANT_PASSWORD (permanent) by the login check in either mode.
 #   E2E_ARTIFACT_DIR   where logs and the report go (default ./e2e-artifacts)
 #   REPO_URL, REPO_BRANCH_NAME   passed through to deploy-workshop.sh
 #   DEPLOY_TIMEOUT_MIN, DELETE_TIMEOUT_MIN   defaults 75 and 40
@@ -25,6 +28,10 @@ source "${HERE}/lib.sh"
 E2E_DEPLOY_FLAGS="${E2E_DEPLOY_FLAGS:--x}"
 E2E_KEEP="${E2E_KEEP:-0}"
 E2E_SKIP_DEPLOY="${E2E_SKIP_DEPLOY:-0}"
+if [[ "${E2E_SKIP_DEPLOY}" == "1" && "${E2E_KEEP}" != "1" ]]; then
+    E2E_KEEP=1
+    echo "E2E_SKIP_DEPLOY=1 implies E2E_KEEP=1: an existing deployment is verified, never deleted"
+fi
 E2E_ARTIFACT_DIR="${E2E_ARTIFACT_DIR:-${PWD}/e2e-artifacts}"
 DEPLOY_TIMEOUT_MIN="${DEPLOY_TIMEOUT_MIN:-75}"
 DELETE_TIMEOUT_MIN="${DELETE_TIMEOUT_MIN:-40}"
@@ -60,8 +67,15 @@ teardown() {
     if [[ "${E2E_KEEP}" == "1" ]]; then
         log "E2E_KEEP=1, leaving the deployment in place"
     elif stack_exists "${STACK_NAME}"; then
-        log "deleting ${STACK_NAME}"
-        aws cloudformation delete-stack --stack-name "${STACK_NAME}"
+        # A failed deploy is still rolling back here; delete-stack is rejected until it settles,
+        # and a stack left in ROLLBACK_COMPLETE would fail every later run in preflight.
+        if ! wait_for_stack_settled "${STACK_NAME}" "${DELETE_TIMEOUT_MIN}"; then
+            log "stack ${STACK_NAME} still $(stack_status "${STACK_NAME}") after ${DELETE_TIMEOUT_MIN} min"
+        fi
+        if [[ "$(stack_status "${STACK_NAME}")" != "DELETE_IN_PROGRESS" ]]; then
+            log "deleting ${STACK_NAME} ($(stack_status "${STACK_NAME}"))"
+            aws cloudformation delete-stack --stack-name "${STACK_NAME}"
+        fi
         if wait_for_stack_gone "${STACK_NAME}" "${DELETE_TIMEOUT_MIN}"; then
             check "teardown: ${STACK_NAME} deleted" "" true
         else
@@ -72,6 +86,7 @@ teardown() {
     else
         log "stack ${STACK_NAME} not present, nothing to delete"
     fi
+    redact_artifacts
     report
     [[ ${FAILED} -eq 0 && ${rc} -eq 0 ]] && exit 0 || exit 1
 }
@@ -87,6 +102,12 @@ else
     (cd "${REPO_ROOT}/deployment" && timeout "${DEPLOY_TIMEOUT_MIN}m" ./deploy-workshop.sh ${E2E_DEPLOY_FLAGS}) \
         > "${E2E_ARTIFACT_DIR}/deploy-workshop.log" 2>&1
     log "deploy-workshop.sh finished in $(( ($(date +%s) - start) / 60 )) min"
+    # deploy-workshop.sh returns on the first status that is not CREATE_IN_PROGRESS, which on
+    # failure is ROLLBACK_IN_PROGRESS and on a throttled describe-stacks is an empty string.
+    # Wait for a settled status ourselves before judging it.
+    remaining_min=$(( DEPLOY_TIMEOUT_MIN - ($(date +%s) - start) / 60 ))
+    (( remaining_min > 5 )) || remaining_min=5
+    wait_for_stack_settled "${STACK_NAME}" "${remaining_min}" || log "stack ${STACK_NAME} did not settle within ${DEPLOY_TIMEOUT_MIN} min"
 fi
 check "stack ${STACK_NAME} CREATE_COMPLETE" "status: $(stack_status "${STACK_NAME}")" test "$(stack_status "${STACK_NAME}")" == "CREATE_COMPLETE"
 
@@ -110,9 +131,11 @@ HAVE_PROFILE=$(aws ec2 describe-iam-instance-profile-associations \
     --query 'IamInstanceProfileAssociations[0].IamInstanceProfile.Arn' --output text 2>/dev/null)
 check "IDE instance runs with the participant profile" "have ${HAVE_PROFILE##*/}, want ${WANT_PROFILE}" test -n "${WANT_PROFILE}" -a "${HAVE_PROFILE##*/}" == "${WANT_PROFILE}"
 
-build_log=$(aws logs get-log-events --log-group-name "${LOG_GROUP}" --log-stream-name "${IDE_INSTANCE_ID}" \
-    --query 'events[].message' --output text 2>/dev/null)
-check "IDE build log reached CloudWatch and reports success" "stream ${IDE_INSTANCE_ID} in ${LOG_GROUP}" grep -q "Success - Workshop created!" <<<"${build_log}"
+# Two streams in the CodeBuild log group: <build-id> for the orchestration and the application
+# build in CodeBuild, <instance-id> for bootstrap-ide.sh on the IDE (shipped by the CloudWatch agent).
+BUILD_STREAM=$(codebuild_log_stream)
+check "CodeBuild log reports the application build succeeded" "stream ${BUILD_STREAM:-?} in ${LOG_GROUP}" log_contains "${BUILD_STREAM}" "Success - Workshop created!"
+check "IDE bootstrap log reached CloudWatch and reports success" "stream ${IDE_INSTANCE_ID} in ${LOG_GROUP}" log_contains "${IDE_INSTANCE_ID}" "Success - IDE ready!"
 
 # ---------------------------------------------------------------- verify control plane
 section "Verify control plane"

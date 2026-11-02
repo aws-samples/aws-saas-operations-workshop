@@ -12,14 +12,14 @@ Parameters:
     Type: String
     Default: aws-samples/aws-saas-operations-workshop
     Description: owner/name of the repository allowed to assume the role
-  AllowedBranch:
-    Type: String
-    Default: main
-    Description: Branch whose scheduled and manual runs may assume the role
   EnvironmentName:
     Type: String
     Default: e2e
-    Description: GitHub environment name; manual runs from other branches go through it
+    Description: >
+      GitHub environment the workflow job runs in. The trust policy only admits tokens issued
+      for this environment, so the environment's deployment branch policy ("Selected branches:
+      main") is what restricts which branches may assume the role. An environment without that
+      policy admits any branch with write access to the repository.
   CreateOidcProvider:
     Type: String
     Default: "true"
@@ -65,10 +65,10 @@ Resources:
             Condition:
               StringEquals:
                 token.actions.githubusercontent.com:aud: sts.amazonaws.com
-              StringLike:
-                token.actions.githubusercontent.com:sub:
-                  - !Sub repo:${GitHubRepository}:ref:refs/heads/${AllowedBranch}
-                  - !Sub repo:${GitHubRepository}:environment:${EnvironmentName}
+                # A job with `environment: e2e` always presents this subject, whatever branch it
+                # runs from (a `ref:` subject is never issued for such a job). Branch control
+                # therefore lives in the environment's deployment branch policy on GitHub.
+                token.actions.githubusercontent.com:sub: !Sub repo:${GitHubRepository}:environment:${EnvironmentName}
       ManagedPolicyArns:
         - !Sub arn:${AWS::Partition}:iam::aws:policy/AdministratorAccess
 

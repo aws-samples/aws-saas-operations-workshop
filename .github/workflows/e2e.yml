@@ -2,7 +2,11 @@ name: e2e deployment test
 
 # Deploys the workshop into the dedicated test account, verifies it and tears it down.
 # See docs/e2e-test.md. Needs the repository variable E2E_ROLE_ARN (role created by
-# tests/e2e/cfn/github-oidc-role.yaml).
+# tests/e2e/cfn/github-oidc-role.yaml) and the `e2e` environment with deployment branch
+# policy "Selected branches: main" (that policy is what keeps other branches off the role).
+#
+# GitHub disables scheduled workflows after 60 days without repository activity. If the
+# weekly run stops appearing, re-enable it under Actions > e2e deployment test.
 
 on:
   schedule:
@@ -26,8 +30,10 @@ permissions:
   id-token: write
   contents: read
 
+# One run at a time for the whole repository: every run uses the same account and stack name,
+# and a second run's teardown would delete the first run's stack.
 concurrency:
-  group: e2e-${{ github.ref }}
+  group: e2e
   cancel-in-progress: false
 
 jobs:
@@ -36,9 +42,9 @@ jobs:
     timeout-minutes: 150
     environment: e2e
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
-      - uses: aws-actions/configure-aws-credentials@v4
+      - uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a # v4.3.1
         with:
           role-to-assume: ${{ vars.E2E_ROLE_ARN }}
           aws-region: ${{ inputs.region || 'eu-central-1' }}
@@ -53,7 +59,9 @@ jobs:
           E2E_ARTIFACT_DIR: ${{ github.workspace }}/e2e-artifacts
         run: tests/e2e/run.sh
 
-      - uses: actions/upload-artifact@v4
+      # run.sh redacts the IDE token (tkn=) from every file it writes; artifacts on a public
+      # repository can be downloaded by any signed-in GitHub user.
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: always()
         with:
           name: e2e-artifacts-${{ github.run_id }}
