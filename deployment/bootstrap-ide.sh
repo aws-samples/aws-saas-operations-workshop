@@ -4,7 +4,8 @@
 
 # Runs on the IDE instance as the IDE user, over SSM, while CodeBuild builds the SaaS
 # application. Installs what the labs run from the IDE terminal: Node.js, AWS CDK, AWS SAM CLI,
-# artillery and the isolation-test packages. Does not deploy anything.
+# artillery, the isolation-test packages, the compiled tenant pipeline CDK app and a
+# samconfig-bootstrap.toml pointing at this account's SAM bucket. Does not deploy anything.
 
 set -eo pipefail
 

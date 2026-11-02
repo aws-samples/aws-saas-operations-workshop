@@ -30,7 +30,7 @@ Option 2. `_manage-workshop-stack.sh` runs `prepare_ide` (IDE stack, participant
 
 - Expected deployment time ~20 minutes (to be confirmed by the e2e test), down from 36.
 - The IDE instance never has more than the participant permissions; `WorkshopStack.yaml` loses `BuildInstanceRole`, `BuildInstanceProfile` and the matching SSM parameter.
-- Lab scripts are unchanged: they still find the repository at `~/environment/aws-saas-operations-workshop` with Node.js 20, CDK, SAM CLI, artillery and the isolation-test packages installed.
+- Lab scripts are unchanged: they still find the repository at `~/environment/aws-saas-operations-workshop` with Node.js 20, CDK, SAM CLI, artillery and the isolation-test packages installed. Two artefacts the on-IDE build used to leave behind are now produced by `bootstrap-ide.sh` instead: the compiled tenant pipeline CDK app (`App/server/TenantPipeline`, for `cdk deploy` from the IDE) and a `samconfig-bootstrap.toml` that names this account's SAM bucket. The bucket name is deterministic (`sam-bootstrap-bucket-<account>-<region>`) so both sides resolve the same one without talking to each other.
 - `create-workshop.sh` no longer removes `~/.aws/credentials` or configures the CloudWatch agent; `bootstrap-ide.sh` does that on the instance.
 - The CodeBuild image alias moves from `amazonlinux2-x86_64-standard:5.0` to its current name `amazonlinux-x86_64-standard:5.0` (same Amazon Linux 2023 image).
 - Revisit if the Angular 14 builds misbehave on Node.js 22 (fallback: install Node.js 20 from nodesource in `install_build_tools`) or when the orchestration moves to Step Functions.

@@ -62,6 +62,15 @@ install_dependencies() {
     cd ${REPO_PATH}/App/isolation-test/
     retry npm install
     echo "Isolation test packages installed"
+    # The build runs in CodeBuild, so the IDE prepares what labs run from its terminal:
+    # the compiled tenant pipeline CDK app (cdk deploy in App/server/TenantPipeline) and a
+    # samconfig-bootstrap.toml that names this account's bucket (sam deploy in App/server).
+    echo "Preparing tenant pipeline CDK app"
+    cd ${REPO_PATH}/App/server/TenantPipeline || exit 1
+    retry npm install
+    npm run build
+    echo "Tenant pipeline CDK app prepared"
+    configure_sam_bucket
     echo "Installing artillery"
     retry ${SUDO} npm install -g artillery
     echo "Installed artillery"
@@ -106,29 +115,38 @@ create_tenant_pipeline() {
     echo "Tenant pipeline deployed"
 }
 
+# Point samconfig-bootstrap.toml at this account's SAM deployment bucket. The name is
+# deterministic so the IDE, which does not run the build, resolves the same bucket as
+# CodeBuild and labs can run sam deploy from the IDE terminal. The "sam-bootstrap-" prefix
+# is what delete_buckets removes on teardown. Only rewrites the file; create_bootstrap
+# creates the bucket.
+configure_sam_bucket() {
+    local account_id region
+    account_id=$(aws sts get-caller-identity --query Account --output text)
+    region="${REGION:-${AWS_REGION:-${AWS_DEFAULT_REGION:-$(aws configure get region 2>/dev/null || true)}}}"
+    if [[ -z "${account_id}" || -z "${region}" ]]; then
+        echo "Error! Could not resolve account id or region for the SAM deployment bucket"
+        exit 1
+    fi
+    SAM_S3_BUCKET="sam-bootstrap-bucket-${account_id}-${region}"
+    sed -i -e "s/^s3_bucket = .*/s3_bucket = \"${SAM_S3_BUCKET}\"/" \
+           -e "s/^region = .*/region = \"${region}\"/" "${REPO_PATH}/App/server/samconfig-bootstrap.toml"
+    echo "SAM deployment bucket: ${SAM_S3_BUCKET}"
+}
+
 # Create application
 # parameters: (1) ignoreAuditingLab (True/False: stirng)
 create_bootstrap() {
     echo "Deploying application"
     cd ${REPO_PATH}/App/server
-    DEFAULT_SAM_S3_BUCKET=$(grep s3_bucket samconfig-bootstrap.toml | cut -d'=' -f2 | cut -d \" -f2)
-    if ! aws s3 ls "s3://${DEFAULT_SAM_S3_BUCKET}"
+    configure_sam_bucket
+    if ! aws s3api head-bucket --bucket "${SAM_S3_BUCKET}" 2>/dev/null
     then
-        echo "S3 Bucket: ${DEFAULT_SAM_S3_BUCKET} specified in samconfig-bootstrap.toml is not readable."
-        echo "So creating a new S3 bucket and will update samconfig-bootstrap.toml with new bucket name."
-        UUID=$(cat /proc/sys/kernel/random/uuid)
-        SAM_S3_BUCKET=sam-bootstrap-bucket-${UUID}
-        aws s3 mb "s3://${SAM_S3_BUCKET}" --region "${REGION}"
+        echo "Creating SAM deployment bucket ${SAM_S3_BUCKET}"
+        aws s3 mb "s3://${SAM_S3_BUCKET}" --region "${REGION}" || exit 1
         aws s3api put-bucket-encryption \
             --bucket "${SAM_S3_BUCKET}" \
-            --server-side-encryption-configuration '{"Rules": [{"ApplyServerSideEncryptionByDefault": {"SSEAlgorithm": "AES256"}}]}'
-        if [[ $? -ne 0 ]]
-        then
-            echo "bootstrap bucket deployment failed"
-            exit 1
-        fi
-        # Update samconfig-bootstrap.toml with new bucket name
-        sed -i "s/^s3_bucket = .*/s3_bucket = \"${SAM_S3_BUCKET}\"/" samconfig-bootstrap.toml
+            --server-side-encryption-configuration '{"Rules": [{"ApplyServerSideEncryptionByDefault": {"SSEAlgorithm": "AES256"}}]}' || exit 1
     fi
     echo "Create bootstrap : IGNORE_AUDITING "$1
     # Built on the host with the python3.9 selected by the CodeBuild buildspec, which matches the function runtimes.
@@ -154,7 +172,10 @@ execute_pipeline() {
 # Wait for the pipeline execution started by execute_pipeline; fail on any end state but Succeeded
 wait_for_pipeline() {
     echo "Waiting for pipeline execution ${PIPELINE_EXECUTION_ID}"
-    local timeout_seconds=2700 # 45 min
+    # The pooled tenant stack normally takes ~10 min. The CodeBuild project stops at 60 min and
+    # the stack has already run ~10 min when this wait starts, so the bound must leave time
+    # for post_build to report the failure to CloudFormation.
+    local timeout_seconds=1200 # 20 min
     local waited=0
     local read_errors=0
     local max_read_errors=5 # consecutive failed status reads (throttling, 5xx) before giving up
@@ -384,18 +405,30 @@ create_users_for_tenant() {
         exit 1
     fi
     TENANTID=$(aws cognito-idp list-users --user-pool-id $TENANTUSERPOOL | jq -r --arg id "${tenant}@" '.Users[] | select(.Attributes[] | .Value | contains($id)) | .Attributes[] | select(.Name == "custom:tenantId") | .Value')
+    if [[ -z "${TENANTID}" || "${TENANTID}" == "null" ]]; then
+        echo "Error! No tenant id found for ${tenant} in user pool ${TENANTUSERPOOL}"
+        exit 1
+    fi
     existing=$(aws cognito-idp list-users --user-pool-id $TENANTUSERPOOL --filter "email ^= \"success+${tenant}_user_\"" --query 'length(Users)' --output text)
     if [[ "${existing}" -ge "${users_count}" ]]; then
         echo "Tenant ${tenant} already has ${existing} users, skipping"
         return 0
     fi
+    local username err
     for (( i=1 ; i<=${users_count} ; i++ )); do
-        local username="success+${tenant}_user_${i}@simulator.amazonses.com"
-        aws cognito-idp admin-create-user \
+        username="success+${tenant}_user_${i}@simulator.amazonses.com"
+        # Only an existing user is fine to skip; throttling, access denied or a bad request must fail.
+        if ! err=$(aws cognito-idp admin-create-user \
             --user-pool-id ${TENANTUSERPOOL} \
             --username "${username}" \
-            --user-attributes Name=email,Value="${username}" Name=email_verified,Value=true Name=custom:tenantId,Value=${TENANTID} Name=custom:userRole,Value=TenantUser 1> /dev/null \
-            || echo "User ${username} exists"
+            --user-attributes Name=email,Value="${username}" Name=email_verified,Value=true Name=custom:tenantId,Value=${TENANTID} Name=custom:userRole,Value=TenantUser 2>&1 1> /dev/null); then
+            if [[ "${err}" == *UsernameExistsException* ]]; then
+                echo "User ${username} exists"
+            else
+                echo "Error! Could not create user ${username}: ${err}"
+                exit 1
+            fi
+        fi
     done
     echo "Tenant ${tenant}: ${users_count} users"
 }
