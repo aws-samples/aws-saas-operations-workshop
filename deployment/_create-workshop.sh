@@ -29,6 +29,14 @@ install_build_tools() {
         fi
     fi
     python3.9 --version
+    # sam build resolves the functions' dependencies with pip for that interpreter. Amazon
+    # Linux 2023 ships pip as a separate package (python3-pip); the runtime-versions python
+    # selection used to bring it along.
+    if ! python3.9 -m pip --version > /dev/null 2>&1; then
+        echo "pip for python3.9 not found, installing"
+        retry ${SUDO} dnf install -y python3-pip || python3.9 -m ensurepip --upgrade || exit 1
+    fi
+    python3.9 -m pip --version
     if ! command -v cdk > /dev/null; then
         retry ${SUDO} npm install --global aws-cdk
     fi
