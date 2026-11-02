@@ -121,7 +121,9 @@ create_bootstrap() {
     echo "Create bootstrap : IGNORE_AUDITING "$1
     # Built on the host with the python3.9 selected by the CodeBuild buildspec, which matches the function runtimes.
     sam build -t bootstrap-template.yaml --region="$REGION" --parameter-overrides ParameterKey=IgnoreAuditingLab,ParameterValue="$1" || exit 1
-    sam deploy --config-file samconfig-bootstrap.toml --region="$REGION" --no-confirm-changeset --parameter-overrides IgnoreAuditingLab="$1"
+    # --no-fail-on-empty-changeset: a retry after a failure elsewhere finds the stack already
+    # up to date, and the default exit 1 on "No changes to deploy" would kill every retry.
+    sam deploy --config-file samconfig-bootstrap.toml --region="$REGION" --no-confirm-changeset --no-fail-on-empty-changeset --parameter-overrides IgnoreAuditingLab="$1"
     if [[ $? -ne 0 ]]
     then
         echo "Error! bootstrap-template.yaml deploy failed"
