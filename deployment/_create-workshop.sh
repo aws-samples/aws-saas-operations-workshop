@@ -156,19 +156,33 @@ wait_for_pipeline() {
     echo "Waiting for pipeline execution ${PIPELINE_EXECUTION_ID}"
     local timeout_seconds=2700 # 45 min
     local waited=0
+    local read_errors=0
+    local max_read_errors=5 # consecutive failed status reads (throttling, 5xx) before giving up
     while true; do
         local deploymentstatus
-        deploymentstatus=$(aws codepipeline get-pipeline-execution --pipeline-name saas-operations-pipeline --pipeline-execution-id ${PIPELINE_EXECUTION_ID} | jq -r '.pipelineExecution.status')
+        # The read may fail or return nothing on a throttle or a transient API error. Under
+        # set -e a failed assignment would end the job, so take the exit code explicitly and
+        # treat an unreadable status as retryable, bounded by max_read_errors.
+        deploymentstatus=$(aws codepipeline get-pipeline-execution --pipeline-name saas-operations-pipeline --pipeline-execution-id "${PIPELINE_EXECUTION_ID}" 2>/dev/null | jq -r '.pipelineExecution.status // empty') || deploymentstatus=""
         case "${deploymentstatus}" in
             Succeeded)
                 echo "Pipeline execution succeeded"
                 return 0
                 ;;
             InProgress|Stopping)
+                read_errors=0
                 ;;
-            *)
+            Failed|Stopped|Superseded|Cancelled)
                 echo "Error! Pipeline execution ended with status ${deploymentstatus}"
                 exit 1
+                ;;
+            *)
+                read_errors=$((read_errors + 1))
+                echo "Could not read pipeline execution status (attempt ${read_errors}/${max_read_errors})"
+                if [[ $read_errors -ge $max_read_errors ]]; then
+                    echo "Error! Pipeline execution status unreadable ${max_read_errors} times in a row"
+                    exit 1
+                fi
                 ;;
         esac
         if [[ $waited -ge $timeout_seconds ]]; then
