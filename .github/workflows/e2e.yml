@@ -1,0 +1,61 @@
+name: e2e deployment test
+
+# Deploys the workshop into the dedicated test account, verifies it and tears it down.
+# See docs/e2e-test.md. Needs the repository variable E2E_ROLE_ARN (role created by
+# tests/e2e/cfn/github-oidc-role.yaml).
+
+on:
+  schedule:
+    - cron: "0 3 * * 1" # Mondays 03:00 UTC
+  workflow_dispatch:
+    inputs:
+      region:
+        description: AWS Region to deploy into
+        default: eu-central-1
+        required: true
+      deploy_flags:
+        description: Flags for deploy-workshop.sh (-x skips the Lab 5 CloudTrail resources; required in Isengard accounts)
+        default: "-x"
+        required: false
+      keep:
+        description: Leave the deployment in place after the test (debugging)
+        type: boolean
+        default: false
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    environment: e2e
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.E2E_ROLE_ARN }}
+          aws-region: ${{ inputs.region || 'eu-central-1' }}
+          role-duration-seconds: 10800
+
+      - name: Deploy, verify, tear down
+        env:
+          REPO_URL: https://github.com/${{ github.repository }}.git
+          REPO_BRANCH_NAME: ${{ github.ref_name }}
+          E2E_DEPLOY_FLAGS: ${{ inputs.deploy_flags || '-x' }}
+          E2E_KEEP: ${{ inputs.keep == true && '1' || '0' }}
+          E2E_ARTIFACT_DIR: ${{ github.workspace }}/e2e-artifacts
+        run: tests/e2e/run.sh
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-artifacts-${{ github.run_id }}
+          path: e2e-artifacts/
+          retention-days: 14

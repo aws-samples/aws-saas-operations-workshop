@@ -1,6 +1,6 @@
 # End-to-end test design
 
-Status: draft, 2026-11-02. Implementation lives in `tests/e2e/` once accepted (see ADR-0002).
+Status: implemented 2026-11-02 in `tests/e2e/` and `.github/workflows/e2e.yml` (see ADR-0002).
 
 ## Goal
 

@@ -1,6 +1,6 @@
 # ADR-0002: Run the end-to-end test from GitHub Actions with OIDC
 
-- Status: Proposed
+- Status: Accepted
 - Date: 2026-11-02
 - Deciders: Dave Roberts (Workshop owner)
 
