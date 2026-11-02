@@ -262,7 +262,8 @@ const awsmobile = {
 };
 export default awsmobile;
 EoF
-    retry npm install
+    # npm ci: the committed package-lock.json is the tree that was tested; npm install would re-resolve it.
+    retry npm ci
     npm run build || exit 1
     aws s3 sync --delete --cache-control no-store dist "s3://${ADMIN_SITE_BUCKET}"
     if [[ $? -ne 0 ]]
@@ -294,7 +295,8 @@ export const environment = {
     regApiGatewayUrl: '${ADMIN_APIGATEWAYURL}',
 };
 EoF
-    retry npm install
+    # npm ci: the committed package-lock.json is the tree that was tested; npm install would re-resolve it.
+    retry npm ci
     npm run build || exit 1
     aws s3 sync --delete --cache-control no-store dist "s3://${APP_SITE_BUCKET}"
     if [[ $? -ne 0 ]]
@@ -326,7 +328,8 @@ export const environment = {
     apiGatewayUrl: '${ADMIN_APIGATEWAYURL}'
 };
 EoF
-    retry npm install
+    # npm ci: the committed package-lock.json is the tree that was tested; npm install would re-resolve it.
+    retry npm ci
     npm run build || exit 1
     aws s3 sync --delete --cache-control no-store dist "s3://${LANDING_APP_SITE_BUCKET}"
     if [[ $? -ne 0 ]]

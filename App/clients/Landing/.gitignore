@@ -62,6 +62,5 @@ amplifytools.xcconfig
 **.sample
 #amplify-do-not-edit-end
 
-# ignore yarn.lock and package-lock.json files for now
+# ignore yarn.lock; package-lock.json is committed so npm ci installs the same tree everywhere
 yarn.lock
-package-lock.json

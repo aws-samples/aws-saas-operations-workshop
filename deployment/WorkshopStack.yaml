@@ -42,7 +42,9 @@ Resources:
   # IDE instance role. The Code Editor instance (deployment/code-editor/code-editor.yaml)
   # is created by the CodeBuild project below and switched to ParticipantInstanceProfile as
   # soon as its stack is up. The SaaS application is built by the CodeBuild project itself,
-  # so the instance never carries more than the participant permissions.
+  # so the instance never carries admin permissions. Until the swap (a few minutes, before
+  # the URL is handed out) it runs the Code Editor template's bootstrap role: ReadOnlyAccess,
+  # CodeCommit, Amazon Q Developer and sts:AssumeRole on the cdk-* roles.
   ParticipantPolicy:
     Type: AWS::IAM::ManagedPolicy
     Metadata:
