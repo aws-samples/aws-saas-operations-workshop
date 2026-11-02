@@ -12,6 +12,8 @@ If you would like to deploy this, then follow the instructions [in the workshop.
 2. clones this repository onto the IDE instance at `~/environment/aws-saas-operations-workshop` and runs `deployment/create-workshop.sh` there to build the SaaS application;
 3. returns the IDE link as the `CodeEditorUrl` output of the `SaaSOps` stack.
 
+Lab 5 needs CloudTrail data events for DynamoDB. Accounts that do not allow those (AWS internal Isengard accounts, for example) must deploy with `./deploy-workshop.sh -x`, which skips the Lab 5 resources; otherwise the `saas-operations-controlplane` stack fails with `The AWS::DynamoDB::Table data resource type is not supported`.
+
 Design decisions are recorded in [docs/adr](docs/adr/README.md).
 
 There is also a second version of the workshop available, [AWS SaaS Operations workshop 2](https://catalog.workshops.aws/saas-operations-2), which follows the SaaS journey of building the control plane.

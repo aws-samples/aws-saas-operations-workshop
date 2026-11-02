@@ -56,7 +56,8 @@ create_workshop() {
 
     replace_instance_profile "${BUILD_INSTANCE_PROFILE_PARAMETER_NAME}"
     run_ssm_command "cd ${IDE_HOME_FOLDER} ; git clone --branch ${REPO_BRANCH_NAME} ${REPO_URL} || echo 'Repo already exists.'"
-    run_ssm_command "cd ${IDE_HOME_FOLDER}/${REPO_NAME}/deployment && ./create-workshop.sh ${REPO_URL} ${1} | tee .ws-create.log"
+    # pipefail: a failure inside create-workshop.sh must fail the SSM command, not be hidden by tee
+    run_ssm_command "set -o pipefail; cd ${IDE_HOME_FOLDER}/${REPO_NAME}/deployment && ./create-workshop.sh ${REPO_URL} ${1} | tee .ws-create.log"
 
     replace_instance_profile "${PARTICIPANT_INSTANCE_PROFILE_PARAMETER_NAME}"
 }
