@@ -168,8 +168,3 @@ delete_api_keys() {
     done
     echo "Api keys deleted."
 }
-
-delete_c9() {
-    aws ec2 create-tags --resources $C9_ID --tags "Key=Workshop,Value=${WORKSHOP_NAME}Old"
-    delete_stack "$WORKSHOP_NAME-C9"
-}

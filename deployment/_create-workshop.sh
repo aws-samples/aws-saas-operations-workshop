@@ -5,9 +5,32 @@
 ## Dependencies
 install_dependencies() {
     echo "Installing dependencies"
+    # The Code Editor image ships git, the AWS CLI, jq, zip and unzip.
+    # Everything below is what the build and the labs need on top of that.
+    echo "Installing OS packages"
+    retry sudo dnf install -y zip unzip python3-pip
+    echo "Installing Node.js ${NODE_MAJOR}"
+    if ! command -v node > /dev/null || [[ "$(node --version | cut -d. -f1)" != "v${NODE_MAJOR}" ]]; then
+        curl -fsSL "https://rpm.nodesource.com/setup_${NODE_MAJOR}.x" -o /tmp/nodesource-setup.sh
+        retry sudo bash /tmp/nodesource-setup.sh
+        retry sudo dnf install -y nodejs
+    fi
+    node --version
     echo "Enabling yarn"
-    corepack enable || retry sudo npm install --global yarn
+    sudo corepack enable || retry sudo npm install --global yarn
     echo "yarn enabled"
+    echo "Installing AWS CDK"
+    retry sudo npm install --global aws-cdk
+    cdk --version
+    echo "Installing AWS SAM CLI"
+    if ! command -v sam > /dev/null; then
+        curl -fsSL "https://github.com/aws/aws-sam-cli/releases/latest/download/aws-sam-cli-linux-$(uname -m | sed 's/aarch64/arm64/').zip" -o /tmp/aws-sam-cli.zip
+        rm -rf /tmp/sam-installation
+        unzip -q -d /tmp/sam-installation /tmp/aws-sam-cli.zip
+        retry sudo /tmp/sam-installation/install
+        rm -rf /tmp/sam-installation /tmp/aws-sam-cli.zip
+    fi
+    sam --version
     echo "Installing isolation test packages"
     cd ${REPO_PATH}/App/isolation-test/
     retry npm install
@@ -15,9 +38,6 @@ install_dependencies() {
     echo "Installing artillery"
     retry sudo npm install -g artillery
     echo "Installed artillery"
-    echo "Installing zip and unzip"
-    retry sudo yum install zip unzip
-    echo "Installed zip and unzip"
     echo "Dependencies installed"
 }
 
@@ -72,7 +92,8 @@ create_bootstrap() {
         ex -sc '%s/s3_bucket = .*/s3_bucket = \"'"${SAM_S3_BUCKET}"'\"/|x' samconfig-bootstrap.toml
     fi
     echo "Create bootstrap : IGNORE_AUDITING "$1
-    sam build -t bootstrap-template.yaml --use-container --region="$REGION" --parameter-overrides ParameterKey=IgnoreAuditingLab,ParameterValue="$1"
+    # Built on the host: Amazon Linux 2023 ships Python 3.9, which matches the function runtimes.
+    sam build -t bootstrap-template.yaml --region="$REGION" --parameter-overrides ParameterKey=IgnoreAuditingLab,ParameterValue="$1"
     sam deploy --config-file samconfig-bootstrap.toml --region="$REGION" --no-confirm-changeset --parameter-overrides IgnoreAuditingLab="$1"
     if [[ $? -ne 0 ]]
     then

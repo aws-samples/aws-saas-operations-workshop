@@ -38,9 +38,9 @@ run_ssm_command() {
     SSM_COMMAND="$1"
     parameters=$(jq -n --arg cm "runuser -l \"$TARGET_USER\" -c \"$SSM_COMMAND\"" '{executionTimeout:["3600"], commands: [$cm]}')
     comment=$(echo "$SSM_COMMAND" | cut -c1-100)
-    # send ssm command to instance id in C9_ID
+    # send ssm command to the IDE instance
     sh_command_id=$(aws ssm send-command \
-        --targets "Key=InstanceIds,Values=$C9_ID" \
+        --targets "Key=InstanceIds,Values=$IDE_INSTANCE_ID" \
         --document-name "AWS-RunShellScript" \
         --parameters "$parameters" \
         --timeout-seconds 3600 \
@@ -53,7 +53,7 @@ run_ssm_command() {
         sleep $DELAY
         command_invocation=$(aws ssm get-command-invocation \
             --command-id "$sh_command_id" \
-            --instance-id "$C9_ID")
+            --instance-id "$IDE_INSTANCE_ID")
         # echo -E "$command_invocation" | jq # for debugging purposes
         command_status=$(echo -E "$command_invocation" | jq -r '.Status')
     done
@@ -89,45 +89,39 @@ wait_for_instance_ssm() {
 # Replace an instance profile on an EC2 instance
 replace_instance_profile() {
     echo "Replacing instance profile"
-    C9_INSTANCE_PROFILE_NAME=$(aws ssm get-parameter \
+    IDE_INSTANCE_PROFILE_NAME=$(aws ssm get-parameter \
         --name "$1" \
         --output text \
         --query "Parameter.Value")
-    association_id=$(aws ec2 describe-iam-instance-profile-associations --filter "Name=instance-id,Values=$C9_ID" --query 'IamInstanceProfileAssociations[].AssociationId' --output text)
-    if [ ! association_id == "" ]; then
+    association_id=$(aws ec2 describe-iam-instance-profile-associations --filter "Name=instance-id,Values=$IDE_INSTANCE_ID" "Name=state,Values=associated,associating" --query 'IamInstanceProfileAssociations[0].AssociationId' --output text)
+    if [[ -n "$association_id" && "$association_id" != "None" ]]; then
         aws ec2 disassociate-iam-instance-profile --association-id $association_id
-        command_status=$(aws ec2 describe-iam-instance-profile-associations --filter "Name=instance-id,Values=$C9_ID" --query 'IamInstanceProfileAssociations[].State' --output text)
+        command_status=$(aws ec2 describe-iam-instance-profile-associations --filter "Name=instance-id,Values=$IDE_INSTANCE_ID" --query 'IamInstanceProfileAssociations[].State' --output text)
         while [[ "$command_status" == "disassociating" ]]; do
             sleep $DELAY
-            command_status=$(aws ec2 describe-iam-instance-profile-associations --filter "Name=instance-id,Values=$C9_ID" --query 'IamInstanceProfileAssociations[].State' --output text)
+            command_status=$(aws ec2 describe-iam-instance-profile-associations --filter "Name=instance-id,Values=$IDE_INSTANCE_ID" --query 'IamInstanceProfileAssociations[].State' --output text)
         done
     fi
-    aws ec2 associate-iam-instance-profile --instance-id $C9_ID --iam-instance-profile Name=$C9_INSTANCE_PROFILE_NAME
-    command_status=$(aws ec2 describe-iam-instance-profile-associations --filter "Name=instance-id,Values=$C9_ID" --query 'IamInstanceProfileAssociations[].State' --output text)
+    aws ec2 associate-iam-instance-profile --instance-id $IDE_INSTANCE_ID --iam-instance-profile Name=$IDE_INSTANCE_PROFILE_NAME
+    command_status=$(aws ec2 describe-iam-instance-profile-associations --filter "Name=instance-id,Values=$IDE_INSTANCE_ID" --query 'IamInstanceProfileAssociations[].State' --output text)
     while [[ "$command_status" == "associating" ]]; do
         sleep $DELAY
-        command_status=$(aws ec2 describe-iam-instance-profile-associations --filter "Name=instance-id,Values=$C9_ID" --query 'IamInstanceProfileAssociations[].State' --output text)
+        command_status=$(aws ec2 describe-iam-instance-profile-associations --filter "Name=instance-id,Values=$IDE_INSTANCE_ID" --query 'IamInstanceProfileAssociations[].State' --output text)
     done
     echo "Instance profile replaced. Rebooting instance"
-    aws ec2 reboot-instances --instance-ids "$C9_ID"
-    wait_for_instance_ssm "$C9_ID"
+    aws ec2 reboot-instances --instance-ids "$IDE_INSTANCE_ID"
+    wait_for_instance_ssm "$IDE_INSTANCE_ID"
     echo "Instance rebooted"
 }
 
-# Get Cloud9 instance ID
-get_c9_id() {
-    C9_ID=$(aws ec2 describe-instances \
-        --filter "Name=tag:Workshop,Values=$WORKSHOP_NAME" \
-        --filter "Name=instance-state-name,Values=pending,running,shutting-down,stopping,stopped" \
-        --query 'Reservations[].Instances[].{Instance:InstanceId}' \
+# Get the IDE instance ID from the IDE stack
+get_ide_instance_id() {
+    IDE_INSTANCE_ID=$(aws cloudformation describe-stack-resource \
+        --stack-name "$IDE_STACK_NAME" \
+        --logical-resource-id CodeEditorInstance \
+        --query 'StackResourceDetail.PhysicalResourceId' \
         --output text)
-}
-
-bootstrap_cdk() {
-    echo "Deploying CDK..."
-    npm install --force --global aws-cdk
-    cd cloud9
-    npm install
-    cdk bootstrap
-    cd ..
+    if [[ -z "$IDE_INSTANCE_ID" || "$IDE_INSTANCE_ID" == "None" ]]; then
+        echo "IDE instance not found in stack $IDE_STACK_NAME" && exit 1
+    fi
 }

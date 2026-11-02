@@ -8,7 +8,17 @@
 WORKSHOP_ID=""
 WORKSHOP_NAME="SaaSOps"$WORKSHOP_ID
 REPO_NAME="aws-saas-operations-workshop"
-BUILD_C9_INSTANCE_PROFILE_PARAMETER_NAME="/"$WORKSHOP_NAME"/Cloud9/BuildInstanceProfileName"
-PARTICIPANT_C9_INSTANCE_PROFILE_PARAMETER_NAME="/"$WORKSHOP_NAME"/Cloud9/ParticipantInstanceProfileName"
-TARGET_USER="ec2-user"
+# IDE (AWS Code Editor on EC2, see code-editor/code-editor.yaml)
+IDE_STACK_NAME="${WORKSHOP_NAME}-CodeEditor"
+IDE_INSTANCE_NAME="${WORKSHOP_NAME}CodeEditor"
+IDE_INSTANCE_TYPE="m5.xlarge"
+IDE_VOLUME_SIZE="50"
+TARGET_USER="participant"
+NODE_MAJOR="20"
+IDE_HOME_FOLDER="/home/${TARGET_USER}/environment"
+# Instance profile names are published by WorkshopStack.yaml
+BUILD_INSTANCE_PROFILE_PARAMETER_NAME="/${WORKSHOP_NAME}/IDE/BuildInstanceProfileName"
+PARTICIPANT_INSTANCE_PROFILE_PARAMETER_NAME="/${WORKSHOP_NAME}/IDE/ParticipantInstanceProfileName"
+# File read by the CodeBuild post_build step and returned to CloudFormation as custom resource Data
+OUTPUTS_FILE="/tmp/saasops-outputs.json"
 DELAY=15 # Used to sleep in functions. Tweak as desired.

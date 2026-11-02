@@ -15,10 +15,7 @@ done
 
 TRAILS=( "saas-ops-ddb-access-trails" "saas-ops-management-trails" )
 STACKS_1=()
-STACKS_2=( "saas-operations-controlplane" "saas-operations-pipeline" "saasOpsWorkshop-saasOperationsDashboard" "${WORKSHOP_NAME}-C9" "saasOpsWorkshop-perTenantMetrics" )
-
-get_c9_id
-aws ec2 create-tags --resources $C9_ID --tags "Key=Workshop,Value=${WORKSHOP_NAME}Old"
+STACKS_2=( "saas-operations-controlplane" "saas-operations-pipeline" "saasOpsWorkshop-saasOperationsDashboard" "${IDE_STACK_NAME}" "saasOpsWorkshop-perTenantMetrics" )
 
 for TRAIL in "${TRAILS[@]}"; do
     stop_cloudtrail "${TRAIL}"

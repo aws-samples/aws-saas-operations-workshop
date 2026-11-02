@@ -39,6 +39,131 @@ Parameters:
       - "True"
       - "False"
 Resources:
+  # IDE instance roles. The Code Editor instance (deployment/code-editor/code-editor.yaml)
+  # is created by the CodeBuild project below. During the workshop build the instance runs
+  # with BuildInstanceProfile (admin); afterwards it is switched to ParticipantInstanceProfile.
+  ParticipantPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: W13
+            reason: Workshop participant policy; actions span resources created during the labs
+          - id: F5
+            reason: Workshop participant policy; actions span resources created during the labs
+    Properties:
+      Description: Write actions a workshop participant needs on top of ReadOnlyAccess
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - apigateway:PATCH
+              - athena:StartQueryExecution
+              - athena:StopQueryExecution
+              - codepipeline:StartPipelineExecution
+              - codepipeline:GetPipelineExecution
+              - cloudformation:CreateChangeSet
+              - cloudformation:CreateStack
+              - cloudformation:DeleteChangeSet
+              - cloudformation:DeleteStack
+              - cloudformation:ExecuteChangeSet
+              - cloudwatch:PutMetricAlarm
+              - cognito-idp:AdminCreateUser
+              - cognito-idp:AdminDeleteUser
+              - cognito-idp:AdminSetUserPassword
+              - glue:BatchCreatePartition
+              - glue:UpdateTable
+              - glue:UpdateDatabase
+              - glue:CreateTable
+              - glue:BatchDeleteTable
+              - glue:CreatePartition
+              - glue:UpdatePartition
+              - glue:CreateDatabase
+              - iam:AttachRolePolicy
+              - iam:CreateRole
+              - iam:DeleteRole
+              - iam:DeleteRolePolicy
+              - iam:DetachRolePolicy
+              - iam:PassRole
+              - iam:PutRolePolicy
+              - iam:TagRole
+              - kms:Decrypt
+              - kms:GenerateDataKey
+              - lambda:DeleteLayerVersion
+              - lambda:PublishLayerVersion
+              - lambda:UpdateFunctionCode
+              - lambda:UpdateFunctionConfiguration
+              - s3:CreateBucket
+              - s3:DeleteBucketPolicy
+              - s3:PutBucketPolicy
+              - s3:PutBucketPublicAccessBlock
+              - s3:PutBucketTagging
+              - s3:PutBucketVersioning
+              - s3:PutEncryptionConfiguration
+              - s3:PutObject
+              - states:StartExecution
+            Resource: "*"
+  ParticipantInstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Description: IDE instance role used by workshop participants
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+                - ssm.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - !Ref ParticipantPolicy
+        - !Sub arn:${AWS::Partition}:iam::aws:policy/ReadOnlyAccess
+        - !Sub arn:${AWS::Partition}:iam::aws:policy/CloudWatchAgentAdminPolicy
+        - !Sub arn:${AWS::Partition}:iam::aws:policy/AmazonSSMManagedInstanceCore
+  ParticipantInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles:
+        - !Ref ParticipantInstanceRole
+  BuildInstanceRole:
+    Type: AWS::IAM::Role
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: W43
+            reason: Admin access is needed while the IDE instance builds the workshop; the role is swapped out afterwards
+    Properties:
+      Description: IDE instance role used only while the workshop is being built
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+                - ssm.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - !Sub arn:${AWS::Partition}:iam::aws:policy/AdministratorAccess
+  BuildInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles:
+        - !Ref BuildInstanceRole
+  ParticipantInstanceProfileNameParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /SaaSOps/IDE/ParticipantInstanceProfileName
+      Type: String
+      Value: !Ref ParticipantInstanceProfile
+  BuildInstanceProfileNameParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /SaaSOps/IDE/BuildInstanceProfileName
+      Type: String
+      Value: !Ref BuildInstanceProfile
   WSCodeBuildServiceRole:
     Type: AWS::IAM::Role
     Properties:
@@ -169,10 +294,10 @@ Resources:
               },
               "post_build": {
                 "commands": [
-                  "if [ \"$CODEBUILD_BUILD_SUCCEEDING\" == \"1\" ]; then export STATUS=\"SUCCESS\"; fi",
-                  "if [ \"$CODEBUILD_BUILD_SUCCEEDING\" != \"1\" ]; then export STATUS=\"FAILED\"; fi",
-                  'export JSON_DATA="{\"Status\" : \"$STATUS\", \"Reason\" : \"See the details in CloudWatch Log Stream: $CONTEXT_LOG_STREAM_NAME\", \"StackId\" : \"$EVENT_STACK_ID\", \"PhysicalResourceId\" : \"$CONTEXT_LOG_STREAM_NAME\", \"RequestId\" : \"$EVENT_REQUEST_ID\", \"LogicalResourceId\" : \"$EVENT_LOGICAL_RESOURCE_ID\" }"',
-                  'echo "$JSON_DATA"',
+                  "if [ \"$CODEBUILD_BUILD_SUCCEEDING\" == \"1\" ]; then export STATUS=\"SUCCESS\"; else export STATUS=\"FAILED\"; fi",
+                  "DATA=$(cat /tmp/saasops-outputs.json 2>/dev/null || echo '{}')",
+                  "JSON_DATA=$(jq -n --arg s \"$STATUS\" --arg r \"See the details in CloudWatch Log Stream: $CONTEXT_LOG_STREAM_NAME\" --arg sid \"$EVENT_STACK_ID\" --arg rid \"$EVENT_REQUEST_ID\" --arg lid \"$EVENT_LOGICAL_RESOURCE_ID\" --argjson d \"$DATA\" '{Status: $s, Reason: $r, StackId: $sid, PhysicalResourceId: \"saasops-workshop\", RequestId: $rid, LogicalResourceId: $lid, Data: $d}')",
+                  "echo \"$JSON_DATA\"",
                   "curl -X PUT --data-binary \"$JSON_DATA\" \"$EVENT_RESPONSE_URL\""
                 ]
               }
@@ -245,17 +370,25 @@ Resources:
           PROJECT_NAME:
             Ref: InstallWorkshopStack
       Handler: index.lambda_handler
-      Runtime: python3.11
+      Runtime: python3.13
       Timeout: 900
       ReservedConcurrentExecutions: 1
     DependsOn:
       - CodeBuildTriggerLambdaRole
   CustomProvisioningResource:
     Type: AWS::CloudFormation::CustomResource
+    DependsOn:
+      - ParticipantInstanceProfileNameParameter
+      - BuildInstanceProfileNameParameter
     Properties:
       ServiceToken:
         Fn::GetAtt:
           - TriggerCodeBuild
           - Arn
+      ServiceTimeout: 3600
     UpdateReplacePolicy: Delete
     DeletionPolicy: Delete
+Outputs:
+  CodeEditorUrl:
+    Description: Open this URL to use the workshop IDE (AWS Code Editor). The link carries the login token.
+    Value: !GetAtt CustomProvisioningResource.CodeEditorUrl
