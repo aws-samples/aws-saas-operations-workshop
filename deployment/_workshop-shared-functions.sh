@@ -15,6 +15,30 @@ wait_for_background_jobs() {
     done
 }
 
+# Wait for named background jobs and fail if any of them failed.
+# Usage: wait_for_jobs "name1:pid1" "name2:pid2" ...
+# Unlike wait_for_background_jobs this propagates the exit status, so a failed
+# parallel step (an Angular build, a stack deploy) fails the whole build.
+wait_for_jobs() {
+    local failed=0
+    local job name pid status
+    for job in "$@"; do
+        name="${job%%:*}"
+        pid="${job##*:}"
+        if wait "$pid"; then
+            echo "Job '${name}' finished"
+        else
+            status=$?
+            echo "Job '${name}' FAILED (exit ${status})"
+            failed=1
+        fi
+    done
+    if [[ $failed -ne 0 ]]; then
+        echo "One or more parallel jobs failed"
+        exit 1
+    fi
+}
+
 # Try to run a command 3 times then timeout
 retry() {
   local n=1
@@ -75,7 +99,7 @@ wait_for_instance_ssm() {
     echo "Instance $INSTANCE_ID is available"
     ssm_status=$(aws ssm describe-instance-information --filters "Key=InstanceIds,Values=$INSTANCE_ID" --query 'InstanceInformationList[].PingStatus' --output text)
     while [[ "$ssm_status" != "Online" ]]; do
-        if [[ $COUNT > $MAX_COUNT ]]; then
+        if [[ $COUNT -gt $MAX_COUNT ]]; then
             echo "Instance $INSTANCE_ID is not online in SSM for "$MAX_COUNT" attempts. Exiting."
             exit 1
         fi
@@ -108,10 +132,50 @@ replace_instance_profile() {
         sleep $DELAY
         command_status=$(aws ec2 describe-iam-instance-profile-associations --filter "Name=instance-id,Values=$IDE_INSTANCE_ID" --query 'IamInstanceProfileAssociations[].State' --output text)
     done
-    echo "Instance profile replaced. Rebooting instance"
-    aws ec2 reboot-instances --instance-ids "$IDE_INSTANCE_ID"
-    wait_for_instance_ssm "$IDE_INSTANCE_ID"
-    echo "Instance rebooted"
+    echo "Instance profile replaced"
+    # No reboot: IMDS serves the new role's credentials within seconds and the SSM agent
+    # follows. The next SSM command verifies that the instance runs as the new role.
+    wait_for_instance_role "$IDE_INSTANCE_PROFILE_NAME"
+}
+
+# Wait until commands on the IDE instance run with the role of the given instance profile
+wait_for_instance_role() {
+    local profile_name="$1"
+    local role_name
+    role_name=$(aws iam get-instance-profile --instance-profile-name "$profile_name" --query 'InstanceProfile.Roles[0].RoleName' --output text)
+    local count=1
+    local max_count=20 # 20*15s = 5 min
+    while true; do
+        local ssm_command_id
+        ssm_command_id=$(aws ssm send-command \
+            --targets "Key=InstanceIds,Values=$IDE_INSTANCE_ID" \
+            --document-name "AWS-RunShellScript" \
+            --parameters '{"commands":["aws sts get-caller-identity --query Arn --output text"]}' \
+            --timeout-seconds 60 \
+            --comment "check instance role" \
+            --output text \
+            --query "Command.CommandId" 2>/dev/null)
+        local status="Pending"
+        local arn=""
+        while [[ "$status" == "InProgress" || "$status" == "Pending" || "$status" == "Delayed" ]]; do
+            sleep 5
+            local invocation
+            invocation=$(aws ssm get-command-invocation --command-id "$ssm_command_id" --instance-id "$IDE_INSTANCE_ID" 2>/dev/null)
+            status=$(echo -E "$invocation" | jq -r '.Status // "Failed"')
+            arn=$(echo -E "$invocation" | jq -r '.StandardOutputContent // ""' | tr -d '[:space:]')
+        done
+        if [[ "$status" == "Success" && "$arn" == *":assumed-role/${role_name}/"* ]]; then
+            echo "Instance $IDE_INSTANCE_ID runs as role ${role_name}"
+            return 0
+        fi
+        if [[ $count -ge $max_count ]]; then
+            echo "Instance $IDE_INSTANCE_ID did not switch to role ${role_name} (last: status=${status} arn=${arn}). Exiting."
+            exit 1
+        fi
+        echo "Instance still reports '${arn}' (status ${status}); waiting for role ${role_name}"
+        count=$((count + 1))
+        sleep $DELAY
+    done
 }
 
 # Get the IDE instance ID from the IDE stack

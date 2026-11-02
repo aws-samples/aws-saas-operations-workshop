@@ -8,9 +8,11 @@ If you would like to deploy this, then follow the instructions [in the workshop.
 
 `deployment/deploy-workshop.sh` creates the `SaaSOps` CloudFormation stack from `deployment/WorkshopStack.yaml`. That stack starts a CodeBuild project which:
 
-1. deploys the workshop IDE, [AWS Code Editor](https://catalog.workshops.aws/docs/en-US/cookbook/cloudformation/codeeditor) on EC2 behind CloudFront (`deployment/code-editor/code-editor.yaml`, vendored from the Workshop Studio cookbook);
-2. clones this repository onto the IDE instance at `~/environment/aws-saas-operations-workshop` and runs `deployment/create-workshop.sh` there to build the SaaS application;
+1. builds the SaaS application with `deployment/create-workshop.sh` (tenant pipeline, control plane, pooled tenant stack, the three UIs, dashboards, sample tenants and users; independent steps run in parallel);
+2. at the same time deploys the workshop IDE, [AWS Code Editor](https://catalog.workshops.aws/docs/en-US/cookbook/cloudformation/codeeditor) on EC2 behind CloudFront (`deployment/code-editor/code-editor.yaml`, vendored from the Workshop Studio cookbook), gives it the participant role, clones this repository onto it at `~/environment/aws-saas-operations-workshop` and installs the lab tooling with `deployment/bootstrap-ide.sh`;
 3. returns the IDE link as the `CodeEditorUrl` output of the `SaaSOps` stack.
+
+`deployment/create-workshop.sh` also runs from any shell with admin credentials for a test account (`./create-workshop.sh True` skips the Lab 5 resources).
 
 Lab 5 needs CloudTrail data events for DynamoDB. Accounts that do not allow those (AWS internal Isengard accounts, for example) must deploy with `./deploy-workshop.sh -x`, which skips the Lab 5 resources; otherwise the `saas-operations-controlplane` stack fails with `The AWS::DynamoDB::Table data resource type is not supported`.
 

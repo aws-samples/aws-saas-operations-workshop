@@ -17,7 +17,7 @@ Out: lab exercises themselves (load simulator, dashboards content, isolation tes
 GitHub Actions (weekly cron + manual) -> OIDC -> role in test account
    tests/e2e/run.sh
      1 preflight   account, region, no SaaSOps leftovers
-     2 deploy      deploy-workshop.sh $E2E_DEPLOY_FLAGS   (default -x)      ~50 min
+     2 deploy      deploy-workshop.sh $E2E_DEPLOY_FLAGS   (default -x)      ~20 min
      3 verify      ~15 checks, see table
      4 teardown    delete SaaSOps, wait, assert nothing left                  ~10 min
      5 report      step summary + logs artifact, exit 1 on any failed check
@@ -34,8 +34,8 @@ GitHub Actions (weekly cron + manual) -> OIDC -> role in test account
 | 3 | IDE healthy | `GET /healthz` on that host | 200 |
 | 4 | IDE auth enforced | `GET /` without token | 403 |
 | 5 | IDE token works | `GET` the full URL | 302 or 200 |
-| 6 | Profile swapped | instance profile of the IDE instance | name from SSM `/SaaSOps/IDE/ParticipantInstanceProfileName` |
-| 7 | Build finished | log stream `<instance-id>` in `/aws/codebuild/install-workshop-stack-codebuild` | contains `Success - Workshop created!` |
+| 6 | Participant role | instance profile of the IDE instance | name from SSM `/SaaSOps/IDE/ParticipantInstanceProfileName` |
+| 7 | Build finished | CodeBuild log stream in `/aws/codebuild/install-workshop-stack-codebuild` | contains `Success - Workshop created!`; instance stream contains `Success - IDE ready!` |
 | 8 | Control plane exports | `list-exports` | AdminApiGatewayUrl, AdminAppSite, ApplicationSite, LandingApplicationSite present |
 | 9 | Static sites | `GET` the three site URLs | 200 |
 | 10 | Tenant bootstrap | `GET {admin}/tenant/init/PooledTenant1` and `/SiloedTenant1` | JSON with userPoolId, appClientId, apiGatewayUrl |
