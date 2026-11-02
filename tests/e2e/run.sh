@@ -18,6 +18,7 @@
 #   E2E_ARTIFACT_DIR   where logs and the report go (default ./e2e-artifacts)
 #   REPO_URL, REPO_BRANCH_NAME   passed through to deploy-workshop.sh
 #   DEPLOY_TIMEOUT_MIN, DELETE_TIMEOUT_MIN   defaults 75 and 40
+#   SILO_TIMEOUT_MIN   how long to wait for the SiloedTenant1 stack after CREATE_COMPLETE (default 15)
 
 set -uo pipefail
 
@@ -35,6 +36,7 @@ fi
 E2E_ARTIFACT_DIR="${E2E_ARTIFACT_DIR:-${PWD}/e2e-artifacts}"
 DEPLOY_TIMEOUT_MIN="${DEPLOY_TIMEOUT_MIN:-75}"
 DELETE_TIMEOUT_MIN="${DELETE_TIMEOUT_MIN:-40}"
+SILO_TIMEOUT_MIN="${SILO_TIMEOUT_MIN:-15}"
 STACK_NAME="SaaSOps"
 IDE_STACK_NAME="SaaSOps-CodeEditor"
 LOG_GROUP="/aws/codebuild/install-workshop-stack-codebuild"
@@ -157,6 +159,20 @@ done
 
 # ---------------------------------------------------------------- verify tenant login and API
 section "Verify tenant access"
+# Registering a Platinum tenant starts a pipeline run (~5 min) that creates its silo stack, and
+# that run usually finishes after SaaSOps reports CREATE_COMPLETE. Wait for the silo API.
+wait_for_tenant_api() {
+    local tenant="$1" minutes="$2" waited=0 api
+    while true; do
+        api=$(curl -s "${ADMIN_API}/tenant/init/${tenant}" | jq -r '.apiGatewayUrl // empty')
+        [[ -n "${api}" ]] && return 0
+        (( waited >= minutes * 60 )) && return 1
+        sleep 30; waited=$((waited + 30))
+    done
+}
+if ! wait_for_tenant_api SiloedTenant1 "${SILO_TIMEOUT_MIN}"; then
+    log "SiloedTenant1 API not published after ${SILO_TIMEOUT_MIN} min"
+fi
 for tenant in PooledTenant1 SiloedTenant1; do
     meta=$(curl -s "${ADMIN_API}/tenant/init/${tenant}")
     pool=$(jq -r '.userPoolId // empty' <<<"${meta}")

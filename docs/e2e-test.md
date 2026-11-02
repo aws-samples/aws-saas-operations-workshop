@@ -42,7 +42,7 @@ GitHub Actions (weekly cron + manual) -> OIDC -> role in test account
 | 11 | Tenant admin user | `cognito-idp list-users` for `success+PooledTenant1@simulator.amazonses.com` | one user |
 | 12 | Tenant login | `admin-set-user-password` then `initiate-auth USER_PASSWORD_AUTH` | IdToken returned |
 | 13 | Tenant API | `GET {tenantApi}/products` and `/orders` with the token | 200, JSON array |
-| 14 | Siloed tenant API | same as 12-13 for SiloedTenant1 | 200 |
+| 14 | Siloed tenant API | same as 10-13 for SiloedTenant1, after waiting up to 15 min for its `apiGatewayUrl` (the silo stack is created by a pipeline run that starts when the tenant is registered and usually finishes after `SaaSOps` is CREATE_COMPLETE) | 200 |
 | 15 | Dashboards | stack `saasOpsWorkshop-saasOperationsDashboard` | CREATE_COMPLETE |
 | 16 | Teardown | wait until the status is not `*_IN_PROGRESS` (a failed deploy is still rolling back and cannot be deleted yet), `delete-stack SaaSOps`, wait | gone within 40 min |
 | 17 | Nothing the workshop owns is left | stacks `stack-*`, `saas-operations-*`, `saasOpsWorkshop-*`, `SaaSOps*` in any non-deleted status; buckets `saas-operations-*`, `sam-bootstrap-*`; user pools `*-SaaSOperationsUserPool` | none. Not covered because `delete-workshop.sh` does not own them: the CDK bootstrap (`CDKToolkit`, `cdk-hnb659fds-*`) and the CodeBuild and Lambda log groups |
