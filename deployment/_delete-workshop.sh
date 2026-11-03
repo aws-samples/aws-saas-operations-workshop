@@ -255,6 +255,21 @@ delete_user_pools() {
     done
 }
 
+# `sam sync` in the labs (lab2-deploy.sh) creates the SAM CLI managed stack with a versioned
+# source bucket. Nothing else in the account is expected to use it; empty the bucket (the stack
+# delete fails otherwise) and delete the stack.
+delete_sam_managed_stack() {
+    local stack="aws-sam-cli-managed-default" bucket
+    if ! aws cloudformation describe-stacks --stack-name "${stack}" > /dev/null 2>&1; then
+        echo "Stack ${stack} does not exist, skipping."
+        return
+    fi
+    bucket=$(aws cloudformation describe-stack-resources --stack-name "${stack}" \
+        --query 'StackResources[?ResourceType==`AWS::S3::Bucket`].PhysicalResourceId' --output text)
+    [[ -n "${bucket}" ]] && empty_bucket "${bucket}"
+    delete_stack "${stack}"
+}
+
 delete_api_keys() {
     echo "Deleting api keys..."
     for i in $(aws apigateway get-api-keys --query "items[?contains(name,'saasOpsWorkshop')].id" --output text); do

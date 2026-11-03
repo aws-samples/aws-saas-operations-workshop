@@ -13,7 +13,7 @@ Source for the [AWS SaaS Operations workshop](https://catalog.workshops.aws/saas
 - To deploy from a branch or fork: `REPO_URL=... REPO_BRANCH_NAME=... ./deploy-workshop.sh -x`. CodeBuild clones that ref, so push first.
 - A full deployment takes about 20 minutes (36 when the build still ran on the IDE, measured 2026-11-02 in eu-central-1). The IDE (~12 min including tooling) and the SaaS application (~18 min) are built side by side; the control plane stack and the pipeline run that creates the pooled tenant stack set the floor. The CodeBuild project times out at 60 minutes, which is also the CloudFormation custom-resource maximum.
 - Registering the two Platinum tenants starts two more pipeline runs (~5 min each) that create their silo stacks; they may finish a few minutes after `SaaSOps` reports CREATE_COMPLETE. Check for `stack-*` stacks in UPDATE_COMPLETE before testing `SiloedTenant1`.
-- Tear down by deleting the `SaaSOps` stack. That triggers `deployment/delete-workshop.sh` through CodeBuild, which empties buckets and removes tenant stacks, the control plane, the pipeline, the IDE stack and the template bucket.
+- Tear down by deleting the `SaaSOps` stack. That triggers `deployment/delete-workshop.sh` through CodeBuild, which empties buckets and removes tenant stacks, the control plane, the pipeline, the IDE stack, the template bucket and the SAM CLI managed stack (`aws-sam-cli-managed-default`, created by `sam sync` in Lab 2).
 
 ## Where to look when a deployment fails
 

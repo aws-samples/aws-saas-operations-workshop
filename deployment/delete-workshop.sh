@@ -44,6 +44,8 @@ for STACK in "${INDEPENDENT_STACKS[@]}"; do
 done
 delete_buckets &
 JOBS+=("buckets:$!")
+delete_sam_managed_stack &
+JOBS+=("sam-managed-stack:$!")
 wait_for_jobs "${JOBS[@]}"
 
 delete_stack "${CONTROLPLANE_STACK}"
