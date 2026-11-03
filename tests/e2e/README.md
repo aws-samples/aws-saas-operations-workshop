@@ -25,9 +25,9 @@ Side effect in both modes: the login check sets the `PooledTenant1` and `SiloedT
 
 Exit code 0 only when every check passed and teardown left nothing behind.
 
-## Scheduled run
+## GitHub Actions run
 
-`.github/workflows/e2e.yml` runs every Monday 03:00 UTC and on demand. One run at a time for the whole repository (`concurrency: e2e`), because every run uses the same account and stack name.
+`.github/workflows/e2e.yml` runs on demand only (Actions > e2e deployment test > Run workflow; inputs region, deploy flags, keep). Run it after changes to `deployment/` or `App/`. One run at a time for the whole repository (`concurrency: e2e`), because every run uses the same account and stack name.
 
 One-time setup in the test account:
 
@@ -42,8 +42,6 @@ aws cloudformation describe-stacks --stack-name saasops-workshop-e2e-role \
 One-time setup on GitHub (Settings):
 
 1. Repository variable `E2E_ROLE_ARN` = the role ARN printed above.
-2. Environment `e2e` with deployment branch policy **Selected branches and tags: `main`**. No required reviewers (they would block the unattended Monday run).
+2. Environment `e2e` with deployment branch policy **Selected branches and tags: `main`**. No required reviewers.
 
 The role trusts only tokens issued for the `e2e` environment, so that branch policy is the control that keeps other branches off the admin role; a manual run from a feature branch fails at job start with "branch not allowed to deploy". The role is admin; the account must hold nothing else.
-
-GitHub disables scheduled workflows after 60 days without repository activity. If the Monday run stops appearing, re-enable it under Actions.

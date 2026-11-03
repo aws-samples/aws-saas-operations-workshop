@@ -6,14 +6,14 @@
 
 ## Context
 
-The workshop broke silently when Cloud9 closed to new accounts; nobody deployed it for months. We want a scheduled deployment test (see `docs/e2e-test.md`) that runs the real `deploy-workshop.sh`, verifies the result and tears it down, in a dedicated AWS test account.
+The workshop broke silently when Cloud9 closed to new accounts; nobody deployed it for months. We want a repeatable deployment test (see `docs/e2e-test.md`) that runs the real `deploy-workshop.sh`, verifies the result and tears it down, in a dedicated AWS test account.
 
 ## Options considered
 
-### Option 1: GitHub Actions on a schedule, OIDC role in the test account
+### Option 1: GitHub Actions, OIDC role in the test account
 Pros: results next to the code, PRs can trigger it by hand, no stored AWS keys, runner minutes are free for the public repo. Cons: the test account trusts GitHub's OIDC provider; the role needs admin rights, so the account must be a sandbox.
 
-### Option 2: EventBridge schedule and CodeBuild inside the test account
+### Option 2: CodeBuild inside the test account
 Pros: nothing outside AWS, no OIDC trust. Cons: a second deployment to maintain, results only visible in the account, no link from a PR to a run.
 
 ### Option 3: Manual runs before events
