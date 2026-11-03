@@ -177,9 +177,17 @@ for tenant in SiloedTenant1 PlatinumTestTenant; do
 done
 # Both Platinum tenants get a silo stack from the same pipeline run. A stack that rolled back
 # still leaves the other tenant working, so look at the stacks, not only at SiloedTenant1.
-tenant_stacks=$(aws cloudformation list-stacks --query 'StackSummaries[?starts_with(StackName,`stack-`) && StackStatus!=`DELETE_COMPLETE`].[StackName,StackStatus]' --output text | sort)
-check "tenant stacks: stack-pooled and two silo stacks CREATE_COMPLETE" "$(tr '\n\t' ';=' <<<"${tenant_stacks}")" \
-    test "$(wc -l <<<"${tenant_stacks}")" -eq 3 -a "$(grep -c -v 'CREATE_COMPLETE$' <<<"${tenant_stacks}")" -eq 0
+# The pipeline run also updates stack-pooled and finishes with an update of each silo stack,
+# so wait until no tenant stack is in progress and accept CREATE_COMPLETE or UPDATE_COMPLETE.
+list_tenant_stacks() {
+    aws cloudformation list-stacks --query 'StackSummaries[?starts_with(StackName,`stack-`) && StackStatus!=`DELETE_COMPLETE`].[StackName,StackStatus]' --output text | sort
+}
+settled=0
+while tenant_stacks=$(list_tenant_stacks) && grep -q '_IN_PROGRESS$' <<<"${tenant_stacks}" && (( settled < 300 )); do
+    sleep 30; settled=$((settled + 30))
+done
+check "tenant stacks: stack-pooled and two silo stacks complete" "$(tr '\n\t' ';=' <<<"${tenant_stacks}")" \
+    test "$(wc -l <<<"${tenant_stacks}")" -eq 3 -a "$(grep -c -v -E '(CREATE|UPDATE)_COMPLETE$' <<<"${tenant_stacks}")" -eq 0
 for tenant in PooledTenant1 SiloedTenant1; do
     meta=$(curl -s "${ADMIN_API}/tenant/init/${tenant}")
     pool=$(jq -r '.userPoolId // empty' <<<"${meta}")
