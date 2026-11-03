@@ -2,6 +2,8 @@
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: MIT-0
 
+# Runs on the IDE instance (as the IDE user) and builds the SaaS application.
+
 REPO_URL=$1
 IGNORE_AUDITING_LAB=$2
 
@@ -20,12 +22,11 @@ done
 
 ## Variables
 REGION=$(aws ec2 describe-availability-zones --output text --query 'AvailabilityZones[0].[RegionName]')
-REPO_PATH="/home/ec2-user/environment/${REPO_NAME}"
+REPO_PATH="${HOME}/environment/${REPO_NAME}"
 
 ## Init
 rm -vf ~/.aws/credentials
-cd ~/environment/$REPO_NAME/deployment && ./configure-logs.sh
-cd ~/environment/$REPO_NAME/deployment/cloud9 && ./resize-cloud9-ebs-vol.sh
+cd ${REPO_PATH}/deployment && ./configure-logs.sh
 
 ## Create SaaS application
 echo "Creating workshop"

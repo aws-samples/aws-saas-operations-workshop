@@ -7,8 +7,9 @@ echo "Deploying workshop resources..."
 alias saasops_logs="aws logs tail --follow /aws/codebuild/install-workshop-stack-codebuild"
 
 STACK_NAME="SaaSOps"
-REPO_URL="https://github.com/aws-samples/aws-saas-operations-workshop.git"
-REPO_BRANCH_NAME="main"
+# Override REPO_URL / REPO_BRANCH_NAME in the environment to deploy from a fork or branch.
+REPO_URL="${REPO_URL:-https://github.com/aws-samples/aws-saas-operations-workshop.git}"
+REPO_BRANCH_NAME="${REPO_BRANCH_NAME:-main}"
 PARTICIPANT_ASSUMED_ROLE_ARN="$(aws sts get-caller-identity --query 'Arn' --output text)"
 IGNORE_AUDITING_LAB="False"
 
@@ -47,7 +48,10 @@ saasops_deploy_wait() {
     DDIFF=$(( $CURRENT_TIME - $START_TIME ))
     echo $(date) "SaaSOps Stack status: "$STATUS", Time elapsed: "$(($DDIFF / 60))"m"$(($DDIFF % 60))"s."
     if [[ $STATUS == 'CREATE_COMPLETE' ]]; then
+        IDE_URL=$(aws cloudformation describe-stacks --stack-name "$STACK_NAME" --query "Stacks[0].Outputs[?OutputKey=='CodeEditorUrl'].OutputValue" --output text)
         echo $(date) "SaaSOps workshop deployed. Please proceed and enjoy the workshop!"
+        echo "Open the workshop IDE (AWS Code Editor) with this link. It carries your login token, so keep it to yourself:"
+        echo "$IDE_URL"
     fi
 }
 

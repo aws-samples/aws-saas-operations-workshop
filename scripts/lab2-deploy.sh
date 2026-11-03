@@ -74,17 +74,21 @@ rm source.zip
 aws codepipeline start-pipeline-execution --name saas-operations-pipeline
 
 # deploy operations lambda layer for shared services
+# Built on the IDE host, not in a container (-u): the Code Editor instance has no Docker. The
+# host is x86_64 with Python 3.9, the same as the Lambda runtime, so the wheels match.
+# --no-dependency-layer: the stack was created with sam deploy, so the per-function dependency
+# layer that sam sync would otherwise look for does not exist; the shared layer carries the deps.
 cd  ~/environment/aws-saas-operations-workshop/App/server
 rm -rf .aws-sam/
 echo "Deploying operations lambda layer for shared services" 
 echo Y | sam sync --stack-name saas-operations-controlplane \
-        --template-file bootstrap-template.yaml --code \
-        --resource-id LambdaFunctions/SaaSOperationsLayers -u
+        --template-file bootstrap-template.yaml --code --no-dependency-layer \
+        --resource-id LambdaFunctions/SaaSOperationsLayers
 
 # deploy tenant authorizer
 cd  ~/environment/aws-saas-operations-workshop/App/server
 rm -rf .aws-sam/
 echo "Deploying tenant authorizer" 
 echo Y | sam sync --stack-name saas-operations-controlplane \
-        --template-file bootstrap-template.yaml --code \
-        --resource-id LambdaFunctions/BusinessServicesAuthorizerFunction -u
+        --template-file bootstrap-template.yaml --code --no-dependency-layer \
+        --resource-id LambdaFunctions/BusinessServicesAuthorizerFunction

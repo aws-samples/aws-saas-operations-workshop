@@ -65,8 +65,13 @@ empty_bucket() {
     for object_type in Versions DeleteMarkers; do
         local opt=() next_token=""
         while [[ "$next_token" != null ]]; do
-            page="$(aws s3api list-object-versions --bucket "$bucket" --output json --max-items 400 "${opt[@]}" \
-                        --query="[{Objects: ${object_type}[].{Key:Key, VersionId:VersionId}}, NextToken]")"
+            # A failed listing (bucket already gone, access denied) must end the loop,
+            # otherwise next_token stays empty and this loops forever.
+            if ! page="$(aws s3api list-object-versions --bucket "$bucket" --output json --max-items 400 "${opt[@]}" \
+                        --query="[{Objects: ${object_type}[].{Key:Key, VersionId:VersionId}}, NextToken]")"; then
+                echo "Could not list s3://${bucket}, skipping."
+                return
+            fi
             objects="$(jq -r '.[0]' <<<"$page")"
             next_token="$(jq -r '.[1]' <<<"$page")"
             case "$(jq -r .Objects <<<"$objects")" in
@@ -81,6 +86,10 @@ empty_bucket() {
 delete_bucket() {
     bucket=$1
     echo "Deleting bucket ${bucket}"
+    if ! aws s3api head-bucket --bucket "${bucket}" 2>/dev/null; then
+        echo "Bucket ${bucket} does not exist, skipping."
+        return
+    fi
     empty_bucket ${bucket}
     aws s3 rb "s3://${bucket}"
     echo "Bucket deleted."
@@ -167,9 +176,4 @@ delete_api_keys() {
         aws apigateway delete-api-key --api-key ${i}
     done
     echo "Api keys deleted."
-}
-
-delete_c9() {
-    aws ec2 create-tags --resources $C9_ID --tags "Key=Workshop,Value=${WORKSHOP_NAME}Old"
-    delete_stack "$WORKSHOP_NAME-C9"
 }
