@@ -66,7 +66,9 @@ prepare_ide() {
     replace_instance_profile "${PARTICIPANT_INSTANCE_PROFILE_PARAMETER_NAME}"
     run_ssm_command "cd ${IDE_HOME_FOLDER} ; git clone --branch ${REPO_BRANCH_NAME} ${REPO_URL} || echo 'Repo already exists.'"
     # pipefail: a failure inside bootstrap-ide.sh must fail the SSM command, not be hidden by tee
-    run_ssm_command "set -o pipefail; cd ${IDE_HOME_FOLDER}/${REPO_NAME}/deployment && ./bootstrap-ide.sh 2>&1 | tee .ws-bootstrap.log"
+    # The region is passed explicitly: the runuser login shell may not have sourced the
+    # participant's .bashrc, and bootstrap-ide.sh writes it to ~/.aws/config for the labs
+    run_ssm_command "set -o pipefail; export AWS_REGION=${REGION}; cd ${IDE_HOME_FOLDER}/${REPO_NAME}/deployment && ./bootstrap-ide.sh 2>&1 | tee .ws-bootstrap.log"
 }
 
 # parameters: (1) ignoreAuditingWorkshop (True/False: string)
