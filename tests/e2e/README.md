@@ -7,7 +7,7 @@ Deploys the workshop the way a self-deployer does, checks what participants touc
 Needs `aws`, `curl`, `jq` and credentials for a dedicated, empty test account. AWS internal (Isengard) accounts need the default `-x` deploy flag.
 
 ```bash
-AWS_REGION=eu-central-1 tests/e2e/run.sh
+AWS_REGION=eu-west-2 tests/e2e/run.sh
 ```
 
 About 20 minutes to deploy, 1 minute to verify, 10 minutes to tear down. The report lands in `./e2e-artifacts/report.md` together with the CodeBuild and IDE bootstrap logs. The IDE login token (`tkn=`) is redacted from every file in that folder.

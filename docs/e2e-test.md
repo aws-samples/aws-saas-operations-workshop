@@ -63,7 +63,7 @@ A change to any of these must update the test in the same PR.
 
 ## Runner
 
-- Workflow `.github/workflows/e2e.yml`: `schedule` (Mondays 03:00 UTC) and `workflow_dispatch` with inputs `region` (default eu-central-1), `deploy_flags` (default `-x`), `keep` (default false). `concurrency: e2e` (one group for the whole repository) so runs never overlap in the one account. `timeout-minutes: 150`. `permissions: id-token: write, contents: read`.
+- Workflow `.github/workflows/e2e.yml`: `schedule` (Mondays 03:00 UTC) and `workflow_dispatch` with inputs `region` (default eu-west-2), `deploy_flags` (default `-x`), `keep` (default false). `concurrency: e2e` (one group for the whole repository) so runs never overlap in the one account. `timeout-minutes: 150`. `permissions: id-token: write, contents: read`.
 - Credentials: `aws-actions/configure-aws-credentials` with `role-to-assume` from repository variable `E2E_ROLE_ARN`. No long-lived keys.
 - Role: `tests/e2e/cfn/github-oidc-role.yaml` creates the GitHub OIDC provider and a role trusting only `repo:aws-samples/aws-saas-operations-workshop:environment:e2e`. A job with `environment: e2e` always presents that subject, whatever branch it runs from, so the environment's deployment branch policy (`main` only, no required reviewers) is the branch control. It carries `AdministratorAccess` because the deployment creates IAM roles, CloudFront, Cognito and CloudTrail; that is why the account must be a dedicated sandbox. Deployed once by hand into the test account. Action versions are pinned to commit SHAs.
 - GitHub disables `schedule` triggers after 60 days without repository activity; the README says how to re-enable the run.
