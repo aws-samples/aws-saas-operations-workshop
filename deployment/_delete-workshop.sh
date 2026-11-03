@@ -27,9 +27,12 @@ delete_stack() {
     wait_for_stack_deleted "$1"
 }
 
-# Poll until the stack is gone; fail on DELETE_FAILED
+# Poll until the stack is gone; fail on DELETE_FAILED.
+# CloudFormation cancels a delete without failing the stack when another stack still imports
+# one of its exports (status stays *_COMPLETE, reason "Delete canceled"). That happens when a
+# tenant stack is still being deleted, so the delete is re-sent a few times before giving up.
 wait_for_stack_deleted() {
-    local stack_name="$1" status
+    local stack_name="$1" status reason resend=0
     while true; do
         status=$(aws cloudformation describe-stacks --stack-name "$stack_name" --query 'Stacks[0].StackStatus' --output text 2>&1)
         if [[ "$status" == *"does not exist"* || "$status" == "DELETE_COMPLETE" ]]; then
@@ -39,6 +42,17 @@ wait_for_stack_deleted() {
         if [[ "$status" == "DELETE_FAILED" ]]; then
             echo "Error! Stack $stack_name is DELETE_FAILED"
             exit 1
+        fi
+        if [[ "$status" != *_IN_PROGRESS ]]; then
+            reason=$(aws cloudformation describe-stacks --stack-name "$stack_name" --query 'Stacks[0].StackStatusReason' --output text 2>/dev/null)
+            if [[ $resend -ge 10 ]]; then
+                echo "Error! Stack $stack_name could not be deleted ($status): $reason"
+                exit 1
+            fi
+            resend=$((resend + 1))
+            echo "Delete of $stack_name did not start ($status: $reason), re-sending ($resend/10)..."
+            sleep 30
+            aws cloudformation delete-stack --stack-name "$stack_name"
         fi
         sleep $DELAY
     done
@@ -86,7 +100,9 @@ delete_tenant_stacks() {
     echo "Deleting tenant stacks..."
     local tenant_jobs=()
     next_token=""
-    STACK_STATUS_FILTER="CREATE_COMPLETE ROLLBACK_COMPLETE UPDATE_COMPLETE UPDATE_ROLLBACK_COMPLETE IMPORT_COMPLETE IMPORT_ROLLBACK_COMPLETE"
+    # Failed stacks are included: a tenant stack left in ROLLBACK_FAILED still imports the
+    # control plane's exports and would block the control plane delete
+    STACK_STATUS_FILTER="CREATE_COMPLETE ROLLBACK_COMPLETE UPDATE_COMPLETE UPDATE_ROLLBACK_COMPLETE IMPORT_COMPLETE IMPORT_ROLLBACK_COMPLETE CREATE_FAILED ROLLBACK_FAILED DELETE_FAILED UPDATE_ROLLBACK_FAILED"
     while true; do
         if [[ "${next_token}" == "" ]]; then
             # shellcheck disable=SC2086
