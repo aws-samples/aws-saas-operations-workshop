@@ -56,6 +56,8 @@ wait_for_stack_gone() {
 }
 
 # Everything the workshop owns that teardown must have removed. Prints one line per leftover.
+# aws-sam-cli-managed-default (stack and bucket) is created by `sam sync` in Lab 2 and removed by
+# delete-workshop.sh; the test never runs Lab 2, so it only shows up when the account was dirty.
 # Not listed, because delete-workshop.sh does not own them: the CDK bootstrap (CDKToolkit stack,
 # cdk-hnb659fds-* bucket and ECR repository) and the CodeBuild and Lambda log groups.
 list_leftovers() {
@@ -67,9 +69,9 @@ list_leftovers() {
             UPDATE_ROLLBACK_IN_PROGRESS UPDATE_ROLLBACK_FAILED UPDATE_ROLLBACK_COMPLETE_CLEANUP_IN_PROGRESS UPDATE_ROLLBACK_COMPLETE \
             REVIEW_IN_PROGRESS IMPORT_IN_PROGRESS IMPORT_COMPLETE IMPORT_ROLLBACK_IN_PROGRESS IMPORT_ROLLBACK_FAILED IMPORT_ROLLBACK_COMPLETE \
         --query 'StackSummaries[].StackName' --output text 2>/dev/null | tr '\t' '\n' \
-        | grep -E '^(stack-|saas-operations-|saasOpsWorkshop-|SaaSOps)' | sed 's/^/stack: /'
+        | grep -E '^(stack-|saas-operations-|saasOpsWorkshop-|SaaSOps|aws-sam-cli-managed-default$)' | sed 's/^/stack: /'
     aws s3api list-buckets --query 'Buckets[].Name' --output text 2>/dev/null | tr '\t' '\n' \
-        | grep -E '^(saas-operations-|sam-bootstrap-)' | sed 's/^/bucket: /'
+        | grep -E '^(saas-operations-|sam-bootstrap-|aws-sam-cli-managed-default-)' | sed 's/^/bucket: /'
     aws cognito-idp list-user-pools --max-results 60 --query 'UserPools[].Name' --output text 2>/dev/null | tr '\t' '\n' \
         | grep -E 'SaaSOperationsUserPool$' | sed 's/^/user pool: /'
     return 0
