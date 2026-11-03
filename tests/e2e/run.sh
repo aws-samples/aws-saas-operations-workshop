@@ -170,9 +170,16 @@ wait_for_tenant_api() {
         sleep 30; waited=$((waited + 30))
     done
 }
-if ! wait_for_tenant_api SiloedTenant1 "${SILO_TIMEOUT_MIN}"; then
-    log "SiloedTenant1 API not published after ${SILO_TIMEOUT_MIN} min"
-fi
+for tenant in SiloedTenant1 PlatinumTestTenant; do
+    if ! wait_for_tenant_api "${tenant}" "${SILO_TIMEOUT_MIN}"; then
+        log "${tenant} API not published after ${SILO_TIMEOUT_MIN} min"
+    fi
+done
+# Both Platinum tenants get a silo stack from the same pipeline run. A stack that rolled back
+# still leaves the other tenant working, so look at the stacks, not only at SiloedTenant1.
+tenant_stacks=$(aws cloudformation list-stacks --query 'StackSummaries[?starts_with(StackName,`stack-`) && StackStatus!=`DELETE_COMPLETE`].[StackName,StackStatus]' --output text | sort)
+check "tenant stacks: stack-pooled and two silo stacks CREATE_COMPLETE" "$(tr '\n\t' ';=' <<<"${tenant_stacks}")" \
+    test "$(wc -l <<<"${tenant_stacks}")" -eq 3 -a "$(grep -c -v 'CREATE_COMPLETE$' <<<"${tenant_stacks}")" -eq 0
 for tenant in PooledTenant1 SiloedTenant1; do
     meta=$(curl -s "${ADMIN_API}/tenant/init/${tenant}")
     pool=$(jq -r '.userPoolId // empty' <<<"${meta}")

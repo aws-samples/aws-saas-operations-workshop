@@ -18,7 +18,7 @@ GitHub Actions (weekly cron + manual) -> OIDC -> role in test account
    tests/e2e/run.sh
      1 preflight   account, region, no SaaSOps leftovers
      2 deploy      deploy-workshop.sh $E2E_DEPLOY_FLAGS   (default -x)      ~20 min
-     3 verify      34 checks, see table
+     3 verify      35 checks, see table
      4 teardown    wait for a settled status, delete SaaSOps, wait, assert nothing left   ~10 min
      5 report      step summary + logs artifact, exit 1 on any failed check
 ```
@@ -43,9 +43,10 @@ GitHub Actions (weekly cron + manual) -> OIDC -> role in test account
 | 12 | Tenant login | `admin-set-user-password` then `initiate-auth USER_PASSWORD_AUTH` | IdToken returned |
 | 13 | Tenant API | `GET {tenantApi}/products` and `/orders` with the token | 200, JSON array |
 | 14 | Siloed tenant API | same as 10-13 for SiloedTenant1, after waiting up to 15 min for its `apiGatewayUrl` (the silo stack is created by a pipeline run that starts when the tenant is registered and usually finishes after `SaaSOps` is CREATE_COMPLETE) | 200 |
-| 15 | Dashboards | stack `saasOpsWorkshop-saasOperationsDashboard` | CREATE_COMPLETE |
-| 16 | Teardown | wait until the status is not `*_IN_PROGRESS` (a failed deploy is still rolling back and cannot be deleted yet), `delete-stack SaaSOps`, wait | gone within 40 min |
-| 17 | Nothing the workshop owns is left | stacks `stack-*`, `saas-operations-*`, `saasOpsWorkshop-*`, `SaaSOps*` in any non-deleted status; buckets `saas-operations-*`, `sam-bootstrap-*`; user pools `*-SaaSOperationsUserPool` | none. Not covered because `delete-workshop.sh` does not own them: the CDK bootstrap (`CDKToolkit`, `cdk-hnb659fds-*`) and the CodeBuild and Lambda log groups |
+| 15 | Tenant stacks | `list-stacks` filtered on `stack-*`, after waiting for the `SiloedTenant1` and `PlatinumTestTenant` APIs | exactly `stack-pooled` and two silo stacks, all CREATE_COMPLETE. Both Platinum tenants are provisioned by one pipeline run; a silo stack that rolled back leaves the other tenant working, so SiloedTenant1 alone does not show it |
+| 16 | Dashboards | stack `saasOpsWorkshop-saasOperationsDashboard` | CREATE_COMPLETE |
+| 17 | Teardown | wait until the status is not `*_IN_PROGRESS` (a failed deploy is still rolling back and cannot be deleted yet), `delete-stack SaaSOps`, wait | gone within 40 min |
+| 18 | Nothing the workshop owns is left | stacks `stack-*`, `saas-operations-*`, `saasOpsWorkshop-*`, `SaaSOps*` in any non-deleted status; buckets `saas-operations-*`, `sam-bootstrap-*`; user pools `*-SaaSOperationsUserPool` | none. Not covered because `delete-workshop.sh` does not own them: the CDK bootstrap (`CDKToolkit`, `cdk-hnb659fds-*`) and the CodeBuild and Lambda log groups |
 
 Checks 10-14 reuse the logic of `scripts/init-test.sh`; check 12 sets the two tenant admin passwords permanently. Teardown always runs, also after a failed check, unless `E2E_KEEP=1` is set for debugging; `E2E_SKIP_DEPLOY=1` implies `E2E_KEEP=1`. The IDE token (`tkn=`) is redacted from every artifact before the report is written.
 

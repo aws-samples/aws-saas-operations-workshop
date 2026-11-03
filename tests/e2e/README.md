@@ -19,7 +19,7 @@ About 20 minutes to deploy, 1 minute to verify, 10 minutes to tear down. The rep
 | `E2E_SKIP_DEPLOY` | `0` | `1` verifies an existing deployment instead of creating one. Implies `E2E_KEEP=1`; the test never deletes a deployment it did not create. |
 | `REPO_URL`, `REPO_BRANCH_NAME` | upstream `main` | What CodeBuild clones. Push first. |
 | `DEPLOY_TIMEOUT_MIN`, `DELETE_TIMEOUT_MIN` | `75`, `40` | Upper bounds for the deploy and the delete. |
-| `SILO_TIMEOUT_MIN` | `15` | How long to wait for the `SiloedTenant1` stack, whose pipeline run finishes after `SaaSOps` is complete. |
+| `SILO_TIMEOUT_MIN` | `15` | How long to wait for the `SiloedTenant1` and `PlatinumTestTenant` stacks, whose pipeline run finishes after `SaaSOps` is complete. |
 
 Side effect in both modes: the login check sets the `PooledTenant1` and `SiloedTenant1` admin passwords to `Lab@12345` (permanent).
 
