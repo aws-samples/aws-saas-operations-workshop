@@ -1,10 +1,10 @@
 # End-to-end test design
 
-Status: implemented 2026-11-02 in `tests/e2e/` and `.github/workflows/e2e.yml` (see ADR-0002).
+Status: implemented 2026-11-02 in `tests/e2e/`, run by hand (ADR-0002 chose GitHub Actions; ADR-0004 superseded it).
 
 ## Goal
 
-Prove on a schedule, in a throwaway account, that the workshop still deploys from `main`, that what participants touch first works, and that teardown leaves nothing behind. A red run means a participant would hit the same wall at an event.
+Prove, in a test account, that the workshop still deploys from `main`, that what participants touch first works, and that teardown leaves nothing behind. A red run means a participant would hit the same wall at an event.
 
 ## Scope
 
@@ -14,16 +14,16 @@ Out: lab exercises themselves (load simulator, dashboards content, isolation tes
 ## Shape
 
 ```
-GitHub Actions (weekly cron + manual) -> OIDC -> role in test account
+maintainer shell with admin credentials for the test account
    tests/e2e/run.sh
      1 preflight   account, region, no SaaSOps leftovers
      2 deploy      deploy-workshop.sh $E2E_DEPLOY_FLAGS   (default -x)      ~20 min
      3 verify      35 checks, see table
      4 teardown    wait for a settled status, delete SaaSOps, wait, assert nothing left   ~10 min
-     5 report      step summary + logs artifact, exit 1 on any failed check
+     5 report      report.md + logs in the artifact folder, exit 1 on any failed check
 ```
 
-`run.sh` is plain bash, AWS CLI, curl and jq, like the deployment scripts. It runs unchanged on a laptop with any profile: `AWS_PROFILE=<test-account> tests/e2e/run.sh`.
+`run.sh` is plain bash, AWS CLI, curl and jq, like the deployment scripts: `AWS_PROFILE=<test-account> AWS_REGION=<empty region> tests/e2e/run.sh`.
 
 ## Checks
 
@@ -63,17 +63,14 @@ A change to any of these must update the test in the same PR.
 
 ## Runner
 
-- Workflow `.github/workflows/e2e.yml`: `schedule` (Mondays 03:00 UTC) and `workflow_dispatch` with inputs `region` (default eu-central-1), `deploy_flags` (default `-x`), `keep` (default false). `concurrency: e2e` (one group for the whole repository) so runs never overlap in the one account. `timeout-minutes: 150`. `permissions: id-token: write, contents: read`.
-- Credentials: `aws-actions/configure-aws-credentials` with `role-to-assume` from repository variable `E2E_ROLE_ARN`. No long-lived keys.
-- Role: `tests/e2e/cfn/github-oidc-role.yaml` creates the GitHub OIDC provider and a role trusting only `repo:aws-samples/aws-saas-operations-workshop:environment:e2e`. A job with `environment: e2e` always presents that subject, whatever branch it runs from, so the environment's deployment branch policy (`main` only, no required reviewers) is the branch control. It carries `AdministratorAccess` because the deployment creates IAM roles, CloudFront, Cognito and CloudTrail; that is why the account must be a dedicated sandbox. Deployed once by hand into the test account. Action versions are pinned to commit SHAs.
-- GitHub disables `schedule` triggers after 60 days without repository activity; the README says how to re-enable the run.
-- Output: pass/fail table in `$GITHUB_STEP_SUMMARY`, full logs (CodeBuild and instance stream, paged with `filter-log-events`, token redacted) uploaded as an artifact for 14 days.
+- A maintainer runs `tests/e2e/run.sh` from a shell with admin credentials for the test account, after changes to `deployment/` or `App/` and before an event. The deployment creates IAM roles, CloudFront, Cognito and CloudTrail, so the credentials must be admin; that is why no CI system holds them (ADR-0004).
+- Output: `report.md` (pass/fail table) and the full logs (CodeBuild and instance stream, paged with `filter-log-events`, IDE token redacted) in `$E2E_ARTIFACT_DIR`, default `./e2e-artifacts`.
 
 ## Cost and time
 
-One run: about 35 minutes wall clock, roughly 1 EC2 hour (m5.xlarge), one CloudFront distribution, a few hundred Lambda and API calls. Low single-digit dollars. Weekly cadence.
+One run: about 35 minutes wall clock, roughly 1 EC2 hour (m5.xlarge), one CloudFront distribution, a few hundred Lambda and API calls. Low single-digit dollars per run.
 
 ## Open points
 
-1. Isengard needs `-x`; a Workshop Studio-style account should also be tested without `-x` eventually. Second schedule or manual run.
+1. Isengard needs `-x`; a Workshop Studio-style account should also be tested without `-x` eventually. Separate run.
 2. A test for the load simulator (`scripts/init-initialize.sh`) needs the IDE instance, which the sandbox cannot reach over SSM. Left out for now.
