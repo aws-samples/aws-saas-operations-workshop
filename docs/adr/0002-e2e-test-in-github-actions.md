@@ -1,6 +1,6 @@
 # ADR-0002: Run the end-to-end test from GitHub Actions with OIDC
 
-- Status: Proposed
+- Status: Accepted
 - Date: 2026-11-02
 - Deciders: Dave Roberts (Workshop owner)
 
@@ -26,5 +26,5 @@ Option 1. `tests/e2e/run.sh` holds all logic and runs locally too; the workflow 
 ## Consequences
 
 - The sandbox account must stay free of other workloads, because teardown checks look for leftovers by name and the role is admin.
-- The trust policy pins the repository and `main`; manual runs from branches go through the `e2e` environment so they can be approved.
+- The trust policy pins the repository and the `e2e` environment. A job in an environment always presents the environment subject, never the branch, so the environment's deployment branch policy (`main` only) is what keeps other branches off the role; required reviewers are not used because they would block the unattended schedule.
 - Revisit if GitHub Actions is disabled for the organisation or the test needs access the sandbox cannot grant over OIDC.
