@@ -17,13 +17,17 @@ except Exception as e:
     helper.init_failure(e)
 
 # Usage plans are shared by every tenant stack. Two silo tenants provisioned in the same
-# pipeline run patch the same plan within the same second, and API Gateway rejects the
-# second write with ConflictException ("API Key ... cannot reference multiple Usage Plans
-# with the same API Stage"). The write is safe to repeat, so retry with backoff.
-MAX_ATTEMPTS = 6
+# pipeline run patch the same plan within the same second. API Gateway rejects the second
+# write with ConflictException while the first is applied, then throttles UpdateUsagePlan
+# (TooManyRequestsException) for about 20 s, longer than botocore's own retries cover.
+# The write is safe to repeat, so retry with a backoff that spans several throttle windows.
+MAX_ATTEMPTS = 8
 
 
 def add_stage_to_usage_plan(usage_plan_id, api_id, stage):
+    retryable = (apigateway.exceptions.ConflictException,
+                 apigateway.exceptions.TooManyRequestsException,
+                 apigateway.exceptions.LimitExceededException)
     attempt = 1
     while True:
         try:
@@ -37,12 +41,12 @@ def add_stage_to_usage_plan(usage_plan_id, api_id, stage):
                     }
                 ]
             )
-        except apigateway.exceptions.ConflictException as e:
+        except retryable as e:
             if attempt >= MAX_ATTEMPTS:
                 raise
-            delay = min(2 ** attempt, 20) + random.uniform(0, 2)
-            logger.info("ConflictException adding %s:%s to usage plan %s (attempt %d/%d), retrying in %.1fs: %s"
-                        % (api_id, stage, usage_plan_id, attempt, MAX_ATTEMPTS, delay, e))
+            delay = min(5 * 2 ** (attempt - 1), 25) + random.uniform(0, 5)
+            logger.info("%s adding %s:%s to usage plan %s (attempt %d/%d), retrying in %.1fs: %s"
+                        % (type(e).__name__, api_id, stage, usage_plan_id, attempt, MAX_ATTEMPTS, delay, e))
             time.sleep(delay)
             attempt += 1
 
