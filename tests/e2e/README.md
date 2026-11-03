@@ -4,10 +4,10 @@ Deploys the workshop the way a self-deployer does, checks what participants touc
 
 ## Run it locally
 
-Needs `aws`, `curl`, `jq` and credentials for a dedicated, empty test account. AWS internal (Isengard) accounts need the default `-x` deploy flag.
+Needs `aws`, `curl`, `jq` and admin credentials for a test account; the region must hold no other `SaaSOps` deployment and the account no workshop buckets. AWS internal (Isengard) accounts need the default `-x` deploy flag.
 
 ```bash
-AWS_REGION=eu-central-1 tests/e2e/run.sh
+AWS_REGION=eu-west-2 tests/e2e/run.sh
 ```
 
 About 20 minutes to deploy, 1 minute to verify, 10 minutes to tear down. The report lands in `./e2e-artifacts/report.md` together with the CodeBuild and IDE bootstrap logs. The IDE login token (`tkn=`) is redacted from every file in that folder.
@@ -25,25 +25,6 @@ Side effect in both modes: the login check sets the `PooledTenant1` and `SiloedT
 
 Exit code 0 only when every check passed and teardown left nothing behind.
 
-## Scheduled run
+## When to run it
 
-`.github/workflows/e2e.yml` runs every Monday 03:00 UTC and on demand. One run at a time for the whole repository (`concurrency: e2e`), because every run uses the same account and stack name.
-
-One-time setup in the test account:
-
-```bash
-aws cloudformation deploy --stack-name saasops-workshop-e2e-role \
-  --template-file tests/e2e/cfn/github-oidc-role.yaml \
-  --capabilities CAPABILITY_NAMED_IAM
-aws cloudformation describe-stacks --stack-name saasops-workshop-e2e-role \
-  --query "Stacks[0].Outputs[?OutputKey=='RoleArn'].OutputValue" --output text
-```
-
-One-time setup on GitHub (Settings):
-
-1. Repository variable `E2E_ROLE_ARN` = the role ARN printed above.
-2. Environment `e2e` with deployment branch policy **Selected branches and tags: `main`**. No required reviewers (they would block the unattended Monday run).
-
-The role trusts only tokens issued for the `e2e` environment, so that branch policy is the control that keeps other branches off the admin role; a manual run from a feature branch fails at job start with "branch not allowed to deploy". The role is admin; the account must hold nothing else.
-
-GitHub disables scheduled workflows after 60 days without repository activity. If the Monday run stops appearing, re-enable it under Actions.
+By hand, from a maintainer's shell, after changes to `deployment/` or `App/` and before an event. There is no GitHub Actions workflow on purpose: the test needs admin in the account it deploys into, and a workflow would hand that role to anyone who can push to the repository (ADR-0004). One run at a time per account: every run uses the same stack name and the workshop's buckets are account-wide.

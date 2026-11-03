@@ -132,6 +132,5 @@ report() {
         done
     } > "${md}"
     echo; cat "${md}"
-    [[ -n "${GITHUB_STEP_SUMMARY:-}" ]] && cat "${md}" >> "${GITHUB_STEP_SUMMARY}"
     return 0
 }
