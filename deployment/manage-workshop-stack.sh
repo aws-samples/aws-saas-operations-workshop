@@ -31,7 +31,9 @@ echo "Managing workshop for " $STACK_OPERATION "event."
 
 for i in {1..3}; do
     echo "iteration number: $i"
-    if manage_workshop_stack "$STACK_OPERATION"; then
+    # Subshell: the functions exit on failure, and that must end the attempt, not the retry loop.
+    # The steps are safe to re-run (stack deploys converge, existing tenants and users are skipped).
+    if ( manage_workshop_stack "$STACK_OPERATION" ); then
         echo "successfully completed execution"
         exit 0
     else

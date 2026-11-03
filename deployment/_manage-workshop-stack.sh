@@ -59,16 +59,31 @@ create_ide() {
     echo "IDE URL recorded in ${OUTPUTS_FILE}"
 }
 
+# Create the IDE and prepare it for the participant: participant role, repository clone,
+# lab tooling (bootstrap-ide.sh). Runs in parallel with the application build.
+prepare_ide() {
+    create_ide
+    replace_instance_profile "${PARTICIPANT_INSTANCE_PROFILE_PARAMETER_NAME}"
+    run_ssm_command "cd ${IDE_HOME_FOLDER} ; git clone --branch ${REPO_BRANCH_NAME} ${REPO_URL} || echo 'Repo already exists.'"
+    # pipefail: a failure inside bootstrap-ide.sh must fail the SSM command, not be hidden by tee
+    # The region is passed explicitly: the runuser login shell may not have sourced the
+    # participant's .bashrc, and bootstrap-ide.sh writes it to ~/.aws/config for the labs
+    run_ssm_command "set -o pipefail; export AWS_REGION=${REGION}; cd ${IDE_HOME_FOLDER}/${REPO_NAME}/deployment && ./bootstrap-ide.sh 2>&1 | tee .ws-bootstrap.log"
+}
+
 # parameters: (1) ignoreAuditingWorkshop (True/False: string)
 create_workshop() {
-    create_ide
+    # The IDE (CloudFront, SSM bootstrap, lab tooling) and the SaaS application are
+    # independent, so they are built side by side: the IDE in the background, the
+    # application here in CodeBuild with the CodeBuild service role.
+    prepare_ide > >(sed -u 's/^/[ide] /') 2>&1 &
+    local ide_pid=$!
 
-    replace_instance_profile "${BUILD_INSTANCE_PROFILE_PARAMETER_NAME}"
-    run_ssm_command "cd ${IDE_HOME_FOLDER} ; git clone --branch ${REPO_BRANCH_NAME} ${REPO_URL} || echo 'Repo already exists.'"
-    # pipefail: a failure inside create-workshop.sh must fail the SSM command, not be hidden by tee
-    run_ssm_command "set -o pipefail; cd ${IDE_HOME_FOLDER}/${REPO_NAME}/deployment && ./create-workshop.sh ${REPO_URL} ${1} | tee .ws-create.log"
+    ./create-workshop.sh "${1}" > >(sed -u 's/^/[app] /') 2>&1 &
+    local app_pid=$!
 
-    replace_instance_profile "${PARTICIPANT_INSTANCE_PROFILE_PARAMETER_NAME}"
+    wait_for_jobs "ide:${ide_pid}" "app:${app_pid}"
+    echo "Success - Workshop created!"
 }
 
 delete_workshop() {

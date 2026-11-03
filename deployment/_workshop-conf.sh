@@ -16,8 +16,7 @@ IDE_VOLUME_SIZE="50"
 TARGET_USER="participant"
 NODE_MAJOR="20"
 IDE_HOME_FOLDER="/home/${TARGET_USER}/environment"
-# Instance profile names are published by WorkshopStack.yaml
-BUILD_INSTANCE_PROFILE_PARAMETER_NAME="/${WORKSHOP_NAME}/IDE/BuildInstanceProfileName"
+# The participant instance profile name is published by WorkshopStack.yaml
 PARTICIPANT_INSTANCE_PROFILE_PARAMETER_NAME="/${WORKSHOP_NAME}/IDE/ParticipantInstanceProfileName"
 # File read by the CodeBuild post_build step and returned to CloudFormation as custom resource Data
 OUTPUTS_FILE="/tmp/saasops-outputs.json"

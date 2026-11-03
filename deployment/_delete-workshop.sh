@@ -24,14 +24,85 @@ delete_stack() {
         return
     fi
     aws cloudformation delete-stack --stack-name "$1"
-    aws cloudformation wait stack-delete-complete --stack-name "$1"
-    echo "Stack $1 deleted."
+    wait_for_stack_deleted "$1"
+}
+
+# Poll until the stack is gone; fail on DELETE_FAILED.
+# CloudFormation cancels a delete without failing the stack when another stack still imports
+# one of its exports (status stays *_COMPLETE, reason "Delete canceled"). That happens when a
+# tenant stack is still being deleted, so the delete is re-sent a few times before giving up.
+wait_for_stack_deleted() {
+    local stack_name="$1" status reason resend=0
+    while true; do
+        status=$(aws cloudformation describe-stacks --stack-name "$stack_name" --query 'Stacks[0].StackStatus' --output text 2>&1)
+        if [[ "$status" == *"does not exist"* || "$status" == "DELETE_COMPLETE" ]]; then
+            echo "Stack $stack_name deleted."
+            return 0
+        fi
+        if [[ "$status" == "DELETE_FAILED" ]]; then
+            echo "Error! Stack $stack_name is DELETE_FAILED"
+            exit 1
+        fi
+        if [[ "$status" != *_IN_PROGRESS ]]; then
+            reason=$(aws cloudformation describe-stacks --stack-name "$stack_name" --query 'Stacks[0].StackStatusReason' --output text 2>/dev/null)
+            if [[ $resend -ge 10 ]]; then
+                echo "Error! Stack $stack_name could not be deleted ($status): $reason"
+                exit 1
+            fi
+            resend=$((resend + 1))
+            echo "Delete of $stack_name did not start ($status: $reason), re-sending ($resend/10)..."
+            sleep 30
+            aws cloudformation delete-stack --stack-name "$stack_name"
+        fi
+        sleep $DELAY
+    done
+}
+
+# List the CloudFront distribution ids a stack owns, including through nested stacks
+stack_cloudfront_distributions() {
+    local stack_name="$1" resources
+    resources=$(aws cloudformation list-stack-resources --stack-name "$stack_name" --output json 2>/dev/null) || return 0
+    jq -r '.StackResourceSummaries[] | select(.ResourceType == "AWS::CloudFront::Distribution" and .PhysicalResourceId != null) | .PhysicalResourceId' <<<"$resources"
+    local nested
+    for nested in $(jq -r '.StackResourceSummaries[] | select(.ResourceType == "AWS::CloudFormation::Stack") | .PhysicalResourceId' <<<"$resources"); do
+        stack_cloudfront_distributions "$nested"
+    done
+}
+
+# Disable the CloudFront distributions of the given stacks so their deletion does not have
+# to wait for the disable to propagate. Only distributions found through the stacks are
+# touched. The update returns at once; propagation runs while other resources are deleted.
+disable_cloudfront_distributions() {
+    echo "Disabling CloudFront distributions..."
+    local stack dist config etag enabled
+    for stack in "$@"; do
+        for dist in $(stack_cloudfront_distributions "$stack"); do
+            config=$(aws cloudfront get-distribution-config --id "$dist" --output json 2>/dev/null) || continue
+            etag=$(jq -r '.ETag' <<<"$config")
+            enabled=$(jq -r '.DistributionConfig.Enabled' <<<"$config")
+            if [[ "$enabled" != "true" ]]; then
+                echo "Distribution $dist ($stack) already disabled"
+                continue
+            fi
+            jq '.DistributionConfig | .Enabled = false' <<<"$config" > "/tmp/cf-${dist}.json"
+            if aws cloudfront update-distribution --id "$dist" --if-match "$etag" --distribution-config "file:///tmp/cf-${dist}.json" --no-cli-pager > /dev/null; then
+                echo "Distribution $dist ($stack) disabling"
+            else
+                echo "Could not disable distribution $dist ($stack); CloudFormation will do it"
+            fi
+            rm -f "/tmp/cf-${dist}.json"
+        done
+    done
+    echo "CloudFront distributions disabled."
 }
 
 delete_tenant_stacks() {
     echo "Deleting tenant stacks..."
+    local tenant_jobs=()
     next_token=""
-    STACK_STATUS_FILTER="CREATE_COMPLETE ROLLBACK_COMPLETE UPDATE_COMPLETE UPDATE_ROLLBACK_COMPLETE IMPORT_COMPLETE IMPORT_ROLLBACK_COMPLETE"
+    # Failed stacks are included: a tenant stack left in ROLLBACK_FAILED still imports the
+    # control plane's exports and would block the control plane delete
+    STACK_STATUS_FILTER="CREATE_COMPLETE ROLLBACK_COMPLETE UPDATE_COMPLETE UPDATE_ROLLBACK_COMPLETE IMPORT_COMPLETE IMPORT_ROLLBACK_COMPLETE CREATE_FAILED ROLLBACK_FAILED DELETE_FAILED UPDATE_ROLLBACK_FAILED"
     while true; do
         if [[ "${next_token}" == "" ]]; then
             # shellcheck disable=SC2086
@@ -46,6 +117,7 @@ delete_tenant_stacks() {
         tenant_stacks=$(echo "$response" | jq -r '.StackSummaries[].StackName | select(. | test("^stack-*"))')
         for i in $tenant_stacks; do
             delete_stack "$i" &
+            tenant_jobs+=("$i:$!")
         done
 
         next_token=$(echo "$response" | jq '.NextToken')
@@ -55,7 +127,9 @@ delete_tenant_stacks() {
             break
         fi
     done
-    wait_for_background_jobs
+    if [[ ${#tenant_jobs[@]} -gt 0 ]]; then
+        wait_for_jobs "${tenant_jobs[@]}"
+    fi
     echo "Tenant stacks deleted."
 }
 
@@ -95,19 +169,30 @@ delete_bucket() {
     echo "Bucket deleted."
 }
 
+workshop_buckets() {
+    aws s3 ls | awk '{print $3}' | grep -E "^saas-operations-*|^sam-bootstrap-*"
+}
+
+# Empty and delete all workshop buckets, one job per bucket
+delete_buckets_once() {
+    local jobs=() i
+    for i in $(workshop_buckets); do
+        delete_bucket "${i}" &
+        jobs+=("${i}:$!")
+    done
+    if [[ ${#jobs[@]} -gt 0 ]]; then
+        wait_for_jobs "${jobs[@]}"
+    fi
+}
+
 delete_buckets() {
     echo "Deleting buckets..."
-    for i in $(aws s3 ls | awk '{print $3}' | grep -E "^saas-operations-*|^sam-bootstrap-*"); do
-        delete_bucket ${i}
-    done
+    delete_buckets_once
     # Try a second run, in case there was still data put into one of the buckets
-    buckets=$(aws s3 ls | awk '{print $3}' | grep -E "^saas-operations-*|^sam-bootstrap-*")
-    if [[ -n "${buckets}" ]]; then
+    if [[ -n "$(workshop_buckets)" ]]; then
         echo "Sleeping for 60s to wait for bucket"
         sleep 60
-        for i in $(aws s3 ls | awk '{print $3}' | grep -E "^saas-operations-*|^sam-bootstrap-*"); do
-            delete_bucket ${i}
-        done
+        delete_buckets_once
     fi
     echo "Buckets deleted."
 }
@@ -168,6 +253,21 @@ delete_user_pools() {
             break
         fi
     done
+}
+
+# `sam sync` in the labs (lab2-deploy.sh) creates the SAM CLI managed stack with a versioned
+# source bucket. Nothing else in the account is expected to use it; empty the bucket (the stack
+# delete fails otherwise) and delete the stack.
+delete_sam_managed_stack() {
+    local stack="aws-sam-cli-managed-default" bucket
+    if ! aws cloudformation describe-stacks --stack-name "${stack}" > /dev/null 2>&1; then
+        echo "Stack ${stack} does not exist, skipping."
+        return
+    fi
+    bucket=$(aws cloudformation describe-stack-resources --stack-name "${stack}" \
+        --query 'StackResources[?ResourceType==`AWS::S3::Bucket`].PhysicalResourceId' --output text)
+    [[ -n "${bucket}" ]] && empty_bucket "${bucket}"
+    delete_stack "${stack}"
 }
 
 delete_api_keys() {

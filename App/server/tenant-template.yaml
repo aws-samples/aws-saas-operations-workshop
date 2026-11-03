@@ -1261,6 +1261,8 @@ Resources:
       CodeUri: custom_resources/
       Handler: update_usage_plan.handler
       Runtime: python3.9
+      # Retries on ConflictException / TooManyRequests add up to ~3 min when silo tenants deploy in parallel
+      Timeout: 300
       Role: !GetAtt UpdateUsagePlanLambdaExecutionRole.Arn
       Layers: 
           - !Ref SaaSOperationsLayers

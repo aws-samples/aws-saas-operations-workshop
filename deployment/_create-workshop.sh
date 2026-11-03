@@ -3,42 +3,98 @@
 # SPDX-License-Identifier: MIT-0
 
 ## Dependencies
+
+# sudo is needed on the IDE instance (the IDE user is not root) and absent or unneeded in CodeBuild.
+SUDO=""
+if [[ "$(id -u)" -ne 0 ]]; then
+    SUDO="sudo"
+fi
+
+# Tooling the build itself needs. Runs in CodeBuild (Amazon Linux 2023 standard:5.0 with
+# nodejs 22 selected in the buildspec; the image has no nodejs 20), or on any admin shell
+# with node, python3.9 and the AWS CLI.
+install_build_tools() {
+    echo "Installing build tools"
+    node --version
+    # sam build needs a python3.9 interpreter for the python3.9 functions. Amazon Linux 2023
+    # ships one as the system Python; selecting python 3.9 in the buildspec instead costs a
+    # 60 s pyenv build. Fall back to pyenv only when the system has none.
+    if ! command -v python3.9 > /dev/null; then
+        echo "python3.9 not found, installing with pyenv"
+        if command -v pyenv > /dev/null; then
+            pyenv install -s 3.9 && pyenv global 3.9
+        else
+            echo "Error! python3.9 is required and pyenv is not available"
+            exit 1
+        fi
+    fi
+    python3.9 --version
+    # sam build resolves the functions' dependencies with pip for that interpreter. Amazon
+    # Linux 2023 ships pip as a separate package (python3-pip); the runtime-versions python
+    # selection used to bring it along.
+    if ! python3.9 -m pip --version > /dev/null 2>&1; then
+        echo "pip for python3.9 not found, installing"
+        retry ${SUDO} dnf install -y python3-pip || python3.9 -m ensurepip --upgrade || exit 1
+    fi
+    python3.9 -m pip --version
+    if ! command -v cdk > /dev/null; then
+        retry ${SUDO} npm install --global aws-cdk
+    fi
+    cdk --version
+    install_sam_cli
+    echo "Build tools installed"
+}
+
+# Tooling the labs run from the IDE terminal. Runs on the IDE instance as the IDE user.
 install_dependencies() {
     echo "Installing dependencies"
     # The Code Editor image ships git, the AWS CLI, jq, zip and unzip.
-    # Everything below is what the build and the labs need on top of that.
+    # Everything below is what the labs need on top of that.
     echo "Installing OS packages"
-    retry sudo dnf install -y zip unzip python3-pip
+    retry ${SUDO} dnf install -y zip unzip python3-pip
     echo "Installing Node.js ${NODE_MAJOR}"
     if ! command -v node > /dev/null || [[ "$(node --version | cut -d. -f1)" != "v${NODE_MAJOR}" ]]; then
         curl -fsSL "https://rpm.nodesource.com/setup_${NODE_MAJOR}.x" -o /tmp/nodesource-setup.sh
-        retry sudo bash /tmp/nodesource-setup.sh
-        retry sudo dnf install -y nodejs
+        retry ${SUDO} bash /tmp/nodesource-setup.sh
+        retry ${SUDO} dnf install -y nodejs
     fi
     node --version
     echo "Enabling yarn"
-    sudo corepack enable || retry sudo npm install --global yarn
+    ${SUDO} corepack enable || retry ${SUDO} npm install --global yarn
     echo "yarn enabled"
     echo "Installing AWS CDK"
-    retry sudo npm install --global aws-cdk
+    retry ${SUDO} npm install --global aws-cdk
     cdk --version
+    install_sam_cli
+    echo "Installing isolation test packages"
+    cd ${REPO_PATH}/App/isolation-test/
+    retry npm install
+    echo "Isolation test packages installed"
+    # The build runs in CodeBuild, so the IDE prepares what labs run from its terminal:
+    # the compiled tenant pipeline CDK app (cdk deploy in App/server/TenantPipeline) and a
+    # samconfig-bootstrap.toml that names this account's bucket (sam deploy in App/server).
+    echo "Preparing tenant pipeline CDK app"
+    cd ${REPO_PATH}/App/server/TenantPipeline || exit 1
+    retry npm install
+    npm run build
+    echo "Tenant pipeline CDK app prepared"
+    configure_sam_bucket
+    echo "Installing artillery"
+    retry ${SUDO} npm install -g artillery
+    echo "Installed artillery"
+    echo "Dependencies installed"
+}
+
+install_sam_cli() {
     echo "Installing AWS SAM CLI"
     if ! command -v sam > /dev/null; then
         curl -fsSL "https://github.com/aws/aws-sam-cli/releases/latest/download/aws-sam-cli-linux-$(uname -m | sed 's/aarch64/arm64/').zip" -o /tmp/aws-sam-cli.zip
         rm -rf /tmp/sam-installation
         unzip -q -d /tmp/sam-installation /tmp/aws-sam-cli.zip
-        retry sudo /tmp/sam-installation/install
+        retry ${SUDO} /tmp/sam-installation/install
         rm -rf /tmp/sam-installation /tmp/aws-sam-cli.zip
     fi
     sam --version
-    echo "Installing isolation test packages"
-    cd ${REPO_PATH}/App/isolation-test/
-    retry npm install
-    echo "Isolation test packages installed"
-    echo "Installing artillery"
-    retry sudo npm install -g artillery
-    echo "Installed artillery"
-    echo "Dependencies installed"
 }
 
 # pack and push source code to S3 source code bucket
@@ -59,12 +115,31 @@ upload_source_code_to_s3() {
 # Deploy tenant pipeline
 create_tenant_pipeline() {
     echo "Deploying tenant pipeline"
-    cd ${REPO_PATH}/App/server/TenantPipeline || exit 
+    cd ${REPO_PATH}/App/server/TenantPipeline || exit 1
     retry npm install
-    npm run build
-    cdk bootstrap
-    cdk deploy --require-approval never
+    npm run build || exit 1
+    cdk bootstrap || exit 1
+    cdk deploy --require-approval never || exit 1
     echo "Tenant pipeline deployed"
+}
+
+# Point samconfig-bootstrap.toml at this account's SAM deployment bucket. The name is
+# deterministic so the IDE, which does not run the build, resolves the same bucket as
+# CodeBuild and labs can run sam deploy from the IDE terminal. The "sam-bootstrap-" prefix
+# is what delete_buckets removes on teardown. Only rewrites the file; create_bootstrap
+# creates the bucket.
+configure_sam_bucket() {
+    local account_id region
+    account_id=$(aws sts get-caller-identity --query Account --output text)
+    region="${REGION:-${AWS_REGION:-${AWS_DEFAULT_REGION:-$(aws configure get region 2>/dev/null || true)}}}"
+    if [[ -z "${account_id}" || -z "${region}" ]]; then
+        echo "Error! Could not resolve account id or region for the SAM deployment bucket"
+        exit 1
+    fi
+    SAM_S3_BUCKET="sam-bootstrap-bucket-${account_id}-${region}"
+    sed -i -e "s/^s3_bucket = .*/s3_bucket = \"${SAM_S3_BUCKET}\"/" \
+           -e "s/^region = .*/region = \"${region}\"/" "${REPO_PATH}/App/server/samconfig-bootstrap.toml"
+    echo "SAM deployment bucket: ${SAM_S3_BUCKET}"
 }
 
 # Create application
@@ -72,29 +147,21 @@ create_tenant_pipeline() {
 create_bootstrap() {
     echo "Deploying application"
     cd ${REPO_PATH}/App/server
-    DEFAULT_SAM_S3_BUCKET=$(grep s3_bucket samconfig-bootstrap.toml | cut -d'=' -f2 | cut -d \" -f2)
-    if ! aws s3 ls "s3://${DEFAULT_SAM_S3_BUCKET}"
+    configure_sam_bucket
+    if ! aws s3api head-bucket --bucket "${SAM_S3_BUCKET}" 2>/dev/null
     then
-        echo "S3 Bucket: ${DEFAULT_SAM_S3_BUCKET} specified in samconfig-bootstrap.toml is not readable."
-        echo "So creating a new S3 bucket and will update samconfig-bootstrap.toml with new bucket name."
-        UUID=$(uuidgen | awk '{print tolower($0)}')
-        SAM_S3_BUCKET=sam-bootstrap-bucket-${UUID}
-        aws s3 mb "s3://${SAM_S3_BUCKET}" --region "${REGION}"
+        echo "Creating SAM deployment bucket ${SAM_S3_BUCKET}"
+        aws s3 mb "s3://${SAM_S3_BUCKET}" --region "${REGION}" || exit 1
         aws s3api put-bucket-encryption \
             --bucket "${SAM_S3_BUCKET}" \
-            --server-side-encryption-configuration '{"Rules": [{"ApplyServerSideEncryptionByDefault": {"SSEAlgorithm": "AES256"}}]}'
-        if [[ $? -ne 0 ]]
-        then
-            echo "bootstrap bucket deployment failed"
-            exit 1
-        fi
-        # Update samconfig-bootstrap.toml with new bucket name
-        ex -sc '%s/s3_bucket = .*/s3_bucket = \"'"${SAM_S3_BUCKET}"'\"/|x' samconfig-bootstrap.toml
+            --server-side-encryption-configuration '{"Rules": [{"ApplyServerSideEncryptionByDefault": {"SSEAlgorithm": "AES256"}}]}' || exit 1
     fi
     echo "Create bootstrap : IGNORE_AUDITING "$1
-    # Built on the host: Amazon Linux 2023 ships Python 3.9, which matches the function runtimes.
-    sam build -t bootstrap-template.yaml --region="$REGION" --parameter-overrides ParameterKey=IgnoreAuditingLab,ParameterValue="$1"
-    sam deploy --config-file samconfig-bootstrap.toml --region="$REGION" --no-confirm-changeset --parameter-overrides IgnoreAuditingLab="$1"
+    # Built on the host with the python3.9 selected by the CodeBuild buildspec, which matches the function runtimes.
+    sam build -t bootstrap-template.yaml --region="$REGION" --parameter-overrides ParameterKey=IgnoreAuditingLab,ParameterValue="$1" || exit 1
+    # --no-fail-on-empty-changeset: a retry after a failure elsewhere finds the stack already
+    # up to date, and the default exit 1 on "No changes to deploy" would kill every retry.
+    sam deploy --config-file samconfig-bootstrap.toml --region="$REGION" --no-confirm-changeset --no-fail-on-empty-changeset --parameter-overrides IgnoreAuditingLab="$1"
     if [[ $? -ne 0 ]]
     then
         echo "Error! bootstrap-template.yaml deploy failed"
@@ -107,6 +174,57 @@ execute_pipeline() {
     # Start CI/CD pipeline which loads tenant stack
     echo "Starting CI/CD pipeline"
     PIPELINE_EXECUTION_ID=$(aws codepipeline start-pipeline-execution --name saas-operations-pipeline | jq -r '.pipelineExecutionId')
+    echo "Pipeline execution ${PIPELINE_EXECUTION_ID} started"
+}
+
+# Wait for the pipeline execution started by execute_pipeline; fail on any end state but Succeeded
+wait_for_pipeline() {
+    echo "Waiting for pipeline execution ${PIPELINE_EXECUTION_ID}"
+    # The pooled tenant stack normally takes ~10 min. The CodeBuild project stops at 60 min and
+    # the stack has already run ~10 min when this wait starts, so the bound must leave time
+    # for post_build to report the failure to CloudFormation.
+    local timeout_seconds=1200 # 20 min
+    local waited=0
+    local read_errors=0
+    local max_read_errors=5 # consecutive failed status reads (throttling, 5xx) before giving up
+    while true; do
+        local deploymentstatus
+        # The read may fail or return nothing on a throttle or a transient API error. Under
+        # set -e a failed assignment would end the job, so take the exit code explicitly and
+        # treat an unreadable status as retryable, bounded by max_read_errors.
+        deploymentstatus=$(aws codepipeline get-pipeline-execution --pipeline-name saas-operations-pipeline --pipeline-execution-id "${PIPELINE_EXECUTION_ID}" 2>/dev/null | jq -r '.pipelineExecution.status // empty') || deploymentstatus=""
+        case "${deploymentstatus}" in
+            Succeeded)
+                echo "Pipeline execution succeeded"
+                return 0
+                ;;
+            InProgress|Stopping)
+                read_errors=0
+                ;;
+            Failed|Stopped|Superseded|Cancelled)
+                echo "Error! Pipeline execution ended with status ${deploymentstatus}"
+                exit 1
+                ;;
+            *)
+                read_errors=$((read_errors + 1))
+                echo "Could not read pipeline execution status (attempt ${read_errors}/${max_read_errors})"
+                if [[ $read_errors -ge $max_read_errors ]]; then
+                    echo "Error! Pipeline execution status unreadable ${max_read_errors} times in a row"
+                    exit 1
+                fi
+                ;;
+        esac
+        if [[ $waited -ge $timeout_seconds ]]; then
+            echo "Error! Pipeline execution did not finish within ${timeout_seconds}s"
+            exit 1
+        fi
+        sleep 30
+        waited=$((waited + 30))
+    done
+}
+
+# Read the control plane outputs the UI builds and the tenant steps need
+read_controlplane_outputs() {
     ADMIN_SITE_BUCKET=$(aws cloudformation list-exports --query "Exports[?Name=='SaaS-Operations-AdminAppBucket'].Value" --output text)
     APP_SITE_BUCKET=$(aws cloudformation list-exports --query "Exports[?Name=='SaaS-Operations-AppBucket'].Value" --output text)
     LANDING_APP_SITE_BUCKET=$(aws cloudformation list-exports --query "Exports[?Name=='SaaS-Operations-LandingAppBucket'].Value" --output text)
@@ -116,7 +234,10 @@ execute_pipeline() {
     ADMIN_APPCLIENTID=$(aws cloudformation list-exports --query "Exports[?Name=='SaaS-Operations-AdminUserPoolClientId'].Value" --output text)
     ADMIN_USERPOOLID=$(aws cloudformation list-exports --query "Exports[?Name=='SaaS-Operations-AdminUserPoolId'].Value" --output text)
     ADMIN_APIGATEWAYURL=$(aws cloudformation list-exports --query "Exports[?Name=='SaaS-Operations-AdminApiGatewayUrl'].Value" --output text)
-    echo "Finished CI/CD pipeline"
+    if [[ -z "${ADMIN_APIGATEWAYURL}" || -z "${ADMIN_SITE_BUCKET}" ]]; then
+        echo "Error! Control plane exports not found"
+        exit 1
+    fi
 }
 
 # Configuring admin UI
@@ -149,8 +270,9 @@ const awsmobile = {
 };
 export default awsmobile;
 EoF
-    retry npm install
-    npm run build
+    # npm ci: the committed package-lock.json is the tree that was tested; npm install would re-resolve it.
+    retry npm ci
+    npm run build || exit 1
     aws s3 sync --delete --cache-control no-store dist "s3://${ADMIN_SITE_BUCKET}"
     if [[ $? -ne 0 ]]
     then
@@ -181,8 +303,9 @@ export const environment = {
     regApiGatewayUrl: '${ADMIN_APIGATEWAYURL}',
 };
 EoF
-    retry npm install
-    npm run build
+    # npm ci: the committed package-lock.json is the tree that was tested; npm install would re-resolve it.
+    retry npm ci
+    npm run build || exit 1
     aws s3 sync --delete --cache-control no-store dist "s3://${APP_SITE_BUCKET}"
     if [[ $? -ne 0 ]]
     then
@@ -213,31 +336,29 @@ export const environment = {
     apiGatewayUrl: '${ADMIN_APIGATEWAYURL}'
 };
 EoF
-    retry npm install
-    npm run build
+    # npm ci: the committed package-lock.json is the tree that was tested; npm install would re-resolve it.
+    retry npm ci
+    npm run build || exit 1
     aws s3 sync --delete --cache-control no-store dist "s3://${LANDING_APP_SITE_BUCKET}"
     if [[ $? -ne 0 ]]
     then
         echo "Error:sync $LANDING_APP_SITE_BUCKET"
         exit 1
     fi
-    while true; do
-        deploymentstatus=$(aws codepipeline get-pipeline-execution --pipeline-name saas-operations-pipeline --pipeline-execution-id ${PIPELINE_EXECUTION_ID} | jq -r '.pipelineExecution.status')
-        if [[ "${deploymentstatus}" == "Succeeded" ]]; then
-            break
-        fi
-        echo "Waiting for pipeline execution"
-        sleep 30
-    done
     echo "Landing UI configured"
 }
 
 # Deploy dashboards
 deploy_dashboards() {
     echo "Deploying dashboards"
-    cd ${REPO_PATH}/App/server/dashboards
-    ./deploy.sh
+    cd ${REPO_PATH}/App/server/dashboards || exit 1
+    ./deploy.sh || exit 1
     echo "Dashboards deployed"
+}
+
+tenant_exists() {
+    # /tenant/init/<name> is unauthenticated and returns the tenant's user pool once registered
+    curl -sf "${ADMIN_APIGATEWAYURL}tenant/init/${1}" | jq -e '.userPoolId // empty' > /dev/null 2>&1
 }
 
 create_tenant() {
@@ -245,6 +366,10 @@ create_tenant() {
     TENANT_NAME=$2
     TENANT_EMAIL=$3
     TENANT_TIER=$4
+    if tenant_exists "${TENANT_NAME}"; then
+        echo "Tenant ${TENANT_NAME} already exists, skipping"
+        return 0
+    fi
     data=$(cat <<EOF
 {
     "tenantName": "${TENANT_NAME}",
@@ -255,10 +380,14 @@ create_tenant() {
 }
 EOF
     )
-    REQUEST=$(curl -X POST -H 'Content-type:application/json' --data "$data" "${ADMIN_APIGATEWAYURL}registration")
-    echo $REQUEST
+    REQUEST=$(curl -sf -X POST -H 'Content-type:application/json' --data "$data" "${ADMIN_APIGATEWAYURL}registration") || {
+        echo "Error! Registration of ${TENANT_NAME} failed"
+        exit 1
+    }
+    echo "Tenant ${TENANT_NAME}: $REQUEST"
 }
 
+# Registration skips tenants that already exist, so the build can be retried.
 create_tenants() {
     echo "Creating tenants"
     basicTenants=("PooledTenant1" "PooledTenant2" "PooledTenant3" "PooledTenant4" "BasicTestTenant1" "BasicTestTenant2")
@@ -275,24 +404,59 @@ create_tenants() {
     echo "Tenants created"
 }
 
+# Create the users of one tenant. Usernames are deterministic, so a retry recreates nothing.
+# parameters: (1) tenant name (2) number of users
+create_users_for_tenant() {
+    local tenant=$1
+    local users_count=$2
+    local TENANTUSERPOOL TENANTID existing
+    TENANTUSERPOOL=$(curl -sf "${ADMIN_APIGATEWAYURL}tenant/init/${tenant}" | jq -r '.userPoolId')
+    if [[ -z "${TENANTUSERPOOL}" || "${TENANTUSERPOOL}" == "null" ]]; then
+        echo "Error! No user pool for tenant ${tenant}"
+        exit 1
+    fi
+    TENANTID=$(aws cognito-idp list-users --user-pool-id $TENANTUSERPOOL | jq -r --arg id "${tenant}@" '.Users[] | select(.Attributes[] | .Value | contains($id)) | .Attributes[] | select(.Name == "custom:tenantId") | .Value')
+    if [[ -z "${TENANTID}" || "${TENANTID}" == "null" ]]; then
+        echo "Error! No tenant id found for ${tenant} in user pool ${TENANTUSERPOOL}"
+        exit 1
+    fi
+    existing=$(aws cognito-idp list-users --user-pool-id $TENANTUSERPOOL --filter "email ^= \"success+${tenant}_user_\"" --query 'length(Users)' --output text)
+    if [[ "${existing}" -ge "${users_count}" ]]; then
+        echo "Tenant ${tenant} already has ${existing} users, skipping"
+        return 0
+    fi
+    local username err
+    for (( i=1 ; i<=${users_count} ; i++ )); do
+        username="success+${tenant}_user_${i}@simulator.amazonses.com"
+        # Only an existing user is fine to skip; throttling, access denied or a bad request must fail.
+        if ! err=$(aws cognito-idp admin-create-user \
+            --user-pool-id ${TENANTUSERPOOL} \
+            --username "${username}" \
+            --user-attributes Name=email,Value="${username}" Name=email_verified,Value=true Name=custom:tenantId,Value=${TENANTID} Name=custom:userRole,Value=TenantUser 2>&1 1> /dev/null); then
+            if [[ "${err}" == *UsernameExistsException* ]]; then
+                echo "User ${username} exists"
+            else
+                echo "Error! Could not create user ${username}: ${err}"
+                exit 1
+            fi
+        fi
+    done
+    echo "Tenant ${tenant}: ${users_count} users"
+}
+
+# Different user counts per tenant so the Lab 2 dashboards show variety; fixed so runs are reproducible.
 create_tenant_users() {
     echo "Creating tenant users"
-    TENANTS=("SiloedTenant1" "PooledTenant1" "PooledTenant2" "PooledTenant3" "PooledTenant4")
-    for tenant in ${TENANTS[@]}; do
-        TENANTUSERPOOL=$(curl "${ADMIN_APIGATEWAYURL}/tenant/init/${tenant}" | jq -r '.userPoolId')
-        TENANTID=$(aws cognito-idp list-users --user-pool-id $TENANTUSERPOOL | jq -r --arg id "${tenant}@" '.Users[] | select(.Attributes[] | .Value | contains($id)) | .Attributes[] | select(.Name == "custom:tenantId") | .Value')
-
-        USERSCOUNT=$((1 + $RANDOM % 50))
-        for (( i=1 ; i<=${USERSCOUNT} ; i++ )); 
-            do
-            USERPREFIX=$(date +%s)
-            aws cognito-idp admin-create-user \
-                --user-pool-id ${TENANTUSERPOOL} \
-                --username success+${tenant}_user_${USERPREFIX}@simulator.amazonses.com  \
-                --user-attributes Name=email,Value=success+${tenant}_user_${USERPREFIX}@simulator.amazonses.com Name=email_verified,Value=true Name=custom:tenantId,Value=${TENANTID} Name=custom:userRole,Value=TenantUser 1> /dev/null 
-
-            sleep 1
-        done
-    done
+    create_users_for_tenant SiloedTenant1 32 &
+    local p1=$!
+    create_users_for_tenant PooledTenant1 11 &
+    local p2=$!
+    create_users_for_tenant PooledTenant2 27 &
+    local p3=$!
+    create_users_for_tenant PooledTenant3 5 &
+    local p4=$!
+    create_users_for_tenant PooledTenant4 18 &
+    local p5=$!
+    wait_for_jobs "SiloedTenant1:${p1}" "PooledTenant1:${p2}" "PooledTenant2:${p3}" "PooledTenant3:${p4}" "PooledTenant4:${p5}"
     echo "Tenant users created"
 }

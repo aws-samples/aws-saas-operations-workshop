@@ -97,7 +97,7 @@
             },
             "CreateTenantStack": {
               "Type": "Task",
-              "Next": "Wait 60 Seconds",
+              "Next": "Wait 20 Seconds",
               "Parameters": {
                 "StackName.$": "$.stack.stackName",
                 "TemplateURL.$": "$.stack.templateURL",
@@ -126,13 +126,13 @@
                 "Parameters.$": "$.stack.parameters"
               },
               "Resource": "arn:aws:states:::aws-sdk:cloudformation:updateStack",
-              "Next": "Wait 60 Seconds",
+              "Next": "Wait 20 Seconds",
               "ResultPath": null
             },
-            "Wait 60 Seconds": {
+            "Wait 20 Seconds": {
               "Type": "Wait",
               "Next": "Get Deployment Status",
-              "Seconds": 60
+              "Seconds": 20
             },
             "Get Deployment Status": {
               "Type": "Task",
@@ -186,7 +186,7 @@
                       "StringEquals": "UPDATE_COMPLETE_CLEANUP_IN_PROGRESS"
                     }
                   ],
-                  "Next": "Wait 60 Seconds"
+                  "Next": "Wait 20 Seconds"
                 }
               ],
               "Default": "Deployment Failed"

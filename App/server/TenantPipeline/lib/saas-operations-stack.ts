@@ -263,6 +263,10 @@ export class SaaSOperationsStack extends cdk.Stack {
                         "cloudformation:UpdateStack",
                         "cloudformation:CreateChangeSet",
                         "cloudwatch:PutMetricAlarm",
+                        // A rollback of a tenant stack deletes its alarms with this role;
+                        // without DeleteAlarms the stack ends in ROLLBACK_FAILED
+                        "cloudwatch:DeleteAlarms",
+                        "cloudwatch:DescribeAlarms",
                         "lambda:*",
                         "apigateway:*",
                         "dynamodb:*",
