@@ -31,7 +31,7 @@ Option 1. The template is vendored unchanged as `deployment/code-editor/code-edi
 
 - Deployment works again in new accounts and in Workshop Studio.
 - The `deployment/cloud9` CDK app and `deployment/iam_policy.json` are removed; the participant policy lives inline in `WorkshopStack.yaml` without the `cloud9:*` and `ec2:ModifyVolume` actions.
-- Tooling the Cloud9 AMI shipped (Node.js, SAM CLI, CDK) is now installed by `install_dependencies` on the instance. Docker is not installed: `sam build` runs on the host instead of in a container, which works because Amazon Linux 2023 ships Python 3.9.
+- Tooling the Cloud9 AMI shipped (Node.js, SAM CLI, CDK) is now installed by `install_dependencies` on the instance. Docker is not installed: `sam build` and `sam sync` run on the host instead of in a container, which works because the instance is x86_64 and Amazon Linux 2023 ships Python 3.9, the Lambda runtime's architecture and version. `scripts/lab2-deploy.sh` dropped its `-u` (`--use-container`) for that reason; any `sam sync -u` on the Workshop Studio pages must drop it too.
 - The Workshop Studio content (getting-started pages, lab pages mentioning Cloud9, `static/WorkshopStack.yaml`, `contentspec.yaml` output `CodeEditorUrl`) must be updated to match.
 - Upgrading the IDE means replacing `code-editor.yaml` with a newer version from the Workshop Studio cookbook.
 - Revisit if Workshop Studio provides a native IDE option that removes the need for a self-managed instance.
