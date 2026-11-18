@@ -30,10 +30,18 @@ Resources:
         RecoveryMechanisms:
           - Name: verified_email
             Priority: 1
-      AdminCreateUserConfig:      
+      AdminCreateUserConfig:
+        # Users of this pool are invited by an administrator, never self-registered: the
+        # invite template below sends a username and temporary password, and every user is
+        # created server-side with admin_create_user (TenantManagementService) or
+        # aws cognito-idp admin-create-user (deployment/_create-workshop.sh). There is no
+        # Cognito SignUp call anywhere in this repository. Without this setting Cognito
+        # permits self-registration by default, which would let an unrelated caller create
+        # their own account in the pool that the tenant-isolation model is built on.
+        AllowAdminCreateUserOnly: True
         InviteMessageTemplate:
-          EmailMessage: !Join 
-            - "" 
+          EmailMessage: !Join
+            - ""
             - - "Login into tenant UI application at "
               - "https://"
               - !Ref TenantUserPoolCallbackURLParameter 
@@ -78,10 +86,24 @@ Resources:
         - email
         - openid
         - profile
+      # WriteAttributes governs what the END USER may change about their own profile.
+      # custom:tenantId and custom:userRole are deliberately excluded: both are mapped
+      # into the federated IAM session as aws:PrincipalTag/tenantId and
+      # aws:PrincipalTag/userRole by PooledUserPrincipalTagMapping below, and those tags
+      # gate every dynamodb:LeadingKeys and SystemAdmin/TenantAdmin condition in
+      # AuthenticatedPooledUserRole and AuthenticatedSiloedUserRole. Listing them here let
+      # any signed-in user call Cognito's own UpdateUserAttributes with their own access
+      # token, rewrite their tenant or role, and have Cognito re-sign it -- a direct
+      # tenant-isolation bypass and privilege escalation.
+      #
+      # This does not affect provisioning: WriteAttributes does not constrain the
+      # IAM-authorized admin APIs, and both attributes are set exclusively through those --
+      # admin_create_user and admin_update_user_attributes in
+      # TenantManagementService/user-management.py, and aws cognito-idp admin-create-user in
+      # deployment/_create-workshop.sh. The Schema above intentionally keeps userRole
+      # mutable so an administrator can still change a user's role.
       WriteAttributes:
         - "email"
-        - "custom:tenantId"
-        - "custom:userRole"
       IdTokenValidity: 12
   CognitoUserPoolDomain:
     Type: AWS::Cognito::UserPoolDomain
@@ -336,11 +358,17 @@ Resources:
         RecoveryMechanisms:
           - Name: verified_email
             Priority: 1
-      AdminCreateUserConfig:      
+      AdminCreateUserConfig:
+        # Same reasoning as the tenant pool, and this one matters more: without it anyone
+        # who can reach the hosted UI could self-register into the SaaS-provider operations
+        # pool. Combined with the previously self-writable custom:userRole, that was a path
+        # from an anonymous signup to SystemAdmin and unconditioned access to every
+        # DynamoDB table. Operations users are invited, per the template below.
+        AllowAdminCreateUserOnly: True
         InviteMessageTemplate:
-          EmailMessage: !Join 
-            - "" 
-            - - "Login into admin UI application at " 
+          EmailMessage: !Join
+            - ""
+            - - "Login into admin UI application at "
               - "https://"
               - !Ref AdminUserPoolCallbackURLParameter 
               - "/" 
@@ -383,11 +411,24 @@ Resources:
         - email
         - openid
         - profile
+      # Same reasoning as the tenant client above, and more urgent here. This is the
+      # SaaS-provider operations pool: layers/auth_manager.py isSaaSProvider() treats a
+      # custom:userRole of SystemAdmin as the provider role, which carries unconditioned
+      # access to every DynamoDB table. Listing custom:userRole here let any user of this
+      # pool promote themselves to SystemAdmin with a single UpdateUserAttributes call.
+      #
+      # custom:apiKey was also self-writable, for which there is no legitimate end-user
+      # write case at all.
+      #
+      # Note custom:tenantId was listed here too but is immutable in the Schema above (no
+      # Mutable: true), so that particular write already failed -- userRole and apiKey are
+      # the two that were genuinely writable. All three are now excluded.
+      #
+      # Operations users are invited, not self-registered: the AdminCreateUserConfig
+      # InviteMessageTemplate above sends a username and temporary password, which is the
+      # admin-create-user flow that WriteAttributes does not constrain.
       WriteAttributes:
         - "email"
-        - "custom:tenantId"
-        - "custom:userRole"
-        - "custom:apiKey"
   CognitoOperationUsersUserPoolDomain:
     Type: AWS::Cognito::UserPoolDomain
     Properties:

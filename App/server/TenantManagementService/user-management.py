@@ -438,12 +438,18 @@ class UserManagement:
                 }
             ],
             AdminCreateUserConfig={
+                # Users of a dedicated-tenancy pool are invited by an administrator, never
+                # self-registered: the invite template sends a username and temporary
+                # password, and create_tenant_admin() creates them with admin_create_user.
+                # Cognito permits self-registration by default, which would let an
+                # unrelated caller create an account directly in a tenant's own pool.
+                'AllowAdminCreateUserOnly': True,
                 'InviteMessageTemplate': {
                     'EmailMessage': email_message,
                     'EmailSubject': email_subject
                 }
             }
-        )    
+        )
         return response
 
     def create_user_pool_client(self, user_pool_id):
@@ -470,9 +476,18 @@ class UserManagement:
                 'openid',
                 'profile'
             ],
+            # End users must not be able to rewrite their own tenant. custom:userRole was
+            # already excluded from this list; custom:tenantId had been left in, so a user
+            # of a dedicated-tenancy pool could call UpdateUserAttributes with their own
+            # access token and move themselves to another tenant. All siloed tenants share
+            # one IAM role keyed on the resulting aws:PrincipalTag/tenantId, so that single
+            # write crossed the boundary between two dedicated-tenancy tenants -- the tier
+            # with the strongest separation guarantee in this architecture.
+            #
+            # Provisioning is unaffected: create_tenant_admin() uses admin_create_user, an
+            # IAM-authorized admin API that WriteAttributes does not constrain.
             WriteAttributes=[
-                'email',
-                'custom:tenantId'
+                'email'
             ],
             ExplicitAuthFlows=[
                 'ALLOW_REFRESH_TOKEN_AUTH','ALLOW_CUSTOM_AUTH','ALLOW_USER_SRP_AUTH','ALLOW_USER_PASSWORD_AUTH'
